@@ -1,6 +1,6 @@
 0/1.x - MoO2 reimplementation
 - 0.1
-playing space
+main screen
 	galaxy (new UI screen)
 	infrastructure for loading and placing sprites
 testing/debugging (new UI screen)
@@ -98,6 +98,7 @@ races
 	score modifier not yet implemented
 	reimplement all MoO2 races using correct number of picks
 	where possible, implement effects race/picks choice
+		set flags for picks whose effects can not be fully implemented
 technology tree
 	technology selector (new UI screen)
 	per-technology details (new UI screen)
@@ -105,29 +106,34 @@ technology tree
 	reimplement all technologies from MoO2
 	creative/uncreative race tech effects
 	where possible, implement tech effects
+		set flags for techs whose effects can not be fully implemented
 buildings
 	add to construction screen
 	do not allow duplicates
-	where possible, upon completion of building costruction, implement its effects
+	where possible, upon completion of building construction, implement its effects
+		set flags for buildings whose effects can not be fully implemented
 computer opponents with basic AI
 	"even" distribution within random galaxy
 	makes decisions on tech tree
 	builds colony ships and colony bases
+		this is an expansion from MoO2, where AI produces colony ships but not colony bases
 	colonizes
 	where different players meet, newcomer disappears
 	no combat ships, spies, or diplomacy yet
+	handle mixed-empire systems (new widget)
 combat ships and transports
 	reimplementation of all MoO2 features
-	design screen
-	allow resulting ships to be built
+	design screen (new UI screen)
+	allow resulting ships to be built (new widget)
+	handle refits
 	auto-design based on existing technologies
-	space combat not yet possible
-	when ships meet, newcomer disappears
-	computer opponent AIs build combat ships but do not move them
+	space/ground combat and blockades not yet possible
+	computer opponent AIs build combat ships and transports but do not move them
 space monsters
-	orion
-	all others
-non-AI space combat
+	orion, space dragon, amoeba, eel (and others?)
+	design them as per MoO2 specifications
+human-initiated tactical space combat
+	allow attacks of in-system opponents (new widget)
 	reimplementation of all MoO2 features
 	fighters
 	torpedoes and missiles
@@ -136,24 +142,52 @@ non-AI space combat
 	shields
 	engine explosion damage to neighboring ships
 	star bases
-	ship movement
+	ship movement and turning
 	retreat
 	monsters
 	size/shape of objects in combat grid
-AI space combat
+	set up testing environment for combat
+		include shortcut to design screen for both sides with access to all tech items
+		include shortcut, quick tech designs
+full tactical space combat
 	computer opponent AIs attack, board and retreat
 	monsters attack
+		some are passive (eg eel), others aggressive (eg orion)
+	calculate initiative
+full strategic space combat
+	computer opponent AIs build ships using "auto-designer"
+	computer opponent AIs refit ships
 	computer opponent AIs move their combat ships between systems and attack
+	can't attack ships if there's an enemy planet
+	non-combat ships retreat from combat if on losing side
+	non-combat ships automatically destroyed if no escorting war ships and attacked
+	if attacking, no help from friendly planet
+	allow blockading and implement its effects
 ground combat
 	allow transports to be built and maintained
 	calculate winner from attack/defender numbers and troop modifiers
+	allow landings on in-system opponents (new widget)
+	ground combat window (new UI screen)
+	set probabilities based on racial and tech modifiers, as per MoO2
+	allow transports to land additional marines (new widget)
+	currently, winner immediately assimilates loser population
+	allow mind control (new widget)
+occupation and assimilation
+	set revolt chance
+	calculate probability of revolts' success
+	what happens when race that revolts' empire has been eliminated?
+	set assimilation rate
+	handle mixed-race planets as per MoO2
 diplomacy
 	all options as from MoO2
 	players start diplomacy when in range of each other
+	meetings with other players (new UI screen)
 	player-to-player no treaty, non-aggression pact, peace, and war
-	information screen for each player
-	power graph screen
-	technologies screen
+	demand/offer systems, tech, money
+	science and trade treaties
+	information screen for each player (new UI screen)
+	power graph screen (new UI screen)
+	technologies screen (new UI screen)
 	computer AI opponents accept/decline requests
 	computer AI opponents make their own requests
 	computer AI opponents declare war and propose treaties
@@ -167,7 +201,10 @@ spying
 	add spying information to diplomacy screen
 random events
 	antarans
-	implement all other random events from MoO2
+		they always self-destruct when ships immobilized
+	find and implement all other random events and their effects from MoO2
+attack antaran homeworld
+	requires "building" (forgot what it is called)
 galactic council
 	threshold when players start to vote
 	how many votes for each player
@@ -201,6 +238,12 @@ bug reporting and fixing
 
 2.x - feature expansion within framework of MoO2 rules and tech tree
 - 2.0
+ship movement uses way points
+	path calculations set way points to automatically make use of worm holes
+	editing way points
+	patrols?
+	complex ship coordination, eg "have this fleet join fleet X"
+		even if fleet X moves
 automation
 	eliminate micro-management where desired
 	user-definable "bureaucrats"
