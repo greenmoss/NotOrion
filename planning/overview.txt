@@ -1,0 +1,285 @@
+0/1.x - MoO2 reimplementation
+- 0.1
+playing space
+	galaxy (new UI screen)
+	infrastructure for loading and placing sprites
+testing/debugging (new UI screen)
+	various log levels
+	configure each type/level while running
+initial galactic objects
+	grid/coordinate system
+	star systems (new sprite)
+		no zoom yet
+	black holes, nebulae (new sprites)
+	worm holes (new sprites)
+star systems
+	popup view (new UI screen)
+	currently, all star systems count as "explored"
+		can pop up all
+	planets (new sprites)
+		all planet environments and sizes as in MoO2
+		no colony view yet
+		population maximums as per MoO2 "normal" race maximums, eg no race bonuses yet
+	asteroids, gas giants (new sprites)
+planets list page (new UI screen)
+	sorting, filtering as in MoO2
+- 0.2
+first colony/home world
+	colony zoom/detail view (new UI screen)
+	population is at half planet capacity
+	individual population icons (new sprites)
+	move individuals between food, production, and science (new sprites)
+	food production per MoO2 rules
+		non-farming planets can't have farmers (new widget)
+	food/population/science totals (new sprites)
+	food shortages
+		no effect on population yet
+	pollution (new sprites)
+	money
+	deca-units for each type of sprite (new sprites)
+		beyond MoO2: centi-units
+	construction is fixed at "trade goods"
+time
+	"turns" (new UI element)
+	population growth (new UI element)
+		MoO2 growth model: slow at first, fastest toward middle, slow at end
+	food shortages (new sprites)
+		cause negative growth
+	when population shrinks, which population unit disappears
+	no freighters yet
+		food shortage affects each colony individually
+macro-economy
+	taxes
+	BC reserve
+	BC surplus/shortage
+	food surplus/shortage
+	command points; only have 5 right now
+	new UI elements for each of these
+construction
+	open from colony view (new widget)
+	construction overview (new UI screen)
+	show buildings on colony view screen (new widget)
+	only options right now are housing and trade goods
+	no queue yet
+		choosing either construction option replaces previous choice
+	implement housing and trade goods effects
+"expansion" ships
+	colony and outpost ships
+		1 command point for each
+	when constructed, show ship/fleet in-orbit (new sprite)
+		initially, only "in orbit"
+		fleet zoom view (new UI screen)
+	colony base
+		only allow queue addition per uncolonized in-system planet
+	colonization chooser (new UI screen)
+	introduce command point deficit/BC relationship
+	command points detail screen (new UI screen)
+freighters
+	add to construction screen (new widget)
+		each build creates 5 freighters
+	automatically used up to move food between colonies where needed
+		1 per food
+	if freigher/food shortage, decide which planets are affected
+	population movement between colonies
+		movement speed currently 1 parsec per turn
+		calculate straight-line movement, ignoring black holes and nebulae
+	beyond MoO2
+		show freighters that are transporting population as "fleets" on galaxy screen
+ship movement
+	initially, all are 1 parsec per turn and have unlimited range
+	path finding
+	create new colonies, choose which planet (new UI screen)
+	can construct "colony base" on planets
+	all unvisited star systems are now "unexplored", changing detail view (new UI screen)
+	view all fleets (new UI screen)
+races
+	race design (new UI screen)
+	ensure race picks add up correctly
+	score modifier not yet implemented
+	reimplement all MoO2 races using correct number of picks
+	where possible, implement effects race/picks choice
+technology tree
+	technology selector (new UI screen)
+	per-technology details (new UI screen)
+	technology progress indicator (new widget)
+	reimplement all technologies from MoO2
+	creative/uncreative race tech effects
+	where possible, implement tech effects
+buildings
+	add to construction screen
+	do not allow duplicates
+	where possible, upon completion of building costruction, implement its effects
+computer opponents with basic AI
+	"even" distribution within random galaxy
+	makes decisions on tech tree
+	builds colony ships and colony bases
+	colonizes
+	where different players meet, newcomer disappears
+	no combat ships, spies, or diplomacy yet
+combat ships and transports
+	reimplementation of all MoO2 features
+	design screen
+	allow resulting ships to be built
+	auto-design based on existing technologies
+	space combat not yet possible
+	when ships meet, newcomer disappears
+	computer opponent AIs build combat ships but do not move them
+space monsters
+	orion
+	all others
+non-AI space combat
+	reimplementation of all MoO2 features
+	fighters
+	torpedoes and missiles
+	boarding
+	beam attack/defense
+	shields
+	engine explosion damage to neighboring ships
+	star bases
+	ship movement
+	retreat
+	monsters
+	size/shape of objects in combat grid
+AI space combat
+	computer opponent AIs attack, board and retreat
+	monsters attack
+	computer opponent AIs move their combat ships between systems and attack
+ground combat
+	allow transports to be built and maintained
+	calculate winner from attack/defender numbers and troop modifiers
+diplomacy
+	all options as from MoO2
+	players start diplomacy when in range of each other
+	player-to-player no treaty, non-aggression pact, peace, and war
+	information screen for each player
+	power graph screen
+	technologies screen
+	computer AI opponents accept/decline requests
+	computer AI opponents make their own requests
+	computer AI opponents declare war and propose treaties
+	computer AI opponents interact with each other as well
+spying
+	players start spy operations when in range of each other
+	offense spy/sabotage/dormant
+	defense: all spies not used offensively
+	computer AI opponents spy on player and each other
+	spying overview screen
+	add spying information to diplomacy screen
+random events
+	antarans
+	implement all other random events from MoO2
+galactic council
+	threshold when players start to vote
+	how many votes for each player
+	computer AI opponents decide who to vote for
+	diplomatic repercussions depending on vote
+leaders
+	same as from MoO2
+	leader offers to join, or is found window (new UI screen)
+	frequency and quality depends on race modifiers, other leader modifiers
+	show leaders in pool (new UI screen)
+	assign leaders to colonies and fleets
+score
+	? (Don't know how this works in MoO2)
+	picks modifier
+	final score (new UI screen)
+- 0.3
+multiplayer
+	? (I've never done this in MoO2)
+- 0.4
+art
+	organize images and sounds into modules
+	"modules" include everything necessary for basic MoO2-like game
+- 1.0
+simply-installed applications per supported platform
+	Mac .app
+	Linux packages
+	Windows?
+	other platforms?
+- 1.1
+bug reporting and fixing
+
+2.x - feature expansion within framework of MoO2 rules and tech tree
+- 2.0
+automation
+	eliminate micro-management where desired
+	user-definable "bureaucrats"
+colonize asteroids and gas giants
+terraform toxic planets
+more planets per system
+- 2.1
+natural and non-natural satellites of planets 
+	eg moons vs space stations vs hollowed-out asteroid habitats
+more size classes and types of solar system objects
+	dyson spheres
+	comets and extremely remote space objects (Oort cloud, etc)
+expand galactic objects of interest beyond stars-with-planets
+	black holes with orbiting objects
+	multi-star systems
+	pulsars
+	rogue planets
+thousands or more objects per galaxy
+	"realistic" star clustering
+in-game effects from star activity
+	flares for unstable stars
+	tidal locking of planets for red dwarves
+- 2.2
+3D galaxies
+3D space combat
+space combat on a much larger time and space scale
+space combat follows laws of physics
+ship size ranges from much smaller to much bigger than conventional MoO2
+3D worlds
+	placement of populations and buildings becomes important
+guerilla warfare on captured colonies
+detailed ground invasions
+detailed ship captures
+detailed spying operations
+
+3.0 - expand beyond MoO2
+civil war
+disintegrating empires
+corruption
+slavery
+expand tech tree 
+	into the past, to stone age
+	into the future
+3D, finer-grained simulation
+	cultural and ethnic groups
+	towns and small settlements
+	individuals
+FTL travel optional
+	implement full ramifications of this into game play
+	interstellar arks, Cheng Ho traders, Mega-year empires, etc
+	man-made wormholes
+per-world and per-system competing kingdoms, empires, and cultures
+fuzzier tech tree
+	tech "leakage"
+	tech collapse
+societal collapse
+	planet-wide and system-wide sterilization and/or extinction
+	spacefaring equivalent of the salting of Carthage
+biosphere degradation and collapse
+	environmental catastrophes
+	planetary climate change
+	orbital pollution
+downloadable add-on scenarios
+	customized rule/tech/race/universe/artwork combinations
+	predefined "events", eg pivotal moments in history
+	implement popular genres
+		Star Wars, BSG, Star Trek, Babylon 5
+		Revelation Space, Deepness in the Sky, "Culture" series
+expanded types of species and interactions
+	a la Stapledon's "Star Maker"
+cultural mixing and evolution
+	language/naming
+	architecture
+	phylo-genetic effects 
+		skin tone, facial features, etc
+		other peculiarities depending upon species
+	fashion, jewelry, body-modification
+	food preparation and preferences
+	music
+	political tendencies and traditions
+	legends, myths, philosophies, and religions
+	taboos
