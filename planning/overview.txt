@@ -1,5 +1,8 @@
 0/1.x - MoO2 reimplementation
-- 0.1
+- 0.1 - basics
+new github project
+	pick a name
+	explore github project management features
 main screen
 	galaxy (new UI screen)
 	infrastructure for loading and placing sprites
@@ -10,6 +13,8 @@ initial galactic objects
 	grid/coordinate system
 	star systems (new sprite)
 		no zoom yet
+	names of star systems
+		pull from online star catalog (not duplicating MoO2 here)
 	black holes, nebulae (new sprites)
 	worm holes (new sprites)
 star systems
@@ -20,10 +25,18 @@ star systems
 		all planet environments and sizes as in MoO2
 		no colony view yet
 		population maximums as per MoO2 "normal" race maximums, eg no race bonuses yet
+		use MoO2 system of star-system name + {prime,II,III,IV,V}
 	asteroids, gas giants (new sprites)
 planets list page (new UI screen)
 	sorting, filtering as in MoO2
-- 0.2
+	by environment
+	by mineral richness
+	by size
+	filter on standard/rich/ultra-rich
+	filter on non-hostile
+	no filter on "no enemy presence" yet
+	no filter on "within range" yet
+	(what's the other filter?)
 first colony/home world
 	colony zoom/detail view (new UI screen)
 	population is at half planet capacity
@@ -39,6 +52,7 @@ first colony/home world
 	deca-units for each type of sprite (new sprites)
 		beyond MoO2: centi-units
 	construction is fixed at "trade goods"
+	no colony growth yet
 time
 	"turns" (new UI element)
 	population growth (new UI element)
@@ -72,8 +86,13 @@ construction
 	colony base
 		only allow queue addition per uncolonized in-system planet
 	colonization chooser (new UI screen)
+	planet name chooser (new UI screen)
 	introduce command point deficit/BC relationship
 	command points detail screen (new UI screen)
+	implement in-range/out of range
+		initial range is 8 parsecs
+	implement "in range" filter on planet list page (new widget)
+	implement "send colony ship" on planet list page (new widget)
 freighters
 	add to construction screen (new widget)
 		each build creates 5 freighters
@@ -99,6 +118,11 @@ races
 	reimplement all MoO2 races using correct number of picks
 	where possible, implement effects race/picks choice
 		set flags for picks whose effects can not be fully implemented
+	choose player color (new UI screen)
+	choose emperor name (new UI screen)
+	use MoO2 emperor names for each race
+	choose starting planet name
+	use MoO2 planet names for each race
 technology tree
 	technology selector (new UI screen)
 	per-technology details (new UI screen)
@@ -108,7 +132,7 @@ technology tree
 	where possible, implement tech effects
 		set flags for techs whose effects can not be fully implemented
 buildings
-	add to construction screen
+	add to construction screen (new widget)
 	do not allow duplicates
 	where possible, upon completion of building construction, implement its effects
 		set flags for buildings whose effects can not be fully implemented
@@ -121,17 +145,22 @@ computer opponents with basic AI
 	where different players meet, newcomer disappears
 	no combat ships, spies, or diplomacy yet
 	handle mixed-empire systems (new widget)
+	add filter on "no enemy presence" to planet list page (new widget)
+- 0.2 - ship design and combat
 combat ships and transports
 	reimplementation of all MoO2 features
 	design screen (new UI screen)
 	allow resulting ships to be built (new widget)
+	allow duplicates to be built
 	handle refits
 	auto-design based on existing technologies
 	space/ground combat and blockades not yet possible
 	computer opponent AIs build combat ships and transports but do not move them
+	allow for different ship designs and names per race/player color
 space monsters
 	orion, space dragon, amoeba, eel (and others?)
 	design them as per MoO2 specifications
+	they cannot attack or be attacked yet
 human-initiated tactical space combat
 	allow attacks of in-system opponents (new widget)
 	reimplementation of all MoO2 features
@@ -146,9 +175,9 @@ human-initiated tactical space combat
 	retreat
 	monsters
 	size/shape of objects in combat grid
-	set up testing environment for combat
-		include shortcut to design screen for both sides with access to all tech items
-		include shortcut, quick tech designs
+testing environment for space combat
+	quick premade tech designs for testing all along tech tree
+	shortcut to design screen for both sides with access to all tech items
 full tactical space combat
 	computer opponent AIs attack, board and retreat
 	monsters attack
@@ -178,6 +207,7 @@ occupation and assimilation
 	what happens when race that revolts' empire has been eliminated?
 	set assimilation rate
 	handle mixed-race planets as per MoO2
+- 0.3 - advanced game and AI
 diplomacy
 	all options as from MoO2
 	players start diplomacy when in range of each other
@@ -220,20 +250,22 @@ score
 	? (Don't know how this works in MoO2)
 	picks modifier
 	final score (new UI screen)
-- 0.3
-multiplayer
-	? (I've never done this in MoO2)
-- 0.4
-art
-	organize images and sounds into modules
-	"modules" include everything necessary for basic MoO2-like game
-- 1.0
+- 0.4 - multiplayer
+? (I've never done this in MoO2)
+- 0.5 - art
+organize images and sounds into modules
+"modules" include everything necessary for basic MoO2-like game
+- 0.6 - installers
 simply-installed applications per supported platform
 	Mac .app
 	Linux packages
 	Windows?
 	other platforms?
-- 1.1
+- 1.0 - initial release
+milestone; no TODOs here
+congratulate self and anyone else who helped
+relax and recuperate
+- 1.1 - stable branch
 bug reporting and fixing
 
 2.x - feature expansion within framework of MoO2 rules and tech tree
@@ -250,6 +282,7 @@ automation
 colonize asteroids and gas giants
 terraform toxic planets
 more planets per system
+"realistic" star clustering
 - 2.1
 natural and non-natural satellites of planets 
 	eg moons vs space stations vs hollowed-out asteroid habitats
@@ -262,7 +295,6 @@ expand galactic objects of interest beyond stars-with-planets
 	pulsars
 	rogue planets
 thousands or more objects per galaxy
-	"realistic" star clustering
 in-game effects from star activity
 	flares for unstable stars
 	tidal locking of planets for red dwarves
