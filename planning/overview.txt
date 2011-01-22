@@ -7,6 +7,7 @@ main screen
 	galaxy (new UI screen)
 	save to and restore from files
 	infrastructure for loading and placing sprites
+	zoom in and out
 testing/debugging (new UI screen)
 	various log levels
 	configure each type/level while running
@@ -108,18 +109,27 @@ colonization and colony management
 	implement "buying" construction
 	can not recolonize an already-colonized planet
 ship movement
+	implement fleet movement target selection, ETA (new widget)
+	show all fleet locations on galaxy map (new widget)
+	click on fleets to reveal destination, ETA (new UI screen)
 	initially, all move 10 parsecs per turn 
 	initially, all have range of 10 parsecs
 	implement "in range" filter on planet list page (new widget)
 	implement "send colony ship" on planet list page (new widget)
-	implement simple path finding as per MoO2
+	implement straight-path movement as per MoO2
+		include obstruction by black holes
+		include slowdowns due to nebulae
+		include single-turn transit due to wormholes
 	create new colonies, choose which planet (new UI screen)
 	can construct "colony base" on planets
 	all unvisited star systems are now "unexplored", changing detail view (new UI screen)
+		wormholes are only revealed when at least one end of each wormhole is explored
 	view all fleets (new UI screen)
+	debugging: reveal all systems
 freighters
 	add to construction screen (new widget)
 		each build creates 5 freighters
+	allow duplicates to be added and removed from queue
 	automatically used up to move food between colonies where needed
 		1 per food
 	if freighter/food shortage, decide which planets are affected
@@ -129,6 +139,7 @@ freighters
 	beyond MoO2
 		show freighters that are transporting population as "fleets" on galaxy screen
 		allow fleet movement to be cancelled, returning freighters to pool
+		these fleets can *not* be combined with standard ship fleets
 races
 	race design (new UI screen)
 	ensure race picks add up correctly
@@ -163,23 +174,24 @@ buildings
 	implement reclaim BC amount as 1/4 (?) of original price, and add to global BC
 computer opponents with "expansion" AI
 	add selector for number of opponents in game setup window (new widget)
-	switch players to "even" distribution within random galaxy
+	distribute human and AI players "evenly" within random galaxy
 	AI makes decisions on tech tree
 	AI builds colony ships and colony bases
 		different than MoO2, where AI produces colony ships but not colony bases
 	AI colonizes
+	AI builds buildings
 	add selector for difficulty of AI in game setup window (new widget)
-	implement effectiveness of AI actions subject to game difficulty level
+	implement effectiveness of AI builds/expansion subject to game difficulty level
 	no combat ships, spies, or diplomacy yet
 	handle mixed-empire systems (new widget)
 	add filter on "no enemy presence" to planet list page (new widget)
+	debugging: log and review AI logic for each decision, built ship, built building
 - 0.2 - ship design and combat
 combat ship design
 	design and build existing designs from costruction list (new widget)
 	design screen (new UI screen)
 	specials, weapons, shields, computers
 	allow resulting ships to be built (new widget)
-	allow duplicates to be added and removed from queue
 	include all weapons and systems from MoO2, subject to tech level
 	restricted sizes based on presence of starbase and titan/doomstar techs
 	ships can be moved between systems based on range calculations
@@ -195,7 +207,7 @@ combat ship management and transports
 	calculate refit cost
 	set up auto-designs based on existing technologies
 	AIs decide when/where to build combat ships and transports, what kinds, how many
-		this is just random right now, limited only to CP availability
+		this is just random right now, limited only by CP availability
 	AIs use auto-designs
 	AIs do not move ships and transports yet
 	different ship designs and names per race/player color
@@ -271,12 +283,12 @@ tactical AI
 	implement aggressiveness of AI actions subject to game difficulty level
 	debugging: assign different AI "personalities" on the fly
 strategic space combat
-	AIs build ships using "auto-designer"
-	AIs refit ships
-	AIs move their combat ships between systems and attack
+	AI builds ships using "auto-designer"
+	AI refits ships
+	AI moves their combat ships between systems and attack
 	initially, every player is "at war" with every other player
-	AIs prioritize strategic targets and defenses
-	AIs set rally points
+	AI prioritizes strategic targets and defenses
+	AI sets rally points
 	monster AI: some are passive (eg eel), others aggressive (eg orion)
 	can't attack ships if there's an enemy planet
 	non-combat ships retreat from combat if on losing side
@@ -285,6 +297,7 @@ strategic space combat
 	allow blockading and implement its effects
 	allow bombarding from orbit, bio-weapons
 	implement aggressiveness of AI actions subject to game difficulty level
+	implement visibility of other players' ships based on scanner technology and size
 ground combat
 	allow transports to be built and maintained
 	calculate winner from attack/defender numbers and troop modifiers
@@ -312,10 +325,10 @@ diplomacy
 	information screen for each player (new UI screen)
 	power graph screen (new UI screen)
 	technologies screen (new UI screen)
-	computer AI opponents accept/decline requests
-	computer AI opponents make their own requests
-	computer AI opponents declare war and propose treaties
-	computer AI opponents interact with each other as well
+	AI accepts/declines requests
+	AI makes own requests
+	AI declares war and proposes treaties
+	AI interact with each other as well
 	implement aggressiveness of AI actions subject to game difficulty level
 spying
 	players start spy operations when in range of each other
@@ -337,7 +350,7 @@ galactic council
 	threshold when players start to vote
 	open window when threshold is reached (new UI screen)
 	how many votes for each player
-	computer AI opponents decide who to vote for
+	AI decides who to vote for
 	player chooses who to vote for
 	diplomatic repercussions depending on vote
 	implement AI response/taking offense subject to game difficulty level
@@ -349,6 +362,7 @@ leaders
 	same list of leaders and attributes as from MoO2
 	show leaders in pool (new UI screen)
 	assign leaders to colonies and fleets
+	AI decides which leaders to hire/retain
 score
 	? (Don't know how this works in MoO2)
 	picks modifier
@@ -397,7 +411,7 @@ more size classes and types of solar system objects
 expand galactic objects of interest beyond stars-with-planets
 	black holes with orbiting objects
 	multi-star systems
-	pulsars
+	pulsars/magnetars/exotics
 	rogue planets
 thousands or more objects per galaxy
 in-game effects from star activity
@@ -405,6 +419,7 @@ in-game effects from star activity
 	tidal locking of planets for red dwarves
 - 2.2
 3D galaxies
+highly-differentiated zoom levels
 3D space combat
 space combat on a much larger time and space scale
 space combat follows laws of physics
