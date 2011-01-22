@@ -1,18 +1,22 @@
 0/1.x - MoO2 reimplementation
 - 0.1 - basics
 new github project
-	pick a name
+	pick a (temporary?) name
 	explore github project management features
 main screen
 	galaxy (new UI screen)
+	save to and restore from files
 	infrastructure for loading and placing sprites
 testing/debugging (new UI screen)
 	various log levels
 	configure each type/level while running
 initial galactic objects
+	choose game/galaxy parameters (new UI screen)
+	implement effects of galaxy size as per MoO2
 	grid/coordinate system
 	star systems (new sprite)
 		no zoom yet
+	implement effects of galaxy age on star types as per MoO2
 	names of star systems
 		pull from online star catalog (not duplicating MoO2 here)
 	black holes, nebulae (new sprites)
@@ -26,6 +30,8 @@ star systems
 		no colony view yet
 		population maximums as per MoO2 "normal" race maximums, eg no race bonuses yet
 		use MoO2 system of star-system name + {prime,II,III,IV,V}
+	likelihood of planet environments and number of planets depends on star types
+		have to make up our own correlations here?
 	asteroids, gas giants (new sprites)
 planets list page (new UI screen)
 	sorting, filtering as in MoO2
@@ -34,10 +40,12 @@ planets list page (new UI screen)
 	by size
 	filter on standard/rich/ultra-rich
 	filter on non-hostile
+	filter on size
 	no filter on "no enemy presence" yet
 	no filter on "within range" yet
-	(what's the other filter?)
+	any other filters from MoO2?
 first colony/home world
+	initially, choose any random non-hostile world
 	colony zoom/detail view (new UI screen)
 	population is at half planet capacity
 	individual population icons (new sprites)
@@ -51,11 +59,11 @@ first colony/home world
 	money
 	deca-units for each type of sprite (new sprites)
 		beyond MoO2: centi-units
-	construction is fixed at "trade goods"
+	construction is fixed at "trade goods", but has no effect yet
 	no colony growth yet
 time
-	"turns" (new UI element)
-	population growth (new UI element)
+	"turns" (new widget)
+	population growth (new widget)
 		MoO2 growth model: slow at first, fastest toward middle, slow at end
 	food shortages (new sprites)
 		cause negative growth
@@ -63,12 +71,14 @@ time
 	no freighters yet
 		food shortage affects each colony individually
 macro-economy
-	taxes
-	BC reserve
+	taxes (new UI screen)
+	implement tax effects on production and BC as per MoO2
+	BC reserve (new widget)
 	BC surplus/shortage
-	food surplus/shortage
-	command points; only have 5 right now
-	new UI elements for each of these
+	implement effect of "trade goods" on economy
+	BC report (new UI screen)
+	food surplus/shortage (new widget)
+	command points; only have 5 right now (new widget)
 construction
 	open from colony view (new widget)
 	construction overview (new UI screen)
@@ -77,47 +87,55 @@ construction
 	no queue yet
 		choosing either construction option replaces previous choice
 	implement housing and trade goods effects
-"expansion" ships
-	colony and outpost ships
-		1 command point for each
+build "expansion" ships
+	can select and build colony and outpost ships from construction window (new widget)
+		1 command point for each when completed
 	when constructed, show ship/fleet in-orbit (new sprite)
 		initially, only "in orbit"
 		fleet zoom view (new UI screen)
-	colony base
+	introduce command point deficit/BC relationship
+	command points report (new UI screen)
+	initially unable to move between systems
+	no colonization possible yet
+colonization and colony management
+	can select and build colony base
 		only allow queue addition per uncolonized in-system planet
+		handl no available planet for colony base
 	colonization chooser (new UI screen)
 	planet name chooser (new UI screen)
-	introduce command point deficit/BC relationship
-	command points detail screen (new UI screen)
-	implement in-range/out of range
-		initial range is 8 parsecs
+	colony summary report as in MoO2 (new UI screen)
+	columns in report same as MoO2
+	implement "buying" construction
+	can not recolonize an already-colonized planet
+ship movement
+	initially, all move 10 parsecs per turn 
+	initially, all have range of 10 parsecs
 	implement "in range" filter on planet list page (new widget)
 	implement "send colony ship" on planet list page (new widget)
+	implement simple path finding as per MoO2
+	create new colonies, choose which planet (new UI screen)
+	can construct "colony base" on planets
+	all unvisited star systems are now "unexplored", changing detail view (new UI screen)
+	view all fleets (new UI screen)
 freighters
 	add to construction screen (new widget)
 		each build creates 5 freighters
 	automatically used up to move food between colonies where needed
 		1 per food
-	if freigher/food shortage, decide which planets are affected
+	if freighter/food shortage, decide which planets are affected
 	population movement between colonies
 		movement speed currently 1 parsec per turn
 		calculate straight-line movement, ignoring black holes and nebulae
 	beyond MoO2
 		show freighters that are transporting population as "fleets" on galaxy screen
-ship movement
-	initially, all are 1 parsec per turn and have unlimited range
-	path finding
-	create new colonies, choose which planet (new UI screen)
-	can construct "colony base" on planets
-	all unvisited star systems are now "unexplored", changing detail view (new UI screen)
-	view all fleets (new UI screen)
+		allow fleet movement to be cancelled, returning freighters to pool
 races
 	race design (new UI screen)
 	ensure race picks add up correctly
 	score modifier not yet implemented
 	reimplement all MoO2 races using correct number of picks
-	where possible, implement effects race/picks choice
-		set flags for picks whose effects can not be fully implemented
+	where possible, implement effects of race/picks choices
+		set flag/note for picks whose effects can not be fully implemented
 	choose player color (new UI screen)
 	choose emperor name (new UI screen)
 	use MoO2 emperor names for each race
@@ -125,73 +143,148 @@ races
 	use MoO2 planet names for each race
 technology tree
 	technology selector (new UI screen)
+	implement creative/uncreative race effect on selecting techs
 	per-technology details (new UI screen)
 	technology progress indicator (new widget)
+	set ship range based on tech level
+		colony/outpost ships get "extended" range
 	reimplement all technologies from MoO2
-	creative/uncreative race tech effects
 	where possible, implement tech effects
-		set flags for techs whose effects can not be fully implemented
+		set flag/note for any techs whose effects can not be fully implemented
+	debugging option: research all
 buildings
 	add to construction screen (new widget)
+	available technology determines which buildings are available
 	do not allow duplicates
 	where possible, upon completion of building construction, implement its effects
-		set flags for buildings whose effects can not be fully implemented
-computer opponents with basic AI
-	"even" distribution within random galaxy
-	makes decisions on tech tree
-	builds colony ships and colony bases
-		this is an expansion from MoO2, where AI produces colony ships but not colony bases
-	colonizes
-	where different players meet, newcomer disappears
+		set flag/note for buildings whose effects can not be fully implemented
+	debugging option: build all available, build all, destroy all
+	allow one building per turn to be reclaimed
+	implement reclaim BC amount as 1/4 (?) of original price, and add to global BC
+computer opponents with "expansion" AI
+	add selector for number of opponents in game setup window (new widget)
+	switch players to "even" distribution within random galaxy
+	AI makes decisions on tech tree
+	AI builds colony ships and colony bases
+		different than MoO2, where AI produces colony ships but not colony bases
+	AI colonizes
+	add selector for difficulty of AI in game setup window (new widget)
+	implement effectiveness of AI actions subject to game difficulty level
 	no combat ships, spies, or diplomacy yet
 	handle mixed-empire systems (new widget)
 	add filter on "no enemy presence" to planet list page (new widget)
 - 0.2 - ship design and combat
-combat ships and transports
-	reimplementation of all MoO2 features
+combat ship design
+	design and build existing designs from costruction list (new widget)
 	design screen (new UI screen)
+	specials, weapons, shields, computers
 	allow resulting ships to be built (new widget)
-	allow duplicates to be built
-	handle refits
-	auto-design based on existing technologies
+	allow duplicates to be added and removed from queue
+	include all weapons and systems from MoO2, subject to tech level
+	restricted sizes based on presence of starbase and titan/doomstar techs
+	ships can be moved between systems based on range calculations
+		including effects of "extended fuel tanks"
+	set build/rally points
+	only give commands to orbiting ships
+		if have tachyon comms or better, give commands to ships *near* systems
+	debugging: allow any size class, and weapons/systems from all tech levels
+	no auto-designs yet
+	no refits yet
+combat ship management and transports
+	allow refits of in-system ships (new widget)
+	calculate refit cost
+	set up auto-designs based on existing technologies
+	AIs decide when/where to build combat ships and transports, what kinds, how many
+		this is just random right now, limited only to CP availability
+	AIs use auto-designs
+	AIs do not move ships and transports yet
+	different ship designs and names per race/player color
+	initial experience points depending on building (space academy)
+	accumulation of experience points; faster if space academy in system
 	space/ground combat and blockades not yet possible
-	computer opponent AIs build combat ships and transports but do not move them
-	allow for different ship designs and names per race/player color
 space monsters
 	orion, space dragon, amoeba, eel (and others?)
 	design them as per MoO2 specifications
-	they cannot attack or be attacked yet
-human-initiated tactical space combat
+	they orbit systems, but cannot attack or be attacked yet
+tactical movement
+	combat area (new UI screen)
+	turn grid on and off (new widget)
+	deploy one generic ship of one size on attacker and defender sides
+	click to select/display ship information
+	turns and order of battle: currently attacker (human) always goes first
+	attacker ship can move and turn, but do nothing else
+	only one class of movement and turning speed
+	highlight available move/turn squares
+	right now only human initiates combat
+	defender ships do not move on their own
 	allow attacks of in-system opponents (new widget)
-	reimplementation of all MoO2 features
-	fighters
-	torpedoes and missiles
-	boarding
-	beam attack/defense
-	shields
-	engine explosion damage to neighboring ships
-	star bases
-	ship movement and turning
+	no resolution yet
+	with and without planet, on attacker or defender side
+	debugging: immediately bring up combat area 
+		place any number of attackers and defenders
+tactical attacks, basic
+	implement all ship sizes and shapes
+	implement all move/turn speeds
+	planet/ship scan (new UI screen)
+	show current ship information (new widget)
+	beam attack/defense, all tech levels and modifications
+	effect of experience points, computers, and specials (?)
+	shields, blocked damage, depletion, directionality
+		implement all shield tech levels
+	armor hit points and depletion
+	structure hit points and depletion
+	damage to shields vs structure/armor vs systems vs engine
+	engine explosions and "splash damage" to neighboring ships
+	debugging: quick premade tech designs for testing all along tech tree
+		shortcut to design screen for both sides with access to all tech levels of above items
+tactical launches
+	fighters, all tech levels
+	torpedoes (only two types? mods?)
+	torpedoes fire on alternating turns
+	missiles, all tech levels and modifications
+	missile depletion and fast-launches
+	missile, torpedo, fighter movement and turning speed
+		what happens when they overshoot?
+	"imminent hit" warning (new UI screen)
+	debugging: launch any type of the above from any ship, with any target
+		turn off damage to ships
+tactical, misc
+	tractor beams and immobilization
+	specials: all from MoO2 plus effects
+	boarding (new UI screen)
+	bombing, all tech levels
+		collateral damage?
 	retreat
-	monsters
-	size/shape of objects in combat grid
-testing environment for space combat
-	quick premade tech designs for testing all along tech tree
-	shortcut to design screen for both sides with access to all tech items
-full tactical space combat
-	computer opponent AIs attack, board and retreat
-	monsters attack
-		some are passive (eg eel), others aggressive (eg orion)
+	self-destruct and confirmation window (new UI screen)
+	star bases, battlestations, (what is level 3 called?)
+	monsters and their special forms of attacks and defenses
+	armed and shielded planets
+	debugging: manually direct any on-screen object
+tactical AI
+	AI closes for battle and attack using all available weapons
+	AI chooses priority of targets
+	AI retreats if overpowered or less aggressive
+	AI boards
+	AI self-destructs
+	special "monster" AI target prioritization, movement and attacks
 	calculate initiative
-full strategic space combat
-	computer opponent AIs build ships using "auto-designer"
-	computer opponent AIs refit ships
-	computer opponent AIs move their combat ships between systems and attack
+	implement aggressiveness of AI actions subject to game difficulty level
+	debugging: assign different AI "personalities" on the fly
+strategic space combat
+	AIs build ships using "auto-designer"
+	AIs refit ships
+	AIs move their combat ships between systems and attack
+	initially, every player is "at war" with every other player
+	AIs prioritize strategic targets and defenses
+	AIs set rally points
+	monster AI: some are passive (eg eel), others aggressive (eg orion)
 	can't attack ships if there's an enemy planet
 	non-combat ships retreat from combat if on losing side
 	non-combat ships automatically destroyed if no escorting war ships and attacked
 	if attacking, no help from friendly planet
 	allow blockading and implement its effects
+	allow bombarding from orbit, bio-weapons
+	implement aggressiveness of AI actions subject to game difficulty level
 ground combat
 	allow transports to be built and maintained
 	calculate winner from attack/defender numbers and troop modifiers
@@ -201,6 +294,7 @@ ground combat
 	allow transports to land additional marines (new widget)
 	currently, winner immediately assimilates loser population
 	allow mind control (new widget)
+	implement aggressiveness of AI actions subject to game difficulty level
 occupation and assimilation
 	set revolt chance
 	calculate probability of revolts' success
@@ -222,6 +316,7 @@ diplomacy
 	computer AI opponents make their own requests
 	computer AI opponents declare war and propose treaties
 	computer AI opponents interact with each other as well
+	implement aggressiveness of AI actions subject to game difficulty level
 spying
 	players start spy operations when in range of each other
 	offense spy/sabotage/dormant
@@ -229,21 +324,29 @@ spying
 	computer AI opponents spy on player and each other
 	spying overview screen
 	add spying information to diplomacy screen
+	implement aggressiveness of AI actions subject to game difficulty level
 random events
 	antarans
 		they always self-destruct when ships immobilized
+	is frequency of antaran attacks subject to game difficulty level?
 	find and implement all other random events and their effects from MoO2
 attack antaran homeworld
 	requires "building" (forgot what it is called)
+	is strength of antaran defenses subject to game difficulty level?
 galactic council
 	threshold when players start to vote
+	open window when threshold is reached (new UI screen)
 	how many votes for each player
 	computer AI opponents decide who to vote for
+	player chooses who to vote for
 	diplomatic repercussions depending on vote
+	implement AI response/taking offense subject to game difficulty level
 leaders
-	same as from MoO2
 	leader offers to join, or is found window (new UI screen)
 	frequency and quality depends on race modifiers, other leader modifiers
+	attributes: bonuses, upkeep, initial cost
+	leveling, and likelihood of levelling
+	same list of leaders and attributes as from MoO2
 	show leaders in pool (new UI screen)
 	assign leaders to colonies and fleets
 score
@@ -255,11 +358,13 @@ score
 - 0.5 - art
 organize images and sounds into modules
 "modules" include everything necessary for basic MoO2-like game
-- 0.6 - installers
+- 0.6 - polishing
+find a good name
 simply-installed applications per supported platform
 	Mac .app
-	Linux packages
+	Linux rpm's and deb's
 	Windows?
+	Macports?
 	other platforms?
 - 1.0 - initial release
 milestone; no TODOs here
