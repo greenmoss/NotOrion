@@ -7,7 +7,7 @@ import Stars
 
 class Camera(object):
 
-	def __init__(self, position=None, scale=None):
+	def __init__(self, position=None, scale=None, width=640, height=480):
 		if position is None:
 			position = (0, 0)
 		self.x, self.y = position
@@ -19,13 +19,17 @@ class Camera(object):
 		self.max_y = 20.0
 
 		if scale is None:
-			scale = 1
+			scale = 1.0
 		self.min_scale = 1.0
 		self.max_scale = 100.0
 		self.scale = scale
 		self.eventual_scale = self.scale
-		self.label_scale = 512
-		self.star_scale = 512
+		self.set_proportions(width, height)
+		self.foreground_scale = 480
+
+	def set_proportions(self, width, height):
+		"""Set proportions for anything derived from height and/or width."""
+		self.aspect_ratio = width/height
 
 	def zoom(self, magnification):
 		self.eventual_scale *= magnification
@@ -59,41 +63,30 @@ class Camera(object):
 		# Set projection matrix suitable for 2D rendering"
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		aspect_ratio = width/height
-		gluOrtho2D(
-			-self.scale*aspect_ratio,
-			+self.scale*aspect_ratio,
-			-self.scale,
-			+self.scale)
-
-		# Set modelview matrix to move, scale & rotate to camera position"
+		# why is 64 the magic number to keep background stars at constant distances?
+		field_of_view = height/64
+		gluPerspective(field_of_view, self.aspect_ratio, .1, 1000)
 		glMatrixMode(GL_MODELVIEW)
-		glLoadIdentity()
-		gluLookAt(
-			self.x, self.y, 1.0,
-			self.x, self.y, -1.0,
-			0.0, 1.0, 0.0)
 
-	def focus_on_star_field(self, width, height):
+	def focus_on_foreground(self, width, height):
 		"Set projection and modelview matrices ready for rendering the stars."
 
 		# Set projection matrix suitable for 2D rendering"
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		aspect_ratio = width/height
 		gluOrtho2D(
-			-self.star_scale*aspect_ratio,
-			+self.star_scale*aspect_ratio,
-			-self.star_scale,
-			+self.star_scale)
+			-height*self.aspect_ratio,
+			height*self.aspect_ratio,
+			-height,
+			height)
 
 		# Set modelview matrix to move, scale & rotate to camera position"
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
-		diff = self.star_scale /self.scale
+		height_ratio = height/self.scale
 		gluLookAt(
-			self.x*diff, self.y*diff, 1.0,
-			self.x*diff, self.y*diff, -1.0,
+			self.x*height_ratio, self.y*height_ratio, 1.0,
+			self.x*height_ratio, self.y*height_ratio, -1.0,
 			0.0, 1.0, 0.0)
 
 	def focus_on_hud(self, width, height):
@@ -103,18 +96,13 @@ class Camera(object):
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
 
-	def scale_label_coordinates(self, unscaled_x, unscaled_y):
-		scaled_x = (unscaled_x)*self.label_scale/self.scale
-		scaled_y = (unscaled_y)*self.label_scale/self.scale
-		return scaled_x, scaled_y
-
 class GalaxyWindow(Window):
 
 	def __init__(self):
-		super(GalaxyWindow, self).__init__(resizable=True)
+		super(GalaxyWindow, self).__init__(resizable=True, caption='Galaxy')
 		self.clock_display = pyglet.clock.ClockDisplay()
 		glClearColor(0.0, 0.0, 0.0, 0)
-		self.camera = Camera((0, 0), 5)
+		self.camera = Camera((0, 0), 5, self.width, self.height)
 
 		self.key_handlers = {
 			key.Q: lambda: self.close(),
@@ -130,13 +118,13 @@ class GalaxyWindow(Window):
 	def on_draw(self):
 		self.clear()
 		self.camera.update()
+		global stars
 
 		self.camera.focus_on_background(self.width, self.height)
-		# background stars/points drawing goes here
+		stars.draw_background()
 
-		self.camera.focus_on_star_field(self.width, self.height)
-		global stars
-		stars.draw_scaled(self.camera.star_scale/self.camera.scale)
+		self.camera.focus_on_foreground(self.width, self.height)
+		stars.draw_scaled(self.camera.foreground_scale/self.camera.scale)
 
 		self.camera.focus_on_hud(self.width, self.height)
 		self.clock_display.draw()
@@ -147,7 +135,7 @@ class GalaxyWindow(Window):
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		# scale down dx/dy so screen tracks mouse
-		tracking_speed = 240.0
+		tracking_speed = self.height/480*240.0
 		reduced_x = -1*(dx/tracking_speed)
 		reduced_y = -1*(dy/tracking_speed)
 		self.camera.pan(x=reduced_x,y=reduced_y)
@@ -159,7 +147,12 @@ class GalaxyWindow(Window):
 		self.camera.zoom(converted_y)
 	
 	def on_resize(self, width, height):
-		print "width, height: ", [width, height]
+		self.camera.set_proportions(width, height)
+		glViewport(0, 0, width, height)
+		glMatrixMode(gl.GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, width, 0, height, -1, 1)
+		glMatrixMode(gl.GL_MODELVIEW)
 
 class Application(object):
 	"""Controller class for all game objects."""
