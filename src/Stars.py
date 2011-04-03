@@ -26,12 +26,12 @@ class Star(object):
 
 	def scale(self, scaling_factor):
 		"""Set star's sprite and label coordinates based on a scaling factor."""
-		self.sprite.x = self.coordinates[0] * scaling_factor
-		self.sprite.y = self.coordinates[1] * scaling_factor
+		self.sprite.x = self.coordinates[0]*scaling_factor
+		self.sprite.y = self.coordinates[1]*scaling_factor
 		# for some reason, the labels are *not* centered under the star
 		# so as a dumb, hopefully-temporary workaround, manually add an offset of 8.0
-		self.label.x = (self.coordinates[0] * scaling_factor) + 8.0
-		self.label.y = self.coordinates[1] * scaling_factor
+		self.label.x = (self.coordinates[0]*scaling_factor)+8.0
+		self.label.y = self.coordinates[1]*scaling_factor
 
 class All(object):
 	"""All stars are referenced from this object."""
@@ -42,10 +42,10 @@ class All(object):
 		star_image = pyglet.resource.image('star.png')
 
 		self.named = [
-			Star(star_image, (10, 10), 'Sol'),
-			Star(star_image, (5, 5), 'Alpha Centauri'),
 			Star(star_image, (0, 0), 'Tau Ceti'),
+			Star(star_image, (5, 5), 'Alpha Centauri'),
 			Star(star_image, (-5, -5), 'Eta Cassiopeiae'),
+			Star(star_image, (10, 10), 'Sol'),
 			Star(star_image, (-10, -10), 'Eridani'),
 			Star(star_image, (10, -10), 'Delta Pavonis'),
 			Star(star_image, (-10, 10), 'Xi Bootis'),
