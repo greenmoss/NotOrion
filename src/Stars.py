@@ -42,13 +42,13 @@ class All(object):
 		star_image = pyglet.resource.image('star.png')
 
 		self.named = [
+			Star(star_image, (500, 500), 'Alpha Centauri'),
+			Star(star_image, (1000, 1000), 'Sol'),
 			Star(star_image, (0, 0), 'Tau Ceti'),
-			Star(star_image, (5, 5), 'Alpha Centauri'),
-			Star(star_image, (-5, -5), 'Eta Cassiopeiae'),
-			Star(star_image, (10, 10), 'Sol'),
-			Star(star_image, (-10, -10), 'Eridani'),
-			Star(star_image, (10, -10), 'Delta Pavonis'),
-			Star(star_image, (-10, 10), 'Xi Bootis'),
+			Star(star_image, (-500, -500), 'Eta Cassiopeiae'),
+			Star(star_image, (-1000, -1000), 'Eridani'),
+			Star(star_image, (1000, -1000), 'Delta Pavonis'),
+			Star(star_image, (-1000, 1000), 'Xi Bootis'),
 		]
 		self.background = [
 			BackgroundStar((1, 2), (200, 255, 255)),
