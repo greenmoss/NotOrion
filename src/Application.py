@@ -27,49 +27,42 @@ class GalaxyWindow(Window):
 
 		self.min_foreground_scale = 1.0
 		self.max_foreground_scale = 10.0
-		self.foreground_scale = 5.0
+		self.foreground_scale = 1.0
 
 		self.foreground_scale_label = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
 			y=5, anchor_x='right', anchor_y='bottom')
-		self.foreground_center_coords = pyglet.text.Label(
+		self.look_coords_label = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
-			anchor_x='right', anchor_y='top',
-			text="foreground center; x,y: %0.4f, %0.4f; scale: %0.4f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale)
+			anchor_x='right', anchor_y='top'
 			)
 		self.star0_coords = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
-			anchor_x='right', anchor_y='top',
-			text=self.debug_star_coords(0)
+			anchor_x='right', anchor_y='top'
 			)
 		self.star1_coords = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
-			anchor_x='right', anchor_y='top',
-			text=self.debug_star_coords(1)
+			anchor_x='right', anchor_y='top'
 			)
-		self.window_dimensions = pyglet.text.Label(
+		self.window_measurements_label = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
 			anchor_x='right', anchor_y='top')
-		self.glulookat_args = pyglet.text.Label(
+		self.coords_conversion_label = pyglet.text.Label(
 			color=(255,255,255,128),
 			font_name='Arial', font_size=10,
-			anchor_x='right', anchor_y='top')
-		self.last_scroll_xy = pyglet.text.Label(
-			color=(255,255,255,128),
-			font_name='Arial', font_size=10,
-			text="last adjusted scroll x, y: (None), (None)",
+			text="no conversions available yet",
 			anchor_x='right', anchor_y='top')
 
 		self.set_variables_from_window_size()
 	
 	def debug_star_coords(self, index):
 		global stars
-		return "%s coordinates: %0.4f, %0.4f" % (stars.named[index].name, stars.named[index].sprite.x, stars.named[index].sprite.y)
+		return "%s; abs coords: %0.4f, %0.4f; rel coords: %0.4f, %0.4f" % (stars.named[index].name, stars.named[index].sprite.x/self.scaled_height, stars.named[index].sprite.y/self.scaled_height, stars.named[index].sprite.x, stars.named[index].sprite.y)
 	
 	def set_variables_from_window_size(self):
 		"""Set all variables that are derived from the dimensions of the window."""
@@ -84,28 +77,31 @@ class GalaxyWindow(Window):
 		# many debugging labels
 		self.foreground_scale_label.x = self.width-10
 
-		self.window_dimensions.x = self.width-10
-		self.window_dimensions.y = self.height-10
-		self.window_dimensions.text = 'width: %i; height: %i; aspect_ratio: %0.4f'%(self.width, self.height, self.aspect_ratio)
+		self.window_measurements_label.x = self.width-10
+		self.window_measurements_label.y = self.height-10
 
-		self.foreground_center_coords.x = self.width-10
-		self.foreground_center_coords.y = self.height-25
+		self.look_coords_label.x = self.width-10
+		self.look_coords_label.y = self.height-25
+
+		self.coords_conversion_label.x = self.width-10
+		self.coords_conversion_label.y = self.height-40
 
 		self.star0_coords.x = self.width-10
-		self.star0_coords.y = self.height-40
+		self.star0_coords.y = self.height-55
+		self.star0_coords.text = self.debug_star_coords(0)
+
 		self.star1_coords.x = self.width-10
-		self.star1_coords.y = self.height-55
+		self.star1_coords.y = self.height-70
+		self.star1_coords.text = self.debug_star_coords(1)
 
-		self.glulookat_args.x = self.width-10
-		self.glulookat_args.y = self.height-70
-
-		self.last_scroll_xy.x = self.width-10
-		self.last_scroll_xy.y = self.height-85
+		self.window_measurements_label.text = 'width: %i; height: %i; aspect_ratio: %0.4f'%(self.width, self.height, self.aspect_ratio)
+		self.look_coords_label.text = "abs center; x,y: %0.4f, %0.4f; foreground scale: %0.4f; rel center x,y: %0.2f, %0.2f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale, self.relative_center_x, self.relative_center_y)
 
 	def set_foreground_scale_variables(self):
 		self.scaled_height = self.height/self.foreground_scale
 		self.relative_center_x = self.absolute_center_x*self.scaled_height
 		self.relative_center_y = self.absolute_center_y*self.scaled_height
+		#print "reverse x,y: %0.4f %0.4f"%(self.relative_center_x/self.scaled_height, self.relative_center_y/self.scaled_height)
 
 	def focus_on_foreground(self):
 		"Set projection and modelview matrices ready for rendering the stars."
@@ -118,12 +114,10 @@ class GalaxyWindow(Window):
 		# Set modelview matrix to move and scale camera position"
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
-		(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) = [
+		gluLookAt(
 			self.relative_center_x, self.relative_center_y, 1.0,
 			self.relative_center_x, self.relative_center_y, -1.0,
-			0.0, 1.0, 0.0]
-		self.glulookat_args.text = "glulookat x, y: %0.2f, %0.2f" % (self.relative_center_x, self.relative_center_y)
-		gluLookAt(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+			0.0, 1.0, 0.0)
 
 	def focus_on_background(self):
 		"Set projection and modelview matrices ready for rendering the background"
@@ -153,13 +147,12 @@ class GalaxyWindow(Window):
 		self.focus_on_hud()
 		self.foreground_scale_label.text = "scale: %0.4f" % self.foreground_scale
 		self.foreground_scale_label.draw()
-		self.foreground_center_coords.draw()
+		self.look_coords_label.draw()
 		self.star0_coords.draw()
 		self.star1_coords.draw()
-		self.window_dimensions.draw()
-		self.glulookat_args.draw()
+		self.window_measurements_label.draw()
 		self.clock_display.draw()
-		self.last_scroll_xy.draw()
+		self.coords_conversion_label.draw()
 
 	def on_key_press(self, symbol, modifiers):
 		handler = self.key_handlers.get(symbol, lambda: None)
@@ -181,7 +174,10 @@ class GalaxyWindow(Window):
 			self.absolute_center_y = self.max_foreground_center_y
 
 		self.set_foreground_scale_variables()
-		self.foreground_center_coords.text = "foreground center; x,y: %0.4f, %0.4f; scale: %0.4f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale)
+		self.look_coords_label.text = "abs center; x,y: %0.4f, %0.4f; foreground scale: %0.4f; rel center x,y: %0.2f, %0.2f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale, self.relative_center_x, self.relative_center_y)
+
+	def on_mouse_press(self, x, y, button, modifiers):
+		self.convert_coords_debug('press', x, y)
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		# .01 more or less than 1.0 should be fast enough
@@ -195,14 +191,12 @@ class GalaxyWindow(Window):
 			self.foreground_scale = self.max_foreground_scale
 
 		self.set_foreground_scale_variables()
-		self.foreground_center_coords.text = "foreground center; x,y: %0.4f, %0.4f; scale: %0.4f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale)
+		self.look_coords_label.text = "abs center; x,y: %0.4f, %0.4f; foreground scale: %0.4f; rel center x,y: %0.2f, %0.2f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale, self.relative_center_x, self.relative_center_y)
 		self.star0_coords.text = self.debug_star_coords(0)
 		self.star1_coords.text = self.debug_star_coords(1)
 
 		if (self.foreground_scale > self.min_foreground_scale) and (self.foreground_scale < self.max_foreground_scale):
-			star_x = (x-self.width/2)/self.foreground_scale
-			star_y = (y-self.height/2)/self.foreground_scale
-			self.last_scroll_xy.text = "last adjusted scroll x, y: %0.4f, %0.4f"%(star_x, star_y)
+			self.convert_coords_debug('scroll', x, y)
 	
 	def on_resize(self, width, height):
 		self.set_variables_from_window_size()
@@ -211,6 +205,29 @@ class GalaxyWindow(Window):
 		glLoadIdentity()
 		glOrtho(0, width, 0, height, -1, 1)
 		glMatrixMode(gl.GL_MODELVIEW)
+	
+	def screen_coords_to_relative(self, x, y):
+		# to center 0,0
+		center0_x = (x-self.width/2)
+		center0_y = (y-self.height/2)
+		# account for window scaling (why 2?)
+		scaled_x = center0_x*2
+		scaled_y = center0_y*2
+		# offset (?)
+		relative_x = scaled_x+self.relative_center_x
+		relative_y = scaled_y+self.relative_center_y
+		return (relative_x, relative_y)
+	
+	def screen_coords_to_absolute(self, x, y):
+		(relative_x, relative_y) = self.screen_coords_to_relative(x, y)
+		absolute_x = relative_x/self.scaled_height
+		absolute_y = relative_y/self.scaled_height
+		return (absolute_x, absolute_y)
+
+	def convert_coords_debug(self, event, x, y):
+		(rel_x, rel_y) = self.screen_coords_to_relative(x, y)
+		(abs_x, abs_y) = self.screen_coords_to_absolute(x, y)
+		self.coords_conversion_label.text = "%s pos x,y: %0.1f, %0.1f; rel scaled x,y: %0.1f, %0.1f; abs scaled x,y: %0.1f, %0.1f"%(event, x, y, rel_x, rel_y, abs_x, abs_y)
 
 class Application(object):
 	"""Controller class for all game objects."""
