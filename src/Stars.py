@@ -11,10 +11,10 @@ class Star(object):
 	"""A Star and all its properties."""
 
 	def __init__(self, image, coordinates, name):
-		self.sprite = pyglet.sprite.Sprite(image)
+		self.sprite = pyglet.sprite.Sprite(image,
+			x=coordinates[0], y=coordinates[1]
+		)
 		self.sprite.scale = 0.2
-		self.sprite.x = coordinates[0]
-		self.sprite.y = coordinates[1]
 		self.coordinates = coordinates
 		self.label = pyglet.text.Label(
 			name,
@@ -51,11 +51,11 @@ class All(object):
 			Star(star_image, (-1000, 1000), 'Xi Bootis'),
 		]
 		self.background = [
+			BackgroundStar((0, 0), (0, 0, 255)),
 			BackgroundStar((1, 2), (200, 255, 255)),
 			BackgroundStar((-5, 3), (255, 255, 200)),
 			BackgroundStar((4, -1), (255, 200, 255)),
 			BackgroundStar((2, -3), (255, 255, 255)),
-			BackgroundStar((0, 1), (215, 255, 255)),
 			BackgroundStar((-4, 0), (255, 255, 215)),
 			BackgroundStar((-2, -7), (255, 215, 255)),
 			BackgroundStar((1, 7), (255, 255, 255)),
