@@ -16,10 +16,8 @@ class Star(object):
 		)
 		self.sprite.scale = 0.2
 		self.coordinates = coordinates
-		self.label = pyglet.text.Label(
-			name,
-			font_name='Arial',
-			font_size=15,
+		self.label = pyglet.text.Label(name,
+			font_name='Arial', font_size=15,
 			x=coordinates[0], y=coordinates[1],
 			anchor_x='center', anchor_y='top')
 		self.name = name
@@ -28,9 +26,8 @@ class Star(object):
 		"""Set star's sprite and label coordinates based on a scaling factor."""
 		self.sprite.x = self.coordinates[0]*scaling_factor
 		self.sprite.y = self.coordinates[1]*scaling_factor
-		# for some reason, the labels are *not* centered under the star
-		# so as a dumb, hopefully-temporary workaround, manually add an offset of 8.0
-		self.label.x = (self.coordinates[0]*scaling_factor)+8.0
+		# manually center label under sprite, which can only be anchored bottom/left :(
+		self.label.x = (self.coordinates[0]*scaling_factor)+(self.sprite.width/2)
 		self.label.y = self.coordinates[1]*scaling_factor
 
 class All(object):
@@ -42,13 +39,13 @@ class All(object):
 		star_image = pyglet.resource.image('star.png')
 
 		self.named = [
+			Star(star_image, (-4000, 4000), 'Xi Bootis'),
 			Star(star_image, (500, 500), 'Alpha Centauri'),
 			Star(star_image, (1000, 1000), 'Sol'),
 			Star(star_image, (0, 0), 'Tau Ceti'),
 			Star(star_image, (-500, -500), 'Eta Cassiopeiae'),
 			Star(star_image, (-1000, -1000), 'Eridani'),
-			Star(star_image, (1000, -1000), 'Delta Pavonis'),
-			Star(star_image, (-1000, 1000), 'Xi Bootis'),
+			Star(star_image, (4000, -4000), 'Delta Pavonis'),
 		]
 		self.background = [
 			BackgroundStar((0, 0), (0, 0, 255)),
@@ -63,6 +60,18 @@ class All(object):
 			BackgroundStar((2, -6), (255, 255, 228)),
 			BackgroundStar((-8, 4), (255, 215, 255)),
 		]
+
+		# find bounding lines that contain all stars
+		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
+		for star in self.named:
+			if star.coordinates[0] < self.left_bounding_x:
+				self.left_bounding_x = star.coordinates[0]
+			elif star.coordinates[0] > self.right_bounding_x:
+				self.right_bounding_x = star.coordinates[0]
+			if star.coordinates[1] < self.bottom_bounding_y:
+				self.bottom_bounding_y = star.coordinates[1]
+			elif star.coordinates[1] > self.top_bounding_y:
+				self.top_bounding_y = star.coordinates[1]
 	
 	def draw_scaled(self, scaling_factor):
 		"""Draw all named stars and labels, scaled appropriately"""
