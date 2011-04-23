@@ -7,16 +7,18 @@ import Stars
 
 class GalaxyWindow(Window):
 
-	def __init__(self):
+	def __init__(self, data):
 		super(GalaxyWindow, self).__init__(resizable=True, caption='Galaxy', width=1024, height=768)
+		self.data = data
 		self.clock_display = pyglet.clock.ClockDisplay()
-		glClearColor(0.0, 0.0, 0.0, 0)
 
 		self.key_handlers = {
 			key.ESCAPE: lambda: self.close(),
 			key.HOME: lambda: self.handle_home_key(),
 			key.Q: lambda: self.close(),
 		}
+
+		print "left: %i, right: %i, bottom: %i, top: %i" % (self.data.stars.left_bounding_x, self.data.stars.right_bounding_x, self.data.stars.bottom_bounding_y, self.data.stars.top_bounding_y)
 
 		self.min_absolute_center_x = -10.0
 		self.max_absolute_center_x = 10.0
@@ -26,7 +28,7 @@ class GalaxyWindow(Window):
 
 		self.min_foreground_scale = 1.0
 		self.max_foreground_scale = 10.0
-		self.reset_scale = 5.0
+		self.reset_scale = (self.max_foreground_scale-self.min_foreground_scale)/2
 
 		self.reset_foreground()
 
@@ -67,6 +69,9 @@ class GalaxyWindow(Window):
 
 		self.set_variables_from_window_size()
 
+		self.calculate_mini_screen()
+
+	def calculate_mini_screen(self):
 		# calculate scale indicator vars
 		self.absolute_width = self.max_absolute_center_x-self.min_absolute_center_x
 		self.absolute_height = self.max_absolute_center_y-self.min_absolute_center_y
@@ -95,9 +100,7 @@ class GalaxyWindow(Window):
 				255, 255, 255, 255,
 				255, 255, 255, 255))
 		)
-		self.calculate_mini_screen()
 
-	def calculate_mini_screen(self):
 		# convert screen coordinates to origin:0,0 and scale downward to minimap size
 		(lower_left_x, lower_left_y) = self.screen_coords_to_absolute(0, 0)
 		(upper_right_x, upper_right_y) = self.screen_coords_to_absolute(self.width, self.height)
@@ -119,8 +122,7 @@ class GalaxyWindow(Window):
 		)
 	
 	def debug_star_coords(self, index):
-		global stars
-		return "%s; abs coords: %0.4f, %0.4f; rel coords: %0.4f, %0.4f" % (stars.named[index].name, stars.named[index].sprite.x/self.scaled_height, stars.named[index].sprite.y/self.scaled_height, stars.named[index].sprite.x, stars.named[index].sprite.y)
+		return "%s; abs coords: %0.4f, %0.4f; rel coords: %0.4f, %0.4f" % (self.data.stars.named[index].name, self.data.stars.named[index].sprite.x/self.scaled_foreground, self.data.stars.named[index].sprite.y/self.scaled_foreground, self.data.stars.named[index].sprite.x, self.data.stars.named[index].sprite.y)
 
 	def handle_home_key(self):
 		self.reset_foreground()
@@ -133,13 +135,18 @@ class GalaxyWindow(Window):
 	
 	def set_variables_from_window_size(self):
 		"""Set all variables that are derived from the dimensions of the window."""
-		self.mouse_tracking_speed = self.height/2
+		self.smallest_window_dimension = self.height
+		if self.width < self.height:
+			self.smallest_window_dimension = self.width
 
 		self.screen_aspect_ratio = self.width/self.height
+		
 		# why is 64 the magic number to keep background stars at fixed positions?
 		self.background_field_of_view = self.height/64
 
 		self.set_foreground_scale_variables()
+
+		self.mouse_tracking_speed = self.smallest_window_dimension/2
 
 		# set "scaling box" dimensions
 
@@ -173,10 +180,10 @@ class GalaxyWindow(Window):
 		self.look_coords_label.text = "abs center; x,y: %0.4f, %0.4f; foreground scale: %0.4f; rel center x,y: %0.2f, %0.2f" % (self.absolute_center_x, self.absolute_center_y, self.foreground_scale, self.relative_center_x, self.relative_center_y)
 
 	def set_foreground_scale_variables(self):
-		self.scaled_height = self.height/self.foreground_scale
-		self.relative_center_x = self.absolute_center_x*self.scaled_height
-		self.relative_center_y = self.absolute_center_y*self.scaled_height
-		#print "reverse x,y: %0.4f %0.4f"%(self.relative_center_x/self.scaled_height, self.relative_center_y/self.scaled_height)
+		self.scaled_foreground = self.smallest_window_dimension/self.foreground_scale
+		self.relative_center_x = float(self.absolute_center_x)*self.scaled_foreground
+		self.relative_center_y = float(self.absolute_center_y)*self.scaled_foreground
+		#print "reverse x,y: %0.4f %0.4f"%(self.relative_center_x/self.scaled_foreground, self.relative_center_y/self.scaled_foreground)
 
 	def focus_on_foreground(self):
 		"Set projection and modelview matrices ready for rendering the stars."
@@ -209,15 +216,15 @@ class GalaxyWindow(Window):
 		glLoadIdentity()
 
 	def on_draw(self):
+		glClearColor(0.0, 0.0, 0.0, 0)
 		self.clear()
-		global stars
 
 		self.focus_on_background()
-		stars.draw_background()
+		self.data.stars.draw_background()
 
 		self.focus_on_foreground()
 		# this must be inverse, otherwise zooming has weird artifacts
-		stars.draw_scaled(1/self.foreground_scale)
+		self.data.stars.draw_scaled(1/self.foreground_scale)
 
 		self.focus_on_hud()
 		self.look_coords_label.draw()
@@ -302,8 +309,8 @@ class GalaxyWindow(Window):
 		glMatrixMode(gl.GL_MODELVIEW)
 	
 	def relative_coords_to_absolute(self, relative_x, relative_y):
-		absolute_x = relative_x/self.scaled_height
-		absolute_y = relative_y/self.scaled_height
+		absolute_x = relative_x/self.scaled_foreground
+		absolute_y = relative_y/self.scaled_foreground
 		return (absolute_x, absolute_y)
 	
 	def screen_coords_to_relative(self, x, y):
@@ -329,11 +336,43 @@ class Application(object):
 	"""Controller class for all game objects."""
 
 	def __init__(self):
-		global stars
-		stars = Stars.All()
+		data = DataContainer()
+		pyglet.resource.path = ['../images']
+		pyglet.resource.reindex()
+		star_image = pyglet.resource.image('star.png')
 
-		galaxy_window = GalaxyWindow()
-		pyglet.app.run()
+		# some test data
+		data.stars = Stars.All(
+			[
+				Stars.NamedStar((-4000, 4000), 'Xi Bootis', star_image),
+				Stars.NamedStar((500, 500), 'Alpha Centauri', star_image),
+				Stars.NamedStar((1000, 1000), 'Sol', star_image),
+				Stars.NamedStar((0, 0), 'Tau Ceti', star_image),
+				Stars.NamedStar((-500, -500), 'Eta Cassiopeiae', star_image),
+				Stars.NamedStar((4000, -4000), 'Delta Pavonis', star_image),
+				Stars.NamedStar((-1000, -1000), 'Eridani', star_image),
+			],
+			[
+				Stars.BackgroundStar((0, 0), (0, 0, 255)),
+				Stars.BackgroundStar((1, 2), (200, 255, 255)),
+				Stars.BackgroundStar((-5, 3), (255, 255, 200)),
+				Stars.BackgroundStar((4, -1), (255, 200, 255)),
+				Stars.BackgroundStar((2, -3), (255, 255, 255)),
+				Stars.BackgroundStar((-4, 0), (255, 255, 215)),
+				Stars.BackgroundStar((-2, -7), (255, 215, 255)),
+				Stars.BackgroundStar((1, 7), (255, 255, 255)),
+				Stars.BackgroundStar((-6, -5), (228, 255, 255)),
+				Stars.BackgroundStar((2, -6), (255, 255, 228)),
+				Stars.BackgroundStar((-8, 4), (255, 215, 255)),
+			])
+
+		galaxy_window = GalaxyWindow(data)
+
+class DataContainer(object):
+	"""A simple object to store all application data."""
+	def __init__(self):
+		True
 
 if __name__ == "__main__":
 	application = Application()
+	pyglet.app.run()

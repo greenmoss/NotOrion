@@ -7,10 +7,19 @@ class BackgroundStar(object):
 		self.coordinates = coordinates
 		self.color = color
 
-class Star(object):
-	"""A Star and all its properties."""
+class NamedStar(object):
+	"""A named star and all its properties."""
+	pyglet.resource.path = ['../images']
+	pyglet.resource.reindex()
 
-	def __init__(self, image, coordinates, name):
+	def __init__(self, coordinates, name, image=None):
+		if not (-10000 < coordinates[0] < 10000) or not (-10000 < coordinates[1] < 10000):
+			raise Exception, "coordinates must be between -10000 and 10000"
+		if (len(name) > 15) or (len(name) < 3):
+			raise Exception, "name must be between 3 and 15 characters long"
+
+		if image == None:
+			image = pyglet.resource.image('star.png')
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=coordinates[0], y=coordinates[1]
 		)
@@ -27,39 +36,15 @@ class Star(object):
 		self.sprite.x = self.coordinates[0]*scaling_factor
 		self.sprite.y = self.coordinates[1]*scaling_factor
 		# manually center label under sprite, which can only be anchored bottom/left :(
-		self.label.x = (self.coordinates[0]*scaling_factor)+(self.sprite.width/2)
-		self.label.y = self.coordinates[1]*scaling_factor
+		self.label.x = self.sprite.x+(self.sprite.width/2)
+		self.label.y = self.sprite.y
 
 class All(object):
 	"""All stars are referenced from this object."""
 
-	def __init__(self):
-		pyglet.resource.path = ['../images']
-		pyglet.resource.reindex()
-		star_image = pyglet.resource.image('star.png')
-
-		self.named = [
-			Star(star_image, (-4000, 4000), 'Xi Bootis'),
-			Star(star_image, (500, 500), 'Alpha Centauri'),
-			Star(star_image, (1000, 1000), 'Sol'),
-			Star(star_image, (0, 0), 'Tau Ceti'),
-			Star(star_image, (-500, -500), 'Eta Cassiopeiae'),
-			Star(star_image, (-1000, -1000), 'Eridani'),
-			Star(star_image, (4000, -4000), 'Delta Pavonis'),
-		]
-		self.background = [
-			BackgroundStar((0, 0), (0, 0, 255)),
-			BackgroundStar((1, 2), (200, 255, 255)),
-			BackgroundStar((-5, 3), (255, 255, 200)),
-			BackgroundStar((4, -1), (255, 200, 255)),
-			BackgroundStar((2, -3), (255, 255, 255)),
-			BackgroundStar((-4, 0), (255, 255, 215)),
-			BackgroundStar((-2, -7), (255, 215, 255)),
-			BackgroundStar((1, 7), (255, 255, 255)),
-			BackgroundStar((-6, -5), (228, 255, 255)),
-			BackgroundStar((2, -6), (255, 255, 228)),
-			BackgroundStar((-8, 4), (255, 215, 255)),
-		]
+	def __init__(self, named_stars, background_stars):
+		self.named = named_stars
+		self.background = background_stars
 
 		# find bounding lines that contain all stars
 		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
@@ -89,4 +74,32 @@ class All(object):
 			)
 
 if __name__ == "__main__":
-	All()
+	"nothing to do here unless called by something else"
+	pass
+	pyglet.resource.path = ['../images']
+	pyglet.resource.reindex()
+	star_image = pyglet.resource.image('star.png')
+	# some test data
+	All(
+		[
+			NamedStar((-4000, 4000), 'Xi Bootis', star_image),
+			NamedStar((500, 500), 'Alpha Centauri', star_image),
+			NamedStar((1000, 1000), 'Sol', star_image),
+			NamedStar((0, 0), 'Tau Ceti', star_image),
+			NamedStar((-500, -500), 'Eta Cassiopeiae', star_image),
+			NamedStar((4000, -4000), 'Delta Pavonis', star_image),
+			NamedStar((-1000, -1000), 'Eridani', star_image),
+		],
+		[
+			BackgroundStar((0, 0), (0, 0, 255)),
+			BackgroundStar((1, 2), (200, 255, 255)),
+			BackgroundStar((-5, 3), (255, 255, 200)),
+			BackgroundStar((4, -1), (255, 200, 255)),
+			BackgroundStar((2, -3), (255, 255, 255)),
+			BackgroundStar((-4, 0), (255, 255, 215)),
+			BackgroundStar((-2, -7), (255, 215, 255)),
+			BackgroundStar((1, 7), (255, 255, 255)),
+			BackgroundStar((-6, -5), (228, 255, 255)),
+			BackgroundStar((2, -6), (255, 255, 228)),
+			BackgroundStar((-8, 4), (255, 215, 255)),
+		])
