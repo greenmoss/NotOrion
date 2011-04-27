@@ -4,7 +4,7 @@ class BackgroundStar(object):
 	"""A simplified star for the background, to be drawn only as a point source"""
 
 	def __init__(self, coordinates, color):
-		self.coordinates = coordinates
+		self.coordinates = (coordinates[0], coordinates[1], -100)
 		self.color = color
 
 class NamedStar(object):
@@ -44,9 +44,8 @@ class All(object):
 
 	def __init__(self, named_stars, background_stars):
 		self.named = named_stars
-		self.background = background_stars
 
-		# find bounding lines that contain all stars
+		# find bounding lines that contain all named stars
 		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
 		for star in self.named:
 			if star.coordinates[0] < self.left_bounding_x:
@@ -57,6 +56,21 @@ class All(object):
 				self.bottom_bounding_y = star.coordinates[1]
 			elif star.coordinates[1] > self.top_bounding_y:
 				self.top_bounding_y = star.coordinates[1]
+
+		self.background = background_stars
+
+		# create vertex/color list for all background stars
+		# will be invoked as background_vertex_list.draw(pyglet.gl.GL_POINTS)
+		self.background_star_vertices = []
+		self.background_star_colors = []
+		for background_star in self.background:
+			[self.background_star_vertices.append(vertex) for vertex in background_star.coordinates]
+			[self.background_star_colors.append(vertex) for vertex in background_star.color]
+		self.background_vertex_list = pyglet.graphics.vertex_list(
+			len(self.background),
+			('v3i/static', self.background_star_vertices),
+			('c3B/static', self.background_star_colors)
+		)
 	
 	def draw_scaled(self, scaling_factor):
 		"""Draw all named stars and labels, scaled appropriately"""
@@ -64,42 +78,7 @@ class All(object):
 			star.scale(scaling_factor)
 			star.sprite.draw()
 			star.label.draw()
-	
-	def draw_background(self):
-		"""Draw background star/point sources"""
-		for star in self.background:
-			pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-				('v3i', (star.coordinates[0], star.coordinates[1], -100)),
-				('c3B', (star.color[0], star.color[1], star.color[2]))
-			)
 
 if __name__ == "__main__":
 	"nothing to do here unless called by something else"
 	pass
-	pyglet.resource.path = ['../images']
-	pyglet.resource.reindex()
-	star_image = pyglet.resource.image('star.png')
-	# some test data
-	All(
-		[
-			NamedStar((-4000, 4000), 'Xi Bootis', star_image),
-			NamedStar((500, 500), 'Alpha Centauri', star_image),
-			NamedStar((1000, 1000), 'Sol', star_image),
-			NamedStar((0, 0), 'Tau Ceti', star_image),
-			NamedStar((-500, -500), 'Eta Cassiopeiae', star_image),
-			NamedStar((4000, -4000), 'Delta Pavonis', star_image),
-			NamedStar((-1000, -1000), 'Eridani', star_image),
-		],
-		[
-			BackgroundStar((0, 0), (0, 0, 255)),
-			BackgroundStar((1, 2), (200, 255, 255)),
-			BackgroundStar((-5, 3), (255, 255, 200)),
-			BackgroundStar((4, -1), (255, 200, 255)),
-			BackgroundStar((2, -3), (255, 255, 255)),
-			BackgroundStar((-4, 0), (255, 255, 215)),
-			BackgroundStar((-2, -7), (255, 215, 255)),
-			BackgroundStar((1, 7), (255, 255, 255)),
-			BackgroundStar((-6, -5), (228, 255, 255)),
-			BackgroundStar((2, -6), (255, 255, 228)),
-			BackgroundStar((-8, 4), (255, 215, 255)),
-		])

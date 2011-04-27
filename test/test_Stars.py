@@ -53,21 +53,33 @@ class TestAll(unittest.TestCase):
 	# some test data
 	stars = Stars.All(
 		[
-			Stars.NamedStar((-4000, 4000), 'Xi Bootis', star_image),
-			Stars.NamedStar((500, 500), 'Alpha Centauri', star_image),
-			Stars.NamedStar((1000, 1000), 'Sol', star_image),
-			Stars.NamedStar((4000, -4000), 'Delta Pavonis', star_image),
+			Stars.NamedStar((-4000, -200), 'Xi Bootis'),
+			Stars.NamedStar((-500, 2000), 'Alpha Centauri'),
+			Stars.NamedStar((1000, -1000), 'Sol'),
+			Stars.NamedStar((4000, 900), 'Delta Pavonis'),
 		],
 		[
-			Stars.BackgroundStar((0, 0), (0, 0, 255))
+			Stars.BackgroundStar((0, 0), (0, 0, 255)),
+			Stars.BackgroundStar((10, 0), (128, 0, 255))
 		])
 
 	def testBoundingArea(self):
 		"Bounding area of stars using test data should return known test values."
 		self.assertEqual(self.stars.left_bounding_x, -4000)
 		self.assertEqual(self.stars.right_bounding_x, 4000)
-		self.assertEqual(self.stars.top_bounding_y, 4000)
-		self.assertEqual(self.stars.bottom_bounding_y, -4000)
+		self.assertEqual(self.stars.top_bounding_y, 2000)
+		self.assertEqual(self.stars.bottom_bounding_y, -1000)
+	
+	def testBackgroundStarVertices(self):
+		"Vertices of stars using test data should return known test values."
+		# would be better to test on the constructed pyglect vertex list
+		# but I don't know how to do that :(
+		# then I could also delete testBackgroundStarColors
+		self.assertEqual(self.stars.background_star_vertices, [0, 0, -100, 10, 0, -100])
+	
+	def testBackgroundStarColors(self):
+		"Vertices of stars using test data should return known test values."
+		self.assertEqual(self.stars.background_star_colors, [0, 0, 255, 128, 0, 255])
 
 if __name__ == "__main__":
 	unittest.main()
