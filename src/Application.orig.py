@@ -28,21 +28,14 @@ class GalaxyWindow(Window):
 			key.Q: lambda: self.close(),
 		}
 
-		self.absolute_center_x = 0.0
-		self.absolute_center_y = 0.0
 		self.foreground_scale = 4.5
+		self.absolute_center = (-3.0, -2.25)
 
-		# Set all variables that are derived from the dimensions of the window.
 		self.window_aspect_ratio = self.width/self.height
-		
-		# why is 64 the magic number to keep background stars at fixed positions?
-		self.background_field_of_view = self.height/64
+		self.height_over_scale = self.height/self.foreground_scale
+		self.scale_over_height = self.foreground_scale/self.height
 
-		self.scaled_foreground = self.height/self.foreground_scale
-		self.relative_center_x = float(self.absolute_center_x)*self.scaled_foreground
-		self.relative_center_y = float(self.absolute_center_y)*self.scaled_foreground
-
-		self.mouse_tracking_speed = self.height/2
+		self.relative_center = (self.absolute_center[0]*self.height_over_scale, self.absolute_center[1]*self.height_over_scale)
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -51,7 +44,7 @@ class GalaxyWindow(Window):
 		# Set projection and modelview matrices ready for rendering the background
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		gluPerspective(self.background_field_of_view, self.window_aspect_ratio, .1, 1000)
+		gluPerspective(self.height, self.window_aspect_ratio, .1, 1000)
 		glMatrixMode(GL_MODELVIEW)
 		self.data.stars.background_vertex_list.draw(pyglet.gl.GL_POINTS)
 
@@ -64,8 +57,8 @@ class GalaxyWindow(Window):
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
 		gluLookAt(
-			self.relative_center_x, self.relative_center_y, 1.0,
-			self.relative_center_x, self.relative_center_y, -1.0,
+			self.relative_center[0], self.relative_center[1], 1.0,
+			self.relative_center[0], self.relative_center[1], -1.0,
 			0.0, 1.0, 0.0)
 		# this must be inverse, otherwise zooming has weird artifacts
 		self.data.stars.draw_scaled(1/self.foreground_scale)
@@ -82,14 +75,11 @@ class GalaxyWindow(Window):
 		handler()
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		reduced_x = -1*(dx/self.mouse_tracking_speed)
-		reduced_y = -1*(dy/self.mouse_tracking_speed)
+		self.absolute_center = (self.absolute_center[0] - dx*self.scale_over_height, 
+			self.absolute_center[1] - dy*self.scale_over_height)
 
-		self.absolute_center_x += self.foreground_scale*float(reduced_x)
-		self.absolute_center_y += self.foreground_scale*float(reduced_y)
-
-		self.relative_center_x = float(self.absolute_center_x)*self.scaled_foreground
-		self.relative_center_y = float(self.absolute_center_y)*self.scaled_foreground
+		self.relative_center = (self.absolute_center[0]*self.height_over_scale, 
+			self.absolute_center[1]*self.height_over_scale)
 
 class Application(object):
 	"""Controller class for all game objects."""
@@ -113,16 +103,16 @@ class Application(object):
 			],
 			[
 				Stars.BackgroundStar((0, 0), (0, 0, 255)),
-				Stars.BackgroundStar((1, 2), (200, 255, 255)),
-				Stars.BackgroundStar((-5, 3), (255, 255, 200)),
-				Stars.BackgroundStar((4, -1), (255, 200, 255)),
-				Stars.BackgroundStar((2, -3), (255, 255, 255)),
-				Stars.BackgroundStar((-4, 0), (255, 255, 215)),
-				Stars.BackgroundStar((-2, -7), (255, 215, 255)),
-				Stars.BackgroundStar((1, 7), (255, 255, 255)),
-				Stars.BackgroundStar((-6, -5), (228, 255, 255)),
-				Stars.BackgroundStar((2, -6), (255, 255, 228)),
-				Stars.BackgroundStar((-8, 4), (255, 215, 255)),
+				Stars.BackgroundStar((10, 20), (200, 255, 255)),
+				Stars.BackgroundStar((-25, 30), (255, 255, 200)),
+				Stars.BackgroundStar((40, -10), (255, 200, 255)),
+				Stars.BackgroundStar((20, -30), (255, 255, 255)),
+				Stars.BackgroundStar((-40, 0), (255, 255, 215)),
+				Stars.BackgroundStar((-20, -35), (255, 215, 255)),
+				Stars.BackgroundStar((10, 35), (255, 255, 255)),
+				Stars.BackgroundStar((-30, -25), (228, 255, 255)),
+				Stars.BackgroundStar((20, -30), (255, 255, 228)),
+				Stars.BackgroundStar((-40, 40), (255, 215, 255)),
 			])
 
 		galaxy_window = GalaxyWindow(1024, 768, data)

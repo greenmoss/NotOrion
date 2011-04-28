@@ -41,9 +41,9 @@ class TestNamedStar(unittest.TestCase):
 	def testScalingLabels(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 77.69999999999999, 66.69999999999999),
-			(1.0, 511.0, 500.0),
-			(7.5321, 3777.0499999999997, 3766.0499999999997))
+			(0.1334, 71.69999999999999, 66.69999999999999),
+			(1.0, 505.0, 500.0),
+			(7.5321, 3771.0499999999997, 3766.0499999999997))
 		for scaler, resultx, resulty in conversions:
 			self.test_star.scale(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)

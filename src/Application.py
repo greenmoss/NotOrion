@@ -19,7 +19,8 @@ class GalaxyWindow(Window):
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
 	# start out viewing coordinates 0, 0
-	foreground_center_coordinates = (0, 0)
+	absolute_center_coordinates = (0, 0)
+	foreground_scale = 5.0
 
 	def __init__(self, width=1024, height=768, data=None):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
@@ -39,9 +40,14 @@ class GalaxyWindow(Window):
 	def derive_from_window_dimensions(self, width, height):
 		"Set attributes that are based on window dimensions."
 		self.window_aspect_ratio = width/height
-		
-		# why is 64 the magic number to keep background stars at fixed positions?
-		self.background_field_of_view = height/64
+		self.dimensions_into_foreground_scale = height/self.foreground_scale
+		self.foreground_scale_into_dimensions = self.foreground_scale/height
+	
+	def rescale(self, new_scale):
+		"Set a new scaling factor."
+		self.dimensions_into_foreground_scale = self.height/new_scale
+		self.foreground_scale_into_dimensions = new_scale/self.height
+		self.foreground_scale = new_scale
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -51,7 +57,7 @@ class GalaxyWindow(Window):
 		# set 3D perspective view
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		gluPerspective(self.background_field_of_view, self.window_aspect_ratio, .1, 1000)
+		gluPerspective(self.height, self.window_aspect_ratio, .1, 1000)
 		glMatrixMode(GL_MODELVIEW)
 
 		# then, draw the background stars
@@ -62,18 +68,17 @@ class GalaxyWindow(Window):
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		gluOrtho2D(0, self.width, 0, self.height)
-		#gluOrtho2D(-self.width, self.width, -self.height, self.height)
 
 		# then, set the center of the viewing area
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
-		gluLookAt(
-			self.foreground_center_coordinates[0], self.foreground_center_coordinates[1], 1.0,
-			self.foreground_center_coordinates[0], self.foreground_center_coordinates[1], -1.0,
-			0.0, 1.0, 0.0)
+		#gluLookAt(
+		#	self.absolute_center_coordinates[0], self.absolute_center_coordinates[1], 1.0,
+		#	self.absolute_center_coordinates[0], self.absolute_center_coordinates[1], -1.0,
+		#	0.0, 1.0, 0.0)
 
 		# then, draw the foreground stars and other objects
-		self.data.stars.draw_scaled(1.0)
+		#self.data.stars.draw_scaled(1.0)
 
 	def on_key_press(self, symbol, modifiers):
 		handler = self.key_handlers.get(symbol, lambda: None)
@@ -82,8 +87,7 @@ class GalaxyWindow(Window):
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		reduced_x = -1*(dx/64)
 		reduced_y = -1*(dy/64)
-		self.foreground_center_coordinates = (self.foreground_center_coordinates[0]-dx, self.foreground_center_coordinates[1]-dy)
-		print self.foreground_center_coordinates
+		self.absolute_center_coordinates = (self.absolute_center_coordinates[0]-dx, self.absolute_center_coordinates[1]-dy)
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		pass
@@ -133,16 +137,16 @@ if __name__ == "__main__":
 		],
 		[
 			Stars.BackgroundStar((0, 0), (0, 0, 255)),
-			Stars.BackgroundStar((1, 2), (200, 255, 255)),
-			Stars.BackgroundStar((-5, 3), (255, 255, 200)),
-			Stars.BackgroundStar((4, -1), (255, 200, 255)),
-			Stars.BackgroundStar((2, -3), (255, 255, 255)),
-			Stars.BackgroundStar((-4, 0), (255, 255, 215)),
-			Stars.BackgroundStar((-2, -7), (255, 215, 255)),
-			Stars.BackgroundStar((1, 7), (255, 255, 255)),
-			Stars.BackgroundStar((-6, -5), (228, 255, 255)),
-			Stars.BackgroundStar((2, -6), (255, 255, 228)),
-			Stars.BackgroundStar((-8, 4), (255, 215, 255)),
+			Stars.BackgroundStar((10, 20), (200, 255, 255)),
+			Stars.BackgroundStar((-25, 30), (255, 255, 200)),
+			Stars.BackgroundStar((40, -10), (255, 200, 255)),
+			Stars.BackgroundStar((20, -30), (255, 255, 255)),
+			Stars.BackgroundStar((-40, 0), (255, 255, 215)),
+			Stars.BackgroundStar((-20, -35), (255, 215, 255)),
+			Stars.BackgroundStar((10, 35), (255, 255, 255)),
+			Stars.BackgroundStar((-30, -25), (228, 255, 255)),
+			Stars.BackgroundStar((20, -30), (255, 255, 228)),
+			Stars.BackgroundStar((-40, 40), (255, 215, 255)),
 		])
 
 	application = Application(data)

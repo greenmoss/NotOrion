@@ -23,10 +23,10 @@ class NamedStar(object):
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=coordinates[0], y=coordinates[1]
 		)
-		self.sprite.scale = 0.2
+		self.sprite.scale = 0.1
 		self.coordinates = coordinates
 		self.label = pyglet.text.Label(name,
-			font_name='Arial', font_size=15,
+			font_name='Arial', font_size=9,
 			x=coordinates[0], y=coordinates[1],
 			anchor_x='center', anchor_y='top')
 		self.name = name
