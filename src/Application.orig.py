@@ -32,10 +32,9 @@ class GalaxyWindow(Window):
 		self.absolute_center = (-3.0, -2.25)
 
 		self.window_aspect_ratio = self.width/self.height
-		self.height_over_scale = self.height/self.foreground_scale
-		self.scale_over_height = self.foreground_scale/self.height
+		self.scaled_window = self.height/self.foreground_scale
 
-		self.relative_center = (self.absolute_center[0]*self.height_over_scale, self.absolute_center[1]*self.height_over_scale)
+		self.window_center = (self.absolute_center[0]*self.scaled_window, self.absolute_center[1]*self.scaled_window)
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -57,8 +56,8 @@ class GalaxyWindow(Window):
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
 		gluLookAt(
-			self.relative_center[0], self.relative_center[1], 1.0,
-			self.relative_center[0], self.relative_center[1], -1.0,
+			self.window_center[0], self.window_center[1], 1.0,
+			self.window_center[0], self.window_center[1], -1.0,
 			0.0, 1.0, 0.0)
 		# this must be inverse, otherwise zooming has weird artifacts
 		self.data.stars.draw_scaled(1/self.foreground_scale)
@@ -75,11 +74,11 @@ class GalaxyWindow(Window):
 		handler()
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		self.absolute_center = (self.absolute_center[0] - dx*self.scale_over_height, 
-			self.absolute_center[1] - dy*self.scale_over_height)
+		self.absolute_center = (self.absolute_center[0] - dx/self.scaled_window, 
+			self.absolute_center[1] - dy/self.scaled_window)
 
-		self.relative_center = (self.absolute_center[0]*self.height_over_scale, 
-			self.absolute_center[1]*self.height_over_scale)
+		self.window_center = (self.absolute_center[0]*self.scaled_window, 
+			self.absolute_center[1]*self.scaled_window)
 
 class Application(object):
 	"""Controller class for all game objects."""

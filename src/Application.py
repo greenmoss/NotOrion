@@ -18,14 +18,13 @@ class GalaxyWindow(Window):
 	min_dimension = 50
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
-	# start out viewing coordinates 0, 0
-	absolute_center_coordinates = (0, 0)
-	foreground_scale = 5.0
+	# start out with a scale of 5.0
+	initial_scale = 5.0
 
 	def __init__(self, width=1024, height=768, data=None):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
 			raise RangeException, "width and height must be between 50 and 5000"
-		super(GalaxyWindow, self).__init__(resizable=True, caption='Galaxy', width=width, height=height)
+		super(GalaxyWindow, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
 		if not (data == None):
 			self.data = data
 		self.clock_display = pyglet.clock.ClockDisplay()
@@ -35,19 +34,38 @@ class GalaxyWindow(Window):
 			key.Q: lambda: self.close(),
 		}
 
+		self.window_center = (-self.width/2, -self.height/2)
+
+		self.derive_from_scale(self.initial_scale)
 		self.derive_from_window_dimensions(self.width, self.height)
+
+		self.absolute_center = self.window_to_absolute(self.window_center)
+
+		self.set_visible()
+
+	def absolute_to_window(self, absolute_coordinates):
+		"Convert absolute coordinates to window coordinates."
+		return (absolute_coordinates[0]*self.scaled_window, absolute_coordinates[1]*self.scaled_window)
+
+	def window_to_absolute(self, window_coordinates):
+		"Convert window coordinates to absolute coordinates."
+		return (window_coordinates[0]/self.scaled_window, window_coordinates[1]/self.scaled_window)
 	
 	def derive_from_window_dimensions(self, width, height):
 		"Set attributes that are based on window dimensions."
 		self.window_aspect_ratio = width/height
-		self.dimensions_into_foreground_scale = height/self.foreground_scale
-		self.foreground_scale_into_dimensions = self.foreground_scale/height
+		self.scaled_window = height/self.foreground_scale
 	
-	def rescale(self, new_scale):
-		"Set a new scaling factor."
-		self.dimensions_into_foreground_scale = self.height/new_scale
-		self.foreground_scale_into_dimensions = new_scale/self.height
-		self.foreground_scale = new_scale
+	def derive_from_scale(self, foreground_scale):
+		"Set attributes that are based on zoom/scale."
+
+		# scale must be larger than 0
+		if foreground_scale <= 0:
+			raise RangeException, "scale must be greater than 0"
+
+		self.foreground_scale = foreground_scale
+		self.inverse_foreground_scale = 1/self.foreground_scale
+		self.scaled_window = self.height/self.foreground_scale
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -60,7 +78,7 @@ class GalaxyWindow(Window):
 		gluPerspective(self.height, self.window_aspect_ratio, .1, 1000)
 		glMatrixMode(GL_MODELVIEW)
 
-		# then, draw the background stars
+		# then draw the background stars
 		self.data.stars.background_vertex_list.draw(pyglet.gl.GL_POINTS)
 
 		## for rendering foreground stars and other objects
@@ -69,31 +87,45 @@ class GalaxyWindow(Window):
 		glLoadIdentity()
 		gluOrtho2D(0, self.width, 0, self.height)
 
-		# then, set the center of the viewing area
+		# then set the center of the viewing area
 		glMatrixMode(GL_MODELVIEW)
 		glLoadIdentity()
-		#gluLookAt(
-		#	self.absolute_center_coordinates[0], self.absolute_center_coordinates[1], 1.0,
-		#	self.absolute_center_coordinates[0], self.absolute_center_coordinates[1], -1.0,
-		#	0.0, 1.0, 0.0)
+		gluLookAt(
+			self.window_center[0], self.window_center[1], 1.0,
+			self.window_center[0], self.window_center[1], -1.0,
+			0.0, 1.0, 0.0)
 
-		# then, draw the foreground stars and other objects
-		#self.data.stars.draw_scaled(1.0)
+		# then draw the foreground stars and other objects
+		self.data.stars.draw_scaled(self.inverse_foreground_scale)
+
+		## for rendering the HUD objects
+		# set 2D projection view
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		gluOrtho2D(0, self.width, 0, self.height)
+		glMatrixMode(GL_MODELVIEW)
+
+		# then draw the HUD objects
+
+		# final glLoadIdentity is needed otherwise background stars move
+		glLoadIdentity()
 
 	def on_key_press(self, symbol, modifiers):
 		handler = self.key_handlers.get(symbol, lambda: None)
 		handler()
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		reduced_x = -1*(dx/64)
-		reduced_y = -1*(dy/64)
-		self.absolute_center_coordinates = (self.absolute_center_coordinates[0]-dx, self.absolute_center_coordinates[1]-dy)
+		self.absolute_center = (self.absolute_center[0] - dx/self.scaled_window, 
+			self.absolute_center[1] - dy/self.scaled_window)
+
+		self.window_center = self.absolute_to_window(self.absolute_center)
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		pass
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		new_zoom = (self.zoom_speed**scroll_y)
+		zoom = (self.zoom_speed**scroll_y)
+		#self.derive_from_scale(zoom)
 	
 	def on_resize(self, width, height):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
