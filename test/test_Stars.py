@@ -41,9 +41,9 @@ class TestNamedStar(unittest.TestCase):
 	def testScalingLabels(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 71.69999999999999, 66.69999999999999),
-			(1.0, 505.0, 500.0),
-			(7.5321, 3771.0499999999997, 3766.0499999999997))
+			(0.1334, 72.19999999999999, 66.69999999999999),
+			(1.0, 505.5, 500.0),
+			(7.5321, 3771.5499999999997, 3766.0499999999997))
 		for scaler, resultx, resulty in conversions:
 			self.test_star.scale(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)
@@ -75,11 +75,19 @@ class TestAll(unittest.TestCase):
 		# would be better to test on the constructed pyglect vertex list
 		# but I don't know how to do that :(
 		# then I could also delete testBackgroundStarColors
-		self.assertEqual(self.stars.background_star_vertices, [0, 0, -100, 10, 0, -100])
+		self.assertEqual(self.stars.background_star_vertices, [0, 0, 0, 10, 0, 0])
 	
 	def testBackgroundStarColors(self):
 		"Vertices of stars using test data should return known test values."
 		self.assertEqual(self.stars.background_star_colors, [0, 0, 255, 128, 0, 255])
+	
+	def testMaxDistance(self):
+		"Given test data, ensure maximum distance has been set correctly."
+		self.assertEqual(self.stars.max_distance, 8075.270893288967)
+	
+	def testMinDistance(self):
+		"Given test data, ensure minimum distance has been set correctly."
+		self.assertEqual(self.stars.min_distance, 3354.1019662496847)
 
 if __name__ == "__main__":
 	unittest.main()

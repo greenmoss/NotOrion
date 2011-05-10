@@ -1,10 +1,12 @@
+from __future__ import division
 import pyglet
+import math
 
 class BackgroundStar(object):
 	"""A simplified star for the background, to be drawn only as a point source"""
 
 	def __init__(self, coordinates, color):
-		self.coordinates = (coordinates[0], coordinates[1], -100)
+		self.coordinates = (coordinates[0], coordinates[1], 0)
 		self.color = color
 
 class NamedStar(object):
@@ -44,6 +46,7 @@ class All(object):
 
 	def __init__(self, named_stars, background_stars):
 		self.named = named_stars
+		self.background = background_stars
 
 		# find bounding lines that contain all named stars
 		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
@@ -57,7 +60,33 @@ class All(object):
 			elif star.coordinates[1] > self.top_bounding_y:
 				self.top_bounding_y = star.coordinates[1]
 
-		self.background = background_stars
+		# find max/min distances between stars
+		self.max_coords = (0, 0)
+		self.max_distance = 0
+		self.min_coords = ((self.right_bounding_x - self.left_bounding_x), (self.top_bounding_y - self.bottom_bounding_y))
+		self.min_distance = math.sqrt(self.min_coords[0]**2 + self.min_coords[1]**2)
+		for star1 in self.named:
+			for star2 in self.named:
+				if star1 == star2:
+					continue
+				max_x = star1.coordinates[0]
+				min_x = star2.coordinates[0]
+				if star2.coordinates[0] > star1.coordinates[0]:
+					max_x = star2.coordinates[0]
+					min_x = star1.coordinates[0]
+				max_y = star1.coordinates[1]
+				min_y = star2.coordinates[1]
+				if star2.coordinates[1] > star1.coordinates[1]:
+					max_y = star2.coordinates[1]
+					min_y = star1.coordinates[1]
+				coords = ((max_x - min_x), (max_y - min_y))
+				distance = math.sqrt(coords[0]**2 + coords[1]**2)
+				if distance < self.min_distance:
+					self.min_coords = coords
+					self.min_distance = distance
+				if distance > self.max_distance:
+					self.max_coords = coords
+					self.max_distance = distance
 
 		# create vertex/color list for all background stars
 		# will be invoked as background_vertex_list.draw(pyglet.gl.GL_POINTS)
