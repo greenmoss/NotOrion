@@ -2,6 +2,8 @@ from __future__ import division
 import pyglet
 import math
 
+class MissingDataException(Exception): pass
+
 class BackgroundStar(object):
 	"""A simplified star for the background, to be drawn only as a point source"""
 
@@ -35,8 +37,8 @@ class NamedStar(object):
 
 	def scale(self, scaling_factor):
 		"""Set star's sprite and label coordinates based on a scaling factor."""
-		self.sprite.x = self.coordinates[0]*scaling_factor
-		self.sprite.y = self.coordinates[1]*scaling_factor
+		self.sprite.x = self.coordinates[0]/scaling_factor
+		self.sprite.y = self.coordinates[1]/scaling_factor
 		# manually center label under sprite, which can only be anchored bottom/left :(
 		self.label.x = self.sprite.x+(self.sprite.width/2)
 		self.label.y = self.sprite.y
@@ -45,7 +47,11 @@ class All(object):
 	"""All stars are referenced from this object."""
 
 	def __init__(self, named_stars, background_stars):
+		if len(named_stars) < 2:
+			raise MissingDataException, "named_stars must have at least two elements"
 		self.named = named_stars
+		if len(background_stars) < 1:
+			raise MissingDataException, "background_stars must have at least one element"
 		self.background = background_stars
 
 		# find bounding lines that contain all named stars

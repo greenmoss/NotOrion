@@ -30,9 +30,9 @@ class TestNamedStar(unittest.TestCase):
 	def testScalingCoordinates(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 66.69999999999999),
+			(0.1334, 3748.1259370314847),
 			(1.0, 500.0),
-			(7.5321, 3766.0499999999997))
+			(7.5321, 66.38254935542545))
 		for scaler, result in conversions:
 			self.test_star.scale(scaler)
 			self.assertEqual(self.test_star.sprite.x, result)
@@ -41,9 +41,9 @@ class TestNamedStar(unittest.TestCase):
 	def testScalingLabels(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 72.19999999999999, 66.69999999999999),
+			(0.1334, 3753.6259370314847, 3748.1259370314847),
 			(1.0, 505.5, 500.0),
-			(7.5321, 3771.5499999999997, 3766.0499999999997))
+			(7.5321, 71.88254935542545, 66.38254935542545))
 		for scaler, resultx, resulty in conversions:
 			self.test_star.scale(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)
@@ -62,6 +62,15 @@ class TestAll(unittest.TestCase):
 			Stars.BackgroundStar((0, 0), (0, 0, 255)),
 			Stars.BackgroundStar((10, 0), (128, 0, 255))
 		])
+
+	def testMissingNamedStars(self):
+		"Providing too few named stars should be disallowed."
+		self.assertRaises(Stars.MissingDataException, Stars.All, [], [])
+		self.assertRaises(Stars.MissingDataException, Stars.All, [1], [])
+
+	def testMissingBackgroundStars(self):
+		"Providing too few background stars should be disallowed."
+		self.assertRaises(Stars.MissingDataException, Stars.All, [1, 2], [])
 
 	def testBoundingArea(self):
 		"Bounding area of stars using test data should return known test values."

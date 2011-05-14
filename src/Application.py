@@ -6,6 +6,7 @@ import pyglet
 import Stars
 
 class RangeException(Exception): pass
+class MissingDataException(Exception): pass
 
 class DataContainer(object):
 	"""A simple object to store all application data."""
@@ -16,7 +17,6 @@ class GalaxyWindow(Window):
 	data = DataContainer()
 	max_dimension = 5000
 	min_dimension = 50
-	initial_scale = 1.0
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
 
@@ -26,6 +26,15 @@ class GalaxyWindow(Window):
 		super(GalaxyWindow, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
 		if not (data == None):
 			self.data = data
+
+		# MUST have stars
+		#if hasattribute(self.data):
+		#	pass
+		if not hasattr(self.data, 'stars'):
+			raise MissingDataException, "self.data must have attribute stars"
+		if not isinstance(self.data.stars, Stars.All):
+			raise MissingDataException, "self.data.stars must be an instance of Stars.All"
+
 		self.clock_display = pyglet.clock.ClockDisplay()
 
 		self.key_handlers = {
@@ -33,10 +42,10 @@ class GalaxyWindow(Window):
 			key.Q: lambda: self.close(),
 		}
 
-		self.window_center = (0, 0)
+		self.set_center((0, 0))
 
-		self.derive_from_scale(self.initial_scale)
 		self.derive_from_window_dimensions(self.width, self.height)
+		self.set_scale(self.maximum_scale)
 
 		self.set_visible()
 	
@@ -44,24 +53,41 @@ class GalaxyWindow(Window):
 		"Set attributes that are based on window dimensions."
 		self.half_width = width/2
 		self.half_height = height/2
-		#self.derive_scale_limits(width, height)
-	
-	def derive_from_scale(self, foreground_scale=None):
-		"Set attributes that are based on zoom/scale."
 
-		if foreground_scale == None:
-			foreground_scale = self.foreground_scale
+		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground stars.
+		self.minimum_dimension = (width < height) and width or height
+			
+		self.minimum_scale = self.data.stars.min_distance/self.minimum_dimension*2.0
+		self.maximum_scale = self.data.stars.max_distance/self.minimum_dimension
+		# 35 is minimum absolute distance between star sprites and labels
+		if(self.data.stars.min_distance/self.maximum_scale < 35.0):
+			self.maximum_scale = self.data.stars.min_distance/35
+
+	def set_center(self, coordinates):
+		"Set the window center, for rendering foreground objects/stars."
+		self.absolute_center = (coordinates)
+	
+	def set_scale(self, foreground_scale):
+		"Set attributes that are based on zoom/scale."
 
 		# scale must be larger than 0
 		if foreground_scale <= 0:
 			raise RangeException, "scale must be greater than 0"
 
-		self.foreground_scale = foreground_scale
-		self.inverse_foreground_scale = 1/self.foreground_scale
+		if (foreground_scale < self.minimum_scale):
+			foreground_scale = self.minimum_scale
+		elif (foreground_scale > self.maximum_scale):
+			foreground_scale = self.maximum_scale
 
-	def derive_scale_limits(self, width, height):
-		"Derive minimum and maximum scale, based on minimum and maximum distances between foreground stars."
-		pass
+		self.foreground_scale = foreground_scale
+
+	def window_to_absolute(self, coordinates):
+		"Translate a window coordinate into absolute foreground coordinates, accounting for window center and scale."
+		return(
+			self.absolute_center[0]/self.foreground_scale+ 
+				(coordinates[0]-self.half_width)/self.foreground_scale,
+			self.absolute_center[1]/self.foreground_scale+ 
+				(coordinates[1]-self.half_height)/self.foreground_scale)
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -78,8 +104,8 @@ class GalaxyWindow(Window):
 
 		# set the center of the viewing area
 		gluLookAt(
-			self.window_center[0], self.window_center[1], 0.0,
-			self.window_center[0], self.window_center[1], -100.0,
+			self.absolute_center[0], self.absolute_center[1], 0.0,
+			self.absolute_center[0], self.absolute_center[1], -100.0,
 			0.0, 1.0, 0.0)
 
 		# draw the foreground stars and other objects
@@ -101,14 +127,13 @@ class GalaxyWindow(Window):
 		handler()
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		self.window_center = (self.window_center[0] - dx, self.window_center[1] - dy)
+		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		pass
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		self.foreground_scale *= (self.zoom_speed**scroll_y)
-		self.derive_from_scale()
+		self.set_scale(self.foreground_scale*(self.zoom_speed**scroll_y))
 	
 	def on_resize(self, width, height):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
@@ -122,6 +147,8 @@ class GalaxyWindow(Window):
 		glMatrixMode(gl.GL_MODELVIEW)
 
 		self.derive_from_window_dimensions(width, height)
+		# window resize changes min/max scale, so ensure we are still within scale bounds
+		self.set_scale(self.foreground_scale)
 
 class Application(object):
 	"""Controller class for all game objects."""
