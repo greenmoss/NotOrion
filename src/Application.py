@@ -19,6 +19,8 @@ class GalaxyWindow(Window):
 	min_dimension = 50
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
+	# empty margin around outermost foreground stars, in window pixels
+	window_margin = 100
 
 	def __init__(self, width=1024, height=768, data=None):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
@@ -28,12 +30,16 @@ class GalaxyWindow(Window):
 			self.data = data
 
 		# MUST have stars
-		#if hasattribute(self.data):
-		#	pass
 		if not hasattr(self.data, 'stars'):
 			raise MissingDataException, "self.data must have attribute stars"
 		if not isinstance(self.data.stars, Stars.All):
 			raise MissingDataException, "self.data.stars must be an instance of Stars.All"
+		self.stars_bounding_y = self.data.stars.top_bounding_y
+		if -self.data.stars.bottom_bounding_y > self.data.stars.top_bounding_y:
+			self.stars_bounding_y = -self.data.stars.bottom_bounding_y
+		self.stars_bounding_x = self.data.stars.right_bounding_x
+		if -self.data.stars.left_bounding_x > self.data.stars.right_bounding_x:
+			self.stars_bounding_x = -self.data.stars.left_bounding_x
 
 		self.clock_display = pyglet.clock.ClockDisplay()
 
@@ -42,10 +48,10 @@ class GalaxyWindow(Window):
 			key.Q: lambda: self.close(),
 		}
 
-		self.set_center((0, 0))
-
 		self.derive_from_window_dimensions(self.width, self.height)
 		self.set_scale(self.maximum_scale)
+
+		self.set_center((0, 0))
 
 		self.set_visible()
 	
@@ -65,7 +71,18 @@ class GalaxyWindow(Window):
 
 	def set_center(self, coordinates):
 		"Set the window center, for rendering foreground objects/stars."
-		self.absolute_center = (coordinates)
+		coordinates = [coordinates[0], coordinates[1]]
+		# would the new center make us fall outside acceptable margins?
+		if coordinates[1] > self.center_limits['top']:
+			coordinates[1] = self.center_limits['top']
+		elif coordinates[1] < self.center_limits['bottom']:
+			coordinates[1] = self.center_limits['bottom']
+
+		if coordinates[0] > self.center_limits['right']:
+			coordinates[0] = self.center_limits['right']
+		elif coordinates[0] < self.center_limits['left']:
+			coordinates[0] = self.center_limits['left']
+		self.absolute_center = (coordinates[0], coordinates[1])
 	
 	def set_scale(self, foreground_scale):
 		"Set attributes that are based on zoom/scale."
@@ -79,15 +96,28 @@ class GalaxyWindow(Window):
 		elif (foreground_scale > self.maximum_scale):
 			foreground_scale = self.maximum_scale
 
+		self.center_limits = {
+			'top':self.stars_bounding_y/foreground_scale+self.window_margin-self.half_height,
+			'right':self.stars_bounding_x/foreground_scale+self.window_margin-self.half_width,
+			'bottom':-self.stars_bounding_y/foreground_scale-self.window_margin+self.half_height,
+			'left':-self.stars_bounding_x/foreground_scale-self.window_margin+self.half_width,
+		}
+		if self.center_limits['top'] < self.center_limits['bottom']:
+			self.center_limits['top'] = 0
+			self.center_limits['bottom'] = 0
+		if self.center_limits['right'] < self.center_limits['left']:
+			self.center_limits['right'] = 0
+			self.center_limits['left'] = 0
+
 		self.foreground_scale = foreground_scale
 
 	def window_to_absolute(self, coordinates):
 		"Translate a window coordinate into absolute foreground coordinates, accounting for window center and scale."
 		return(
-			self.absolute_center[0]/self.foreground_scale+ 
-				(coordinates[0]-self.half_width)/self.foreground_scale,
-			self.absolute_center[1]/self.foreground_scale+ 
-				(coordinates[1]-self.half_height)/self.foreground_scale)
+			self.absolute_center[0]*self.foreground_scale+
+				(coordinates[0]-self.half_width)*self.foreground_scale,
+			self.absolute_center[1]*self.foreground_scale+
+				(coordinates[1]-self.half_height)*self.foreground_scale)
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -134,6 +164,8 @@ class GalaxyWindow(Window):
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		self.set_scale(self.foreground_scale*(self.zoom_speed**scroll_y))
+		# ensure center is still in a valid position
+		self.set_center((self.absolute_center[0], self.absolute_center[1]))
 	
 	def on_resize(self, width, height):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
@@ -149,6 +181,8 @@ class GalaxyWindow(Window):
 		self.derive_from_window_dimensions(width, height)
 		# window resize changes min/max scale, so ensure we are still within scale bounds
 		self.set_scale(self.foreground_scale)
+		# ensure center is still in a valid position
+		self.set_center((self.absolute_center[0], self.absolute_center[1]))
 
 class Application(object):
 	"""Controller class for all game objects."""
@@ -169,12 +203,12 @@ if __name__ == "__main__":
 	# some test data
 	data.stars = Stars.All(
 		[
-			Stars.NamedStar((-1000, 1000), 'Xi Bootis', star_image),
-			Stars.NamedStar((125, 125), 'Alpha Centauri', star_image),
+			Stars.NamedStar((-1000, 900), 'Xi Bootis', star_image),
+			Stars.NamedStar((1225, 125), 'Alpha Centauri', star_image),
 			Stars.NamedStar((250, 250), 'Sol', star_image),
 			Stars.NamedStar((0, 0), 'Tau Ceti', star_image),
-			Stars.NamedStar((-125, -125), 'Eta Cassiopeiae', star_image),
-			Stars.NamedStar((1000, -1000), 'Delta Pavonis', star_image),
+			Stars.NamedStar((-1125, -125), 'Eta Cassiopeiae', star_image),
+			Stars.NamedStar((750, -950), 'Delta Pavonis', star_image),
 			Stars.NamedStar((-250, -250), 'Eridani', star_image),
 		],
 		[
