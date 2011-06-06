@@ -27,10 +27,15 @@ class NamedStar(object):
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=coordinates[0], y=coordinates[1]
 		)
+		self.sprite_origin = (image.width/2, image.height/2)
+		self.sprite.image.anchor_x = self.sprite_origin[0]
+		self.sprite.image.anchor_y = self.sprite_origin[1]
 		self.sprite.scale = 0.1
+		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
 		self.coordinates = coordinates
 		self.label = pyglet.text.Label(name,
 			font_name='Arial', font_size=8,
+			# x and y will immediately be recalculated, but are required to initialize the label
 			x=coordinates[0], y=coordinates[1],
 			anchor_x='center', anchor_y='top')
 		self.name = name
@@ -39,9 +44,9 @@ class NamedStar(object):
 		"""Set star's sprite and label coordinates based on a scaling factor."""
 		self.sprite.x = self.coordinates[0]/scaling_factor
 		self.sprite.y = self.coordinates[1]/scaling_factor
-		# manually center label under sprite, which can only be anchored bottom/left :(
-		self.label.x = self.sprite.x+(self.sprite.width/2)
-		self.label.y = self.sprite.y
+		# center label under sprite
+		self.label.x = self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2)
+		self.label.y = self.sprite.y-self.scaled_sprite_origin[1]
 
 class All(object):
 	"""All stars are referenced from this object."""

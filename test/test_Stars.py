@@ -1,6 +1,8 @@
 import unittest
-import Stars
 import pyglet
+import sys
+sys.path.append('../src')
+import Stars
 
 pyglet.resource.path = ['../images']
 pyglet.resource.reindex()
@@ -41,9 +43,9 @@ class TestNamedStar(unittest.TestCase):
 	def testScalingLabels(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 3753.6259370314847, 3748.1259370314847),
-			(1.0, 505.5, 500.0),
-			(7.5321, 71.88254935542545, 66.38254935542545))
+			(0.1334, 3748.025937031485, 3742.525937031485),
+			(1.0, 499.9, 494.4),
+			(7.5321, 66.28254935542546, 60.78254935542545))
 		for scaler, resultx, resulty in conversions:
 			self.test_star.scale(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)
