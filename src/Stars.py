@@ -119,6 +119,4 @@ class All(object):
 			star.sprite.draw()
 			star.label.draw()
 
-if __name__ == "__main__":
-	"nothing to do here unless called by something else"
-	pass
+# doesn't make sense to call this standalone, so no __main__
