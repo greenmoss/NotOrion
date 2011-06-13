@@ -2,7 +2,7 @@
 from __future__ import division
 from pyglet.gl import *
 import pyglet
-import Stars
+import galaxy_objects
 
 class RangeException(Exception): pass
 class MissingDataException(Exception): pass
@@ -32,8 +32,8 @@ class Window(pyglet.window.Window):
 		# MUST have stars
 		if not hasattr(self.data, 'stars'):
 			raise MissingDataException, "self.data must have attribute stars"
-		if not isinstance(self.data.stars, Stars.All):
-			raise MissingDataException, "self.data.stars must be an instance of Stars.All"
+		if not isinstance(self.data.stars, galaxy_objects.All):
+			raise MissingDataException, "self.data.stars must be an instance of galaxy_objects.All"
 		self.stars_bounding_y = self.data.stars.top_bounding_y
 		if -self.data.stars.bottom_bounding_y > self.data.stars.top_bounding_y:
 			self.stars_bounding_y = -self.data.stars.bottom_bounding_y
