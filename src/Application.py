@@ -6,10 +6,10 @@ import galaxy
 
 class DataContainer(object):
 	"""A simple object to store all application data."""
-	def __init__(self, stars=None):
-		# if we are passed no stars, create defaults
-		if stars == None:
-			self.stars = galaxy_objects.All(
+	def __init__(self, init_galaxy_objects=None):
+		# if we are passed no galaxy_objects, create defaults
+		if init_galaxy_objects == None:
+			self.galaxy_objects = galaxy_objects.All(
 				# foreground stars
 				[
 					galaxy_objects.ForegroundStar((-1000, 900), 'Xi Bootis', 'red'),
@@ -19,8 +19,8 @@ class DataContainer(object):
 					galaxy_objects.ForegroundStar((-1125, -125), 'Eta Cassiopeiae', 'white'),
 					galaxy_objects.ForegroundStar((750, -950), 'Delta Pavonis', 'brown'),
 					galaxy_objects.ForegroundStar((-250, -250), 'Eridani', 'orange'),
-					#galaxy_objects.ForegroundStar((-90, -1070), 'Betelgeuse', 'orange'),
-					#galaxy_objects.ForegroundStar((90, 1070), 'Rigel', 'red'),
+					galaxy_objects.ForegroundStar((-90, -1070), 'Betelgeuse', 'orange'),
+					galaxy_objects.ForegroundStar((90, 1070), 'Rigel', 'red'),
 				],
 				# background stars
 				[
@@ -40,14 +40,14 @@ class DataContainer(object):
 				],
 				# black holes
 				[
-					galaxy_objects.BlackHole((300, 1000)),
+					galaxy_objects.BlackHole((300, 1000), 120),
 					galaxy_objects.BlackHole((-1300, -1500)),
-				#	galaxy_objects.BlackHole((800, -500)),
-				#	galaxy_objects.BlackHole((-200, 1120)),
+					galaxy_objects.BlackHole((800, -500), 225),
+					galaxy_objects.BlackHole((-200, 1120), 55),
 				]
 			)
 		else:
-			self.stars = stars
+			self.galaxy_objects = galaxy_objects
 
 class Application(object):
 	"""Controller class for all game objects."""

@@ -13,7 +13,7 @@ class Window(pyglet.window.Window):
 	min_dimension = 50
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
-	# empty margin around outermost foreground stars, in window pixels
+	# empty margin around outermost foreground galaxy objects, in window pixels
 	window_margin = 100
 	# mini-map offset, from right/bottom
 	mini_map_offset = 20
@@ -29,17 +29,17 @@ class Window(pyglet.window.Window):
 		else:
 			self.data = data
 
-		# MUST have stars
-		if not hasattr(self.data, 'stars'):
-			raise MissingDataException, "self.data must have attribute stars"
-		if not isinstance(self.data.stars, galaxy_objects.All):
-			raise MissingDataException, "self.data.stars must be an instance of galaxy_objects.All"
-		self.stars_bounding_y = self.data.stars.top_bounding_y
-		if -self.data.stars.bottom_bounding_y > self.data.stars.top_bounding_y:
-			self.stars_bounding_y = -self.data.stars.bottom_bounding_y
-		self.stars_bounding_x = self.data.stars.right_bounding_x
-		if -self.data.stars.left_bounding_x > self.data.stars.right_bounding_x:
-			self.stars_bounding_x = -self.data.stars.left_bounding_x
+		# MUST have galaxy_objects
+		if not hasattr(self.data, 'galaxy_objects'):
+			raise MissingDataException, "self.data must have attribute galaxy_objects"
+		if not isinstance(self.data.galaxy_objects, galaxy_objects.All):
+			raise MissingDataException, "self.data.galaxy_objects must be an instance of galaxy_objects.All"
+		self.foreground_bounding_y = self.data.galaxy_objects.top_bounding_y
+		if -self.data.galaxy_objects.bottom_bounding_y > self.data.galaxy_objects.top_bounding_y:
+			self.foreground_bounding_y = -self.data.galaxy_objects.bottom_bounding_y
+		self.foreground_bounding_x = self.data.galaxy_objects.right_bounding_x
+		if -self.data.galaxy_objects.left_bounding_x > self.data.galaxy_objects.right_bounding_x:
+			self.foreground_bounding_x = -self.data.galaxy_objects.left_bounding_x
 
 		self.clock_display = pyglet.clock.ClockDisplay()
 
@@ -53,20 +53,22 @@ class Window(pyglet.window.Window):
 
 		self.set_center((0, 0))
 
+		pyglet.clock.schedule_interval(self.animate, 1/60.)
+
 		self.set_visible()
 
 	def derive_mini_map(self):
 		# mini-map play area dimensions should only need to be calculated once
 		if not hasattr(self, 'mini_map_width'):
-			if self.stars_bounding_x > self.stars_bounding_y:
+			if self.foreground_bounding_x > self.foreground_bounding_y:
 				self.mini_map_width = self.mini_map_size
-				self.mini_map_height = self.stars_bounding_y/self.stars_bounding_x*self.mini_map_size
+				self.mini_map_height = self.foreground_bounding_y/self.foreground_bounding_x*self.mini_map_size
 			else:
 				self.mini_map_height = self.mini_map_size
-				self.mini_map_width = self.stars_bounding_x/self.stars_bounding_y*self.mini_map_size
+				self.mini_map_width = self.foreground_bounding_x/self.foreground_bounding_y*self.mini_map_size
 			# ratio of absolute coordinates to mini-map coordinates
 			# *should* be the same for width/bounding_x as height/bounding_y
-			self.mini_map_to_absolute = self.mini_map_width/(self.stars_bounding_x-(self.window_margin*2.0))/self.maximum_scale
+			self.mini_map_to_absolute = self.mini_map_width/(self.foreground_bounding_x-(self.window_margin*2.0))/self.maximum_scale
 
 		# where is the foreground window on the playing field?
 		right_top = self.window_to_absolute((self.width, self.height))
@@ -74,10 +76,10 @@ class Window(pyglet.window.Window):
 
 		# hide the mini-map if the entire playing field is visible
 		if (
-			(right_top[0] >= self.stars_bounding_x+self.window_margin) and
-			(right_top[1] >= self.stars_bounding_y+self.window_margin) and
-			(left_bottom[0] <= -self.stars_bounding_x-self.window_margin) and
-			(left_bottom[1] <= -self.stars_bounding_y-self.window_margin)
+			(right_top[0] >= self.foreground_bounding_x+self.window_margin) and
+			(right_top[1] >= self.foreground_bounding_y+self.window_margin) and
+			(left_bottom[0] <= -self.foreground_bounding_x-self.window_margin) and
+			(left_bottom[1] <= -self.foreground_bounding_y-self.window_margin)
 		):
 			self.mini_map_visible = False
 			return
@@ -183,17 +185,17 @@ class Window(pyglet.window.Window):
 		self.half_width = width/2
 		self.half_height = height/2
 
-		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground stars.
+		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground galaxy objects.
 		self.minimum_dimension = (width < height) and width or height
 			
-		self.minimum_scale = self.data.stars.min_distance/self.minimum_dimension*2.0
-		self.maximum_scale = self.data.stars.max_distance/self.minimum_dimension
+		self.minimum_scale = self.data.galaxy_objects.min_distance/self.minimum_dimension*2.0
+		self.maximum_scale = self.data.galaxy_objects.max_distance/self.minimum_dimension
 		# 35 is the minimum window distance between each star sprite
-		if(self.data.stars.min_distance/self.maximum_scale < 35.0):
-			self.maximum_scale = self.data.stars.min_distance/35
+		if(self.data.galaxy_objects.min_distance/self.maximum_scale < 35.0):
+			self.maximum_scale = self.data.galaxy_objects.min_distance/35
 
 	def set_center(self, coordinates):
-		"Set the window center, for rendering foreground objects/stars."
+		"Set the window center, for rendering foreground objects."
 		coordinates = [coordinates[0], coordinates[1]]
 		# would the new center make us fall outside acceptable margins?
 		if coordinates[1] > self.center_limits['top']:
@@ -223,10 +225,10 @@ class Window(pyglet.window.Window):
 			foreground_scale = self.maximum_scale
 
 		self.center_limits = {
-			'top':self.stars_bounding_y/foreground_scale+self.window_margin-self.half_height,
-			'right':self.stars_bounding_x/foreground_scale+self.window_margin-self.half_width,
-			'bottom':-self.stars_bounding_y/foreground_scale-self.window_margin+self.half_height,
-			'left':-self.stars_bounding_x/foreground_scale-self.window_margin+self.half_width,
+			'top':self.foreground_bounding_y/foreground_scale+self.window_margin-self.half_height,
+			'right':self.foreground_bounding_x/foreground_scale+self.window_margin-self.half_width,
+			'bottom':-self.foreground_bounding_y/foreground_scale-self.window_margin+self.half_height,
+			'left':-self.foreground_bounding_x/foreground_scale-self.window_margin+self.half_width,
 		}
 		if self.center_limits['top'] < self.center_limits['bottom']:
 			self.center_limits['top'] = 0
@@ -262,7 +264,7 @@ class Window(pyglet.window.Window):
 		glMatrixMode(GL_MODELVIEW)
 
 		# draw the background stars
-		self.data.stars.background_vertex_list.draw(pyglet.gl.GL_POINTS)
+		self.data.galaxy_objects.background_vertex_list.draw(pyglet.gl.GL_POINTS)
 
 		# if we're showing the mini-map, black out background stars under mini-map
 		if self.mini_map_visible:
@@ -287,8 +289,8 @@ class Window(pyglet.window.Window):
 			self.absolute_center[0], self.absolute_center[1], -100.0,
 			0.0, 1.0, 0.0)
 
-		# draw the foreground stars and other objects
-		self.data.stars.draw_scaled(self.foreground_scale)
+		# draw the foreground galaxy objects
+		self.data.galaxy_objects.draw_scaled(self.foreground_scale)
 
 		# for HUD objects, set 2D view with origin at lower left
 		glMatrixMode(GL_PROJECTION)
@@ -356,5 +358,9 @@ class Window(pyglet.window.Window):
 		self.set_scale(self.foreground_scale)
 		# ensure center is still in a valid position
 		self.set_center((self.absolute_center[0], self.absolute_center[1]))
+	
+	def animate(self, dt):
+		'Do any/all animations.'
+		self.data.galaxy_objects.animate(dt)
 
 # doesn't make sense to call this standalone, so no __main__

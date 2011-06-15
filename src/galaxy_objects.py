@@ -90,8 +90,9 @@ class ForegroundStar(ScaledForegroundObject):
 class BlackHole(ScaledForegroundObject):
 	image = pyglet.resource.image('black_hole.png')
 
-	def __init__(self, coordinates):
+	def __init__(self, coordinates, initial_rotation=0):
 		super(BlackHole, self).__init__(coordinates, self.image)
+		self.sprite.rotation = initial_rotation
 
 class All(object):
 	"""All galaxy objects are referenced from this object."""
@@ -104,20 +105,22 @@ class All(object):
 		if len(named_stars) < 2:
 			raise MissingDataException, "named_stars must have at least two elements"
 		self.named_stars = named_stars
+		self.named_stars_batch = pyglet.graphics.Batch()
+		self.named_star_labels_batch = pyglet.graphics.Batch()
+		for star in self.named_stars:
+			star.sprite.batch = self.named_stars_batch
+			# label batches don't work?!
+			#star.label.batch = self.named_star_labels_batch
+
 		self.black_holes = black_holes
+		self.black_holes_batch = pyglet.graphics.Batch()
+		for black_hole in self.black_holes:
+			black_hole.sprite.batch = self.black_holes_batch
+
 		self.scalable_objects = self.named_stars+self.black_holes
 
-		# find bounding lines that contain all scalable objects
-		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
-		for scalable in self.scalable_objects:
-			if scalable.coordinates[0] < self.left_bounding_x:
-				self.left_bounding_x = scalable.coordinates[0]
-			elif scalable.coordinates[0] > self.right_bounding_x:
-				self.right_bounding_x = scalable.coordinates[0]
-			if scalable.coordinates[1] < self.bottom_bounding_y:
-				self.bottom_bounding_y = scalable.coordinates[1]
-			elif scalable.coordinates[1] > self.top_bounding_y:
-				self.top_bounding_y = scalable.coordinates[1]
+		self.derive_bounding_lines()
+		self.normalize()
 
 		# find max/min distances between scalable objects
 		self.max_coords = (0, 0)
@@ -173,12 +176,44 @@ class All(object):
 		for star in self.named_stars:
 			if do_rescale:
 				star.scale(scaling_factor)
-			star.sprite.draw()
 			star.label.draw()
+		self.named_stars_batch.draw()
 
 		for black_hole in self.black_holes:
 			if do_rescale:
 				black_hole.scale(scaling_factor)
-			black_hole.sprite.draw()
+		black_hole.sprite.batch.draw()
+
+	def normalize(self):
+		'Force extreme foreground objects to be equidistant from (0,0)'
+		x_offset = (abs(self.right_bounding_x)-abs(self.left_bounding_x))/2
+		y_offset = (abs(self.top_bounding_y)-abs(self.bottom_bounding_y))/2
+
+		# recalculate all object coordinates
+		for scalable in self.scalable_objects:
+			scalable.coordinates = (scalable.coordinates[0]-x_offset, scalable.coordinates[1]-y_offset)
+
+		# previously-caculated bounding lines are now incorrect, so recalculate
+		self.derive_bounding_lines()
+
+	def derive_bounding_lines(self):
+		'Find bounding lines that contain all scalable objects.'
+		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
+		for scalable in self.scalable_objects:
+			if scalable.coordinates[0] < self.left_bounding_x:
+				self.left_bounding_x = scalable.coordinates[0]
+			elif scalable.coordinates[0] > self.right_bounding_x:
+				self.right_bounding_x = scalable.coordinates[0]
+			if scalable.coordinates[1] < self.bottom_bounding_y:
+				self.bottom_bounding_y = scalable.coordinates[1]
+			elif scalable.coordinates[1] > self.top_bounding_y:
+				self.top_bounding_y = scalable.coordinates[1]
+	
+	def animate(self, dt):
+		'Perform animations.'
+		# 360 * dt / 20 == 18 * dt
+		black_hole_rotation_delta = 18.*dt
+		for black_hole in self.black_holes:
+			black_hole.sprite.rotation -= black_hole_rotation_delta
 
 # doesn't make sense to call this standalone, so no __main__
