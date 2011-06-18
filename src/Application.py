@@ -44,7 +44,11 @@ class DataContainer(object):
 					galaxy_objects.BlackHole((-1300, -1500)),
 					galaxy_objects.BlackHole((800, -500), 225),
 					galaxy_objects.BlackHole((-200, 1120), 55),
-				]
+				],
+				# nebulae
+				[
+					galaxy_objects.Nebula((100, -700), 'red', [(0, (5, 5), 0)]),
+				],
 			)
 		else:
 			self.galaxy_objects = galaxy_objects

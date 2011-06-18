@@ -24,10 +24,9 @@ class Window(pyglet.window.Window):
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
 			raise RangeException, "width and height must be between 50 and 5000"
 		super(Window, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
-		if data == None:
-			raise MissingDataException, "missing param: data"
-		else:
-			self.data = data
+		if not data:
+			raise MissingDataException, "shared data parameter is required"
+		self.data = data
 
 		# MUST have galaxy_objects
 		if not hasattr(self.data, 'galaxy_objects'):

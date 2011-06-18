@@ -94,10 +94,51 @@ class BlackHole(ScaledForegroundObject):
 		super(BlackHole, self).__init__(coordinates, self.image)
 		self.sprite.rotation = initial_rotation
 
+class Nebula(ForegroundObject):
+	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:
+	lobe_colors = {
+		'red': ['pink', 'yellow'],
+		'green': ['cyan', 'yellow'],
+		'blue': ['cyan', 'pink']
+	}
+	lobe_images = {}
+
+	def __init__(self, coordinates, color, lobes):
+		super(Nebula, self).__init__(coordinates)
+		self.primary_color = color
+		self.secondary_colors = self.lobe_colors[color]
+		for primary in self.lobe_colors.keys():
+			for secondary in self.lobe_colors[primary]:
+				composite = '%s_%s'%(primary, secondary)
+				self.lobe_images[composite] = pyglet.resource.image('%s_nebula.png'%composite)
+		self.lobes = []
+		#self.test_sprite = pyglet.sprite.Sprite(self.lobe_images['green_cyan'],
+		#	x=0, y=0
+		#)
+		for lobe in lobes:
+			lobe_info = {}
+			lobe_info['secondary'] = self.lobe_colors[color][lobe[0]]
+			lobe_info['coordinates'] = lobe[1]
+			lobe_info['rotation'] = lobe[2]
+
+			image = self.lobe_images['%s_%s'%(self.primary_color, lobe_info['secondary'])]
+			lobe_info['sprite'] = pyglet.sprite.Sprite(
+				image,
+				x=0, y=0
+				#x=coordinates[0]+lobe_info['coordinates'][0], 
+				#y=coordinates[1]+lobe_info['coordinates'][1]
+			)
+			lobe_info['sprite_origin'] = (image.width/2, image.height/2)
+			lobe_info['sprite'].image.anchor_x = lobe_info['sprite_origin'][0]
+			lobe_info['sprite'].image.anchor_y = lobe_info['sprite_origin'][1]
+			lobe_info['sprite'].rotation = lobe_info['rotation']
+
+			self.lobes.append(lobe_info)
+
 class All(object):
 	"""All galaxy objects are referenced from this object."""
 
-	def __init__(self, named_stars, background_stars, black_holes=[]):
+	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[]):
 		if len(background_stars) < 1:
 			raise MissingDataException, "background_stars must have at least one element"
 		self.background_stars = background_stars
@@ -116,6 +157,9 @@ class All(object):
 		self.black_holes_batch = pyglet.graphics.Batch()
 		for black_hole in self.black_holes:
 			black_hole.sprite.batch = self.black_holes_batch
+
+		self.nebulae = nebulae
+		self.nebulae_batch = pyglet.graphics.Batch()
 
 		self.scalable_objects = self.named_stars+self.black_holes
 
@@ -183,6 +227,11 @@ class All(object):
 			if do_rescale:
 				black_hole.scale(scaling_factor)
 		black_hole.sprite.batch.draw()
+
+		for nebula in self.nebulae:
+			#nebula.test_sprite.draw()
+			for lobe in nebula.lobes:
+				lobe['sprite'].draw()
 
 	def normalize(self):
 		'Force extreme foreground objects to be equidistant from (0,0)'
