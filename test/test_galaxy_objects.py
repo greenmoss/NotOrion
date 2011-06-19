@@ -40,7 +40,7 @@ class TestForegroundStar(unittest.TestCase):
 			(1.0, 500.0),
 			(7.5321, 66.38254935542545))
 		for scaler, result in conversions:
-			self.test_star.scale(scaler)
+			self.test_star.scale_coordinates(scaler)
 			self.assertEqual(self.test_star.sprite.x, result)
 			self.assertEqual(self.test_star.sprite.y, result)
 	
@@ -51,7 +51,7 @@ class TestForegroundStar(unittest.TestCase):
 			(1.0, 499.9, 494.4),
 			(7.5321, 66.28254935542546, 60.78254935542545))
 		for scaler, resultx, resulty in conversions:
-			self.test_star.scale(scaler)
+			self.test_star.scale_coordinates(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)
 			self.assertEqual(self.test_star.label.y, resulty)
 	

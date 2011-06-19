@@ -42,7 +42,7 @@ class ScaledForegroundObject(ForegroundObject):
 
 		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
 
-	def scale(self, scaling_factor):
+	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
 		self.sprite.x = self.coordinates[0]/scaling_factor
 		self.sprite.y = self.coordinates[1]/scaling_factor
@@ -79,9 +79,9 @@ class ForegroundStar(ScaledForegroundObject):
 			x=coordinates[0], y=coordinates[1],
 			anchor_x='center', anchor_y='top')
 
-	def scale(self, scaling_factor):
+	def scale_coordinates(self, scaling_factor):
 		"""Set star's sprite and label coordinates based on a scaling factor."""
-		super(ForegroundStar, self).scale(scaling_factor)
+		super(ForegroundStar, self).scale_coordinates(scaling_factor)
 
 		# center label under sprite
 		self.label.x = self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2)
@@ -209,9 +209,9 @@ class All(object):
 
 		self.scaling_factor = None
 	
-	def draw_scaled(self, scaling_factor):
-		"""Draw all scalable galaxy objects, scaled appropriately"""
-		# should we recalculate star scale?
+	def draw(self, scaling_factor):
+		"Draw all galaxy objects"
+		# if we are not at the same scaling factor, recalculate scales
 		do_rescale = False
 		if not (self.scaling_factor == scaling_factor):
 			do_rescale = True
@@ -219,13 +219,13 @@ class All(object):
 
 		for star in self.named_stars:
 			if do_rescale:
-				star.scale(scaling_factor)
+				star.scale_coordinates(scaling_factor)
 			star.label.draw()
 		self.named_stars_batch.draw()
 
 		for black_hole in self.black_holes:
 			if do_rescale:
-				black_hole.scale(scaling_factor)
+				black_hole.scale_coordinates(scaling_factor)
 		black_hole.sprite.batch.draw()
 
 		for nebula in self.nebulae:
