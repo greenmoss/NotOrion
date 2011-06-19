@@ -289,7 +289,7 @@ class Window(pyglet.window.Window):
 			0.0, 1.0, 0.0)
 
 		# draw the foreground galaxy objects
-		self.data.galaxy_objects.draw_scaled(self.foreground_scale)
+		self.data.galaxy_objects.draw(self.foreground_scale)
 
 		# for HUD objects, set 2D view with origin at lower left
 		glMatrixMode(GL_PROJECTION)
