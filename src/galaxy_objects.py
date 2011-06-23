@@ -80,7 +80,7 @@ class ForegroundStar(ScaledForegroundObject):
 			anchor_x='center', anchor_y='top')
 
 	def scale_coordinates(self, scaling_factor):
-		"""Set star's sprite and label coordinates based on a scaling factor."""
+		"Set star's sprite and label coordinates based on a scaling factor."
 		super(ForegroundStar, self).scale_coordinates(scaling_factor)
 
 		# center label under sprite
@@ -102,31 +102,49 @@ class Nebula(ForegroundObject):
 		'blue': ['cyan', 'pink']
 	}
 	lobe_images = {}
+	for primary in lobe_colors.keys():
+		for secondary in lobe_colors[primary]:
+			for sprite_number in [1,2]:
+				sprite_identifier = '%s_%s_%d'%(primary, secondary, sprite_number)
+				lobe_images[sprite_identifier] = pyglet.resource.image(
+					'%s_%s_nebula_%d.png'%(primary, secondary ,sprite_number)
+				)
+	max_coordinate = 200
+	min_scale = 0.25
+	max_scale = 4.0
 
 	def __init__(self, coordinates, color, lobes):
+		if (len(lobes) > 6) or (len(lobes) < 1):
+			raise RangeException, "number of lobes must be between 1 and 6"
+		if not self.lobe_colors.has_key(color):
+			raise DataError, "invalid primary color: %s"%color
+
 		super(Nebula, self).__init__(coordinates)
 		self.primary_color = color
-		self.secondary_colors = self.lobe_colors[color]
-		for primary in self.lobe_colors.keys():
-			for secondary in self.lobe_colors[primary]:
-				composite = '%s_%s'%(primary, secondary)
-				self.lobe_images[composite] = pyglet.resource.image('%s_nebula.png'%composite)
 		self.lobes = []
-		#self.test_sprite = pyglet.sprite.Sprite(self.lobe_images['green_cyan'],
-		#	x=0, y=0
-		#)
 		for lobe in lobes:
 			lobe_info = {}
+			if (lobe[0] > 1) or (lobe[0] < 0):
+				raise RangeException, "lobe secondary color must be between 0 and 1"
 			lobe_info['secondary'] = self.lobe_colors[color][lobe[0]]
-			lobe_info['coordinates'] = lobe[1]
-			lobe_info['rotation'] = lobe[2]
+			if (lobe[1] > 2) or (lobe[1] < 1):
+				raise RangeException, "lobe sprite identifier must be between 1 and 2"
+			if (lobe[2][0] > self.max_coordinate) or (lobe[2][0] < -self.max_coordinate) or (lobe[2][1] > self.max_coordinate) or (lobe[2][1] < -self.max_coordinate):
+				raise RangeException, "lobe x and y coordinates must fall between %d and %d"%(self.max_coordinate, -self.max_coordinate)
+			lobe_info['coordinates'] = lobe[2]
+			if (lobe[3] > 360) or (lobe[3] < 0):
+				raise RangeException, "lobe rotation must be between 0 and 360"
+			lobe_info['rotation'] = lobe[3]
+			if (lobe[4] > self.max_scale) or (lobe[4] < self.min_scale):
+				raise RangeException, "lobe scale must fall between %0.2f and %0.2f"%(self.min_scale, self.max_scale)
+			lobe_info['scale'] = lobe[4]
 
-			image = self.lobe_images['%s_%s'%(self.primary_color, lobe_info['secondary'])]
+			sprite_identifier = '%s_%s_%d'%(self.primary_color, lobe_info['secondary'], lobe[1])
+			image = self.lobe_images[sprite_identifier]
 			lobe_info['sprite'] = pyglet.sprite.Sprite(
 				image,
+				# initial coordinates will never be used
 				x=0, y=0
-				#x=coordinates[0]+lobe_info['coordinates'][0], 
-				#y=coordinates[1]+lobe_info['coordinates'][1]
 			)
 			lobe_info['sprite_origin'] = (image.width/2, image.height/2)
 			lobe_info['sprite'].image.anchor_x = lobe_info['sprite_origin'][0]
@@ -134,6 +152,13 @@ class Nebula(ForegroundObject):
 			lobe_info['sprite'].rotation = lobe_info['rotation']
 
 			self.lobes.append(lobe_info)
+
+	def scale_coordinates_and_size(self, scaling_factor):
+		"Set each lobe's coordinates and size based on a scaling factor."
+		for lobe in self.lobes:
+			lobe['sprite'].x = (self.coordinates[0]+lobe['coordinates'][0])/scaling_factor
+			lobe['sprite'].y = (self.coordinates[1]+lobe['coordinates'][1])/scaling_factor
+			lobe['sprite'].scale = 1/scaling_factor*lobe['scale']
 
 class All(object):
 	"""All galaxy objects are referenced from this object."""
@@ -145,21 +170,30 @@ class All(object):
 
 		if len(named_stars) < 2:
 			raise MissingDataException, "named_stars must have at least two elements"
+		self.sprites_batch = pyglet.graphics.Batch()
+		self.nebulae_group = pyglet.graphics.OrderedGroup(0)
+		self.black_holes_group = pyglet.graphics.OrderedGroup(1)
+		self.stars_group = pyglet.graphics.OrderedGroup(2)
+		self.labels_group = pyglet.graphics.OrderedGroup(3)
+
 		self.named_stars = named_stars
-		self.named_stars_batch = pyglet.graphics.Batch()
-		self.named_star_labels_batch = pyglet.graphics.Batch()
 		for star in self.named_stars:
-			star.sprite.batch = self.named_stars_batch
-			# label batches don't work?!
-			#star.label.batch = self.named_star_labels_batch
+			star.sprite.batch = self.sprites_batch
+			star.sprite.group = self.stars_group
+			# batches don't work with labels?!
+			#star.label.batch = self.sprites_batch
+			#star.label.group = self.labels_group
 
 		self.black_holes = black_holes
-		self.black_holes_batch = pyglet.graphics.Batch()
 		for black_hole in self.black_holes:
-			black_hole.sprite.batch = self.black_holes_batch
+			black_hole.sprite.batch = self.sprites_batch
+			black_hole.sprite.group = self.black_holes_group
 
 		self.nebulae = nebulae
-		self.nebulae_batch = pyglet.graphics.Batch()
+		for nebula in self.nebulae:
+			for lobe in nebula.lobes:
+				lobe['sprite'].batch = self.sprites_batch
+				lobe['sprite'].group = self.nebulae_group
 
 		self.scalable_objects = self.named_stars+self.black_holes
 
@@ -212,26 +246,19 @@ class All(object):
 	def draw(self, scaling_factor):
 		"Draw all galaxy objects"
 		# if we are not at the same scaling factor, recalculate scales
-		do_rescale = False
 		if not (self.scaling_factor == scaling_factor):
-			do_rescale = True
 			self.scaling_factor = scaling_factor
+			for star in self.named_stars:
+				star.scale_coordinates(scaling_factor)
+			for black_hole in self.black_holes:
+				black_hole.scale_coordinates(scaling_factor)
+			for nebula in self.nebulae:
+				nebula.scale_coordinates_and_size(scaling_factor)
+
+		self.sprites_batch.draw()
 
 		for star in self.named_stars:
-			if do_rescale:
-				star.scale_coordinates(scaling_factor)
 			star.label.draw()
-		self.named_stars_batch.draw()
-
-		for black_hole in self.black_holes:
-			if do_rescale:
-				black_hole.scale_coordinates(scaling_factor)
-		black_hole.sprite.batch.draw()
-
-		for nebula in self.nebulae:
-			#nebula.test_sprite.draw()
-			for lobe in nebula.lobes:
-				lobe['sprite'].draw()
 
 	def normalize(self):
 		'Force extreme foreground objects to be equidistant from (0,0)'
@@ -239,7 +266,7 @@ class All(object):
 		y_offset = (abs(self.top_bounding_y)-abs(self.bottom_bounding_y))/2
 
 		# recalculate all object coordinates
-		for scalable in self.scalable_objects:
+		for scalable in self.scalable_objects + self.nebulae:
 			scalable.coordinates = (scalable.coordinates[0]-x_offset, scalable.coordinates[1]-y_offset)
 
 		# previously-caculated bounding lines are now incorrect, so recalculate

@@ -59,6 +59,68 @@ class TestForegroundStar(unittest.TestCase):
 		"Star color should have known values."
 		self.assertEqual(self.test_star.sprite.color, [255,255,0])
 
+class TestNebula(unittest.TestCase):
+
+	def testValidLobeCount(self):
+		"Number of lobes should fall within acceptable limits."
+		invalid_lobe_counts = (
+			[], 
+			[1, 2, 3, 4, 5, 6, 7] )
+		for lobe_arg in invalid_lobe_counts:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', lobe_arg)
+
+	def testValidPrimaryColor(self):
+		"Nebula primary color should be a valid value."
+		self.assertRaises(galaxy_objects.DataError, galaxy_objects.Nebula, (0,0), 'chartreuse', [1,2,3])
+
+	def testValidSecondaryColor(self):
+		"Lobes should request a valid secondary color."
+		invalid_lobe_secondary_colors = ( -1, 2 )
+		for lobe_secondary in invalid_lobe_secondary_colors:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', [(invalid_lobe_secondary_colors)])
+
+	def testValidSpriteIdentifier(self):
+		"Lobes should request a valid sprite identifier."
+		invalid_lobe_sprite_identifiers = ( 0, 3 )
+		for sprite_identifier in invalid_lobe_sprite_identifiers:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', [(0, sprite_identifier)])
+
+	def testLobeValidCoordinates(self):
+		"Lobes coordinates should fall in valid bounds."
+		invalid_lobe_coordinates = ( (-210, 0), (0, -210), (210, 0), (0, 210) )
+		for coordinate in invalid_lobe_coordinates:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', [(0, 1, coordinate)])
+
+	def testLobeValidRotation(self):
+		"Lobes rotation should fall in valid bounds."
+		invalid_lobe_rotations = ( -1, 361 )
+		for rotation in invalid_lobe_rotations:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', [(0, 1, (0, 0), rotation)])
+
+	def testLobeValidScale(self):
+		"Lobes scale should fall in valid bounds."
+		invalid_lobe_scales = ( 0.2, 4.1 )
+		for scale in invalid_lobe_scales:
+			self.assertRaises(galaxy_objects.RangeException, galaxy_objects.Nebula, (0,0), 'red', [(0, 1, (0, 0), 0, scale)])
+	
+	def testLobeScaling(self):
+		"Given test data, lobes should scale to known values."
+		test_nebula = galaxy_objects.Nebula(
+			(10, 20), 'red', [
+				(0, 1, (5, -5), 0, 1.0)
+			]
+		)
+		test_scales = ( 
+			(2.0, 7.5, 7.5, 0.5),
+			(1.0, 15.0, 15.0, 1.0),
+			(0.5, 30.0, 30.0, 2.0)
+		)
+		for scaling_factor, x, y, sprite_scale in test_scales:
+			test_nebula.scale_coordinates_and_size(scaling_factor)
+			self.assertEqual(test_nebula.lobes[0]['sprite'].x, x)
+			self.assertEqual(test_nebula.lobes[0]['sprite'].y, y)
+			self.assertEqual(test_nebula.lobes[0]['sprite'].scale, sprite_scale)
+
 class TestAll(unittest.TestCase):
 	# some test data
 	galaxy_objects = galaxy_objects.All(

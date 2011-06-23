@@ -20,7 +20,7 @@ class DataContainer(object):
 					galaxy_objects.ForegroundStar((750, -950), 'Delta Pavonis', 'brown'),
 					galaxy_objects.ForegroundStar((-250, -250), 'Eridani', 'orange'),
 					galaxy_objects.ForegroundStar((-90, -1070), 'Betelgeuse', 'orange'),
-					galaxy_objects.ForegroundStar((90, 1070), 'Rigel', 'red'),
+					galaxy_objects.ForegroundStar((100, -700), 'Rigel', 'red'),
 				],
 				# background stars
 				[
@@ -47,7 +47,24 @@ class DataContainer(object):
 				],
 				# nebulae
 				[
-					galaxy_objects.Nebula((100, -700), 'red', [(0, (5, 5), 0)]),
+					galaxy_objects.Nebula((100, -700), 'red', [
+						(0, 1, (35, -25), 0, 1.2), 
+						(1, 2, (-20, 46), 148, 0.9),
+						(1, 1, (-46, -55), 223, 1.05),
+						(0, 2, (3, 14), 321, 0.63),
+					]),
+					galaxy_objects.Nebula((1225, 900), 'blue', [
+						(1, 1, (35, -25), 0, 1.5), 
+						(0, 2, (-20, 46), 45, 0.45),
+						(0, 1, (-46, -55), 88, 0.78),
+						(1, 2, (0, 5), 130, 1.1)
+					]),
+					galaxy_objects.Nebula((-900, 200), 'green', [
+						(0, 1, (35, -25), 129, 0.95), 
+						(1, 2, (-20, 46), 94, 1.22),
+						(0, 1, (-46, -55), 210, 1.3),
+						(0, 2, (36, 65), 290, 0.78)
+					]),
 				],
 			)
 		else:
