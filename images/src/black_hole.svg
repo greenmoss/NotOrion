@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="640px"
+   height="480px"
+   id="svg2836"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="black_hole.svg">
+  <defs
+     id="defs2838">
+    <linearGradient
+       id="linearGradient3618">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3620" />
+      <stop
+         style="stop-color:#8000ff;stop-opacity:0;"
+         offset="1"
+         id="stop3622" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5253">
+      <stop
+         style="stop-color:#c50909;stop-opacity:1;"
+         offset="0"
+         id="stop5255" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop5257" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5213">
+      <stop
+         id="stop5215"
+         offset="0"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         style="stop-color:#6c3fb7;stop-opacity:1;"
+         offset="0.63"
+         id="stop5217" />
+      <stop
+         id="stop5219"
+         offset="0.64999998"
+         style="stop-color:#ffffff;stop-opacity:1;" />
+      <stop
+         style="stop-color:#d72d2d;stop-opacity:0.49803922;"
+         offset="0.72000003"
+         id="stop5221" />
+      <stop
+         id="stop5223"
+         offset="1"
+         style="stop-color:#ffffff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3642">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3644" />
+      <stop
+         id="stop3650"
+         offset="0.63"
+         style="stop-color:#6c3fb7;stop-opacity:1;" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0.64999998"
+         id="stop5209" />
+      <stop
+         id="stop5211"
+         offset="0.72000003"
+         style="stop-color:#d72d2d;stop-opacity:0.49803922;" />
+      <stop
+         style="stop-color:#271414;stop-opacity:0;"
+         offset="1"
+         id="stop3646" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 240 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="640 : 240 : 1"
+       inkscape:persp3d-origin="320 : 160 : 1"
+       id="perspective2844" />
+    <inkscape:perspective
+       id="perspective3628"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3642"
+       id="radialGradient3648"
+       cx="297.52481"
+       cy="208.93617"
+       fx="297.52481"
+       fy="208.93617"
+       r="25.170214"
+       gradientTransform="matrix(1,0,0,1.025641,0,-5.3573333)"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5253"
+       id="radialGradient5261"
+       cx="239.0932"
+       cy="241.42876"
+       fx="239.0932"
+       fy="241.42876"
+       r="84.766823"
+       gradientTransform="matrix(1,0,0,0.94437537,0,13.087679)"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       inkscape:collect="always"
+       id="filter5343"
+       x="-0.16036105"
+       width="1.3207221"
+       y="-0.14089657"
+       height="1.2817931">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="5.9003529"
+         id="feGaussianBlur5345" />
+    </filter>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3618"
+       id="radialGradient3624"
+       cx="297.52481"
+       cy="208.93617"
+       fx="297.52481"
+       fy="208.93617"
+       r="25.170214"
+       gradientTransform="matrix(1,0,0,1.025641,0,-5.3573333)"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       inkscape:collect="always"
+       id="filter3626"
+       x="-0.23250836"
+       width="1.4650167"
+       y="-0.22669565"
+       height="1.4533913">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4.8769042"
+         id="feGaussianBlur3628" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4"
+     inkscape:cx="261.15956"
+     inkscape:cy="246.33548"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:window-width="1126"
+     inkscape:window-height="809"
+     inkscape:window-x="74"
+     inkscape:window-y="21"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata2841">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <rect
+       style="color:#000000;fill:#000000;fill-opacity:0;fill-rule:evenodd;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect2846"
+       width="139.25"
+       height="139.25"
+       x="170.25"
+       y="169.75"
+       inkscape:export-filename="/Users/kyoder/Documents/NotOrion/code/images/black_hole.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       sodipodi:type="spiral"
+       style="opacity:0.88053098;fill:url(#radialGradient5261);fill-opacity:1;fill-rule:nonzero;stroke:none;filter:url(#filter5343)"
+       id="path5145"
+       sodipodi:cx="238"
+       sodipodi:cy="240"
+       sodipodi:expansion="34.080002"
+       sodipodi:revolution="32.110001"
+       sodipodi:radius="56.922096"
+       sodipodi:argument="-18.064157"
+       sodipodi:t0="0.94999999"
+       d="m 231.19306,232.7968 c 3.83256,-5.17228 11.36535,-5.46899 16.32023,-1.78676 6.81339,5.06339 7.19935,14.99662 2.33307,21.52593 -6.6744,8.95536 -19.74388,9.45633 -28.32886,3.03982 -11.74512,-8.77844 -12.39395,-25.93682 -3.95219,-37.20005 11.52052,-15.37098 33.99856,-16.20952 48.74386,-5.1276 20.07382,15.0866 21.15528,44.4712 6.63885,63.73431 -7.29654,9.68241 -17.91136,16.56009 -29.59141,19.68705"
+       transform="translate(0,3.25)"
+       inkscape:export-filename="/Users/kyoder/Documents/NotOrion/code/images/black_hole.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       sodipodi:type="arc"
+       style="color:#000000;fill:url(#radialGradient3648);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;display:none;overflow:visible;enable-background:accumulate"
+       id="path2846"
+       sodipodi:cx="297.52481"
+       sodipodi:cy="208.93617"
+       sodipodi:rx="25.170214"
+       sodipodi:ry="25.815603"
+       d="m 322.69502,208.93617 a 25.170214,25.815603 0 1 1 -50.34042,0 25.170214,25.815603 0 1 1 50.34042,0 z"
+       transform="matrix(1.5374657,0,0,1.5374657,-218.98585,-81.422803)"
+       inkscape:export-filename="/Users/kyoder/Documents/NotOrion/code/images/black_hole.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       sodipodi:type="arc"
+       style="color:#000000;fill:url(#radialGradient3624);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;marker:none;visibility:visible;overflow:visible;enable-background:accumulate;filter:url(#filter3626)"
+       id="path2846-7"
+       sodipodi:cx="297.52481"
+       sodipodi:cy="208.93617"
+       sodipodi:rx="25.170214"
+       sodipodi:ry="25.815603"
+       d="m 322.69502,208.93617 a 25.170214,25.815603 0 1 1 -50.34042,0 25.170214,25.815603 0 1 1 50.34042,0 z"
+       transform="matrix(0.96126374,0,0,0.96126374,-47.554599,39.09163)"
+       inkscape:export-filename="/Users/kyoder/Documents/NotOrion/code/images/black_hole.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+</svg>
