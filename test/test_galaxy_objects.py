@@ -123,28 +123,96 @@ class TestNebula(unittest.TestCase):
 
 class TestAll(unittest.TestCase):
 	# some test data
+	(star1, star2, star3, star4) = (
+		galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
+		galaxy_objects.ForegroundStar((-500, 2000), 'Alpha Centauri'),
+		galaxy_objects.ForegroundStar((1000, -1000), 'Sol'),
+		galaxy_objects.ForegroundStar((4000, 900), 'Delta Pavonis')
+		)
+	(bgstar1, bgstar2) = (
+		galaxy_objects.BackgroundStar((0, 0), (0, 0, 255)),
+		galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
+		)
+	valid_star_set = [ star1, star2, star3, star4 ]
+	valid_background_star_set = [ bgstar1, bgstar2 ]
+	valid_black_hole_set = [ galaxy_objects.BlackHole((300, 1000), 120) ]
 	galaxy_objects = galaxy_objects.All(
-		[
-			galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
-			galaxy_objects.ForegroundStar((-500, 2000), 'Alpha Centauri'),
-			galaxy_objects.ForegroundStar((1000, -1000), 'Sol'),
-			galaxy_objects.ForegroundStar((4000, 900), 'Delta Pavonis'),
-		],
-		[
-			galaxy_objects.BackgroundStar((0, 0), (0, 0, 255)),
-			galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
-		],
-		[ galaxy_objects.BlackHole((300, 1000), 120) ]
+		valid_star_set,
+		valid_background_star_set,
+		valid_black_hole_set
 	)
+
+	def testDisallowedStarBlackHoleOverlap(self):
+		"Stars and black holes should be a minimum distance apart."
+		self.assertRaises(
+			galaxy_objects.DataError, 
+			galaxy_objects.All, 
+			[
+				galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
+				galaxy_objects.ForegroundStar((-4000, -200), 'Evil Xi Bootis'),
+			], 
+			self.valid_background_star_set
+		)
+		self.assertRaises(
+			galaxy_objects.DataError, 
+			galaxy_objects.All, 
+			[
+				galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
+				galaxy_objects.ForegroundStar((-4000, 200), 'Spica'),
+			], 
+			self.valid_background_star_set,
+			[ galaxy_objects.BlackHole((-4000, 200), 120) ]
+		)
+	
+	def testDisallowedNebulaOverlap(self):
+		"Nebulae should be a minimum distance apart."
+		self.assertRaises(
+			galaxy_objects.DataError, 
+			galaxy_objects.All, 
+			self.valid_star_set,
+			self.valid_background_star_set,
+			self.valid_black_hole_set,
+			[
+				galaxy_objects.Nebula(
+					(0, 0), 'red', [
+						(0, 1, (5, -5), 0, 1.0)
+					]
+				),
+				galaxy_objects.Nebula(
+					(0, 399), 'red', [
+						(0, 1, (5, -5), 0, 1.0)
+					]
+				)
+			]
+		)
+		self.assertRaises(
+			galaxy_objects.DataError, 
+			galaxy_objects.All, 
+			self.valid_star_set,
+			self.valid_background_star_set,
+			self.valid_black_hole_set,
+			[
+				galaxy_objects.Nebula(
+					(0, 0), 'red', [
+						(0, 1, (5, -5), 0, 1.0)
+					]
+				),
+				galaxy_objects.Nebula(
+					(-399, 0), 'red', [
+						(0, 1, (5, -5), 0, 1.0)
+					]
+				)
+			]
+		)
 
 	def testMissingNamedStars(self):
 		"Require minimum number of foreground stars."
-		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, [], [])
-		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, [1], [])
+		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, [], self.valid_background_star_set)
+		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, [self.star1], self.valid_background_star_set)
 
 	def testMissingBackgroundStars(self):
 		"Providing too few background stars should be disallowed."
-		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, [1, 2], [])
+		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, self.valid_star_set, [])
 
 	def testBoundingArea(self):
 		"Bounding area of galaxy_objects using test data should return known test values."

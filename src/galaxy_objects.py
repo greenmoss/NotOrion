@@ -17,6 +17,7 @@ class All(object):
 	black_holes_group = pyglet.graphics.OrderedGroup(1)
 	stars_group = pyglet.graphics.OrderedGroup(2)
 	labels_group = pyglet.graphics.OrderedGroup(3)
+	min_foreground_separation = 10
 
 	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[]):
 		if len(background_stars) < 1:
@@ -62,6 +63,19 @@ class All(object):
 				if distance > self.max_distance:
 					self.max_coords = coords
 					self.max_distance = distance
+		if self.min_distance < self.min_foreground_separation:
+			raise DataError, "at least two foreground objects are not far enough apart"
+
+		# ensure nebulae don't overlap
+		min_nebula_distance = Nebula.max_offset * 2
+		for nebula1 in self.nebulae:
+			for nebula2 in self.nebulae:
+				if nebula1 == nebula2:
+					continue
+				offset_from_zero = (abs(nebula1.coordinates[0] - nebula2.coordinates[0]), abs(nebula1.coordinates[1] - nebula2.coordinates[1]))
+				distance = math.sqrt(offset_from_zero[0]**2 + offset_from_zero[1]**2)
+				if distance < min_nebula_distance:
+					raise DataError, "at least two nebulae are not far enough apart"
 
 		# create vertex/color list for all background stars
 		# will be invoked as background_vertex_list.draw(pyglet.gl.GL_POINTS)
