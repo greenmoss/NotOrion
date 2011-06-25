@@ -8,7 +8,9 @@ class RangeException(Exception): pass
 
 class All(object):
 	"""All galaxy objects are referenced from this object."""
-	sprites_batch = pyglet.graphics.Batch()
+	sprites_batch1 = pyglet.graphics.Batch()
+	# because we have to draw raw GL objects in between sprite, create multiple batch layers
+	sprites_batch2 = pyglet.graphics.Batch()
 	#render_groups = {}
 	# python equivalent of ruby's each_with_index?
 	#for group_name in ['nebulae', 'black_holes', 'stars', 'labels']:
@@ -115,9 +117,10 @@ class All(object):
 			for worm_hole in self.worm_holes:
 				worm_hole.scale_coordinates()
 
-		self.sprites_batch.draw()
+		self.sprites_batch1.draw()
 		for worm_hole in self.worm_holes:
 			worm_hole.vertex_list.draw(pyglet.gl.GL_LINES)
+		self.sprites_batch2.draw()
 
 	def normalize(self):
 		'Force extreme foreground objects to be equidistant from (0,0)'
@@ -182,7 +185,7 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite_origin = (self.image.width/2, self.image.height/2)
 		self.sprite.image.anchor_x = self.sprite_origin[0]
 		self.sprite.image.anchor_y = self.sprite_origin[1]
-		self.sprite.batch = self.sprites_batch
+		self.sprite.batch = self.sprites_batch2
 		if group:
 			self.sprite.group = group
 
@@ -226,7 +229,7 @@ class ForegroundStar(ScaledForegroundObject):
 			# x and y will immediately be recalculated, but are required to initialize the label
 			x=coordinates[0], y=coordinates[1],
 			anchor_x='center', anchor_y='top', 
-			batch=self.sprites_batch, group=self.labels_group)
+			batch=self.sprites_batch2, group=self.labels_group)
 
 		self.worm_hole = None
 
@@ -301,7 +304,7 @@ class Nebula(ForegroundObject):
 			lobe_info['sprite'].image.anchor_x = lobe_info['sprite_origin'][0]
 			lobe_info['sprite'].image.anchor_y = lobe_info['sprite_origin'][1]
 			lobe_info['sprite'].rotation = lobe_info['rotation']
-			lobe_info['sprite'].batch = self.sprites_batch
+			lobe_info['sprite'].batch = self.sprites_batch1
 			lobe_info['sprite'].group = self.nebulae_group
 
 			self.lobes.append(lobe_info)
