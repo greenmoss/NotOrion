@@ -19,7 +19,7 @@ class All(object):
 	labels_group = pyglet.graphics.OrderedGroup(3)
 	min_foreground_separation = 10
 
-	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[]):
+	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[], worm_holes=[]):
 		if len(background_stars) < 1:
 			raise MissingDataException, "background_stars must have at least one element"
 		self.background_stars = background_stars
@@ -90,6 +90,15 @@ class All(object):
 			('c3B/static', self.background_star_colors)
 		)
 
+		# create worm holes
+		self.worm_holes = []
+		for endpoint_stars in worm_holes:
+			endpoint1 = endpoint_stars[0]
+			endpoint2 = endpoint_stars[1]
+			if (endpoint1 < 0) or (endpoint1 > len(self.named_stars)-1) or (endpoint2 < 0) or (endpoint2 > len(self.named_stars)-1):
+				raise RangeException, "both ends of wormhole must be within list of existing stars"
+			self.worm_holes.append(WormHole(self.named_stars[endpoint1], self.named_stars[endpoint2]))
+
 		self.scaling_factor = None
 	
 	def draw(self, scaling_factor):
@@ -103,8 +112,12 @@ class All(object):
 				black_hole.scale_coordinates(scaling_factor)
 			for nebula in self.nebulae:
 				nebula.scale_coordinates_and_size(scaling_factor)
+			for worm_hole in self.worm_holes:
+				worm_hole.scale_coordinates()
 
 		self.sprites_batch.draw()
+		for worm_hole in self.worm_holes:
+			worm_hole.vertex_list.draw(pyglet.gl.GL_LINES)
 
 	def normalize(self):
 		'Force extreme foreground objects to be equidistant from (0,0)'
@@ -215,6 +228,8 @@ class ForegroundStar(ScaledForegroundObject):
 			anchor_x='center', anchor_y='top', 
 			batch=self.sprites_batch, group=self.labels_group)
 
+		self.worm_hole = None
+
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."
 		super(ForegroundStar, self).scale_coordinates(scaling_factor)
@@ -297,5 +312,36 @@ class Nebula(ForegroundObject):
 			lobe['sprite'].x = (self.coordinates[0]+lobe['coordinates'][0])/scaling_factor
 			lobe['sprite'].y = (self.coordinates[1]+lobe['coordinates'][1])/scaling_factor
 			lobe['sprite'].scale = 1/scaling_factor*lobe['scale']
+
+class WormHole(All):
+	'Worm holes; one maximum to any given star'
+
+	def __init__(self, star1, star2):
+		if not isinstance(star1, ForegroundStar) or not isinstance(star2, ForegroundStar):
+			raise DataError, "both ends of wormholes must be foreground stars"
+
+		if star1.worm_hole or star2.worm_hole:
+			raise DataError, "wormhole endpoint stars may only be used once"
+
+		self.endpoints = (star1, star2)
+		star1.worm_hole = self
+		star2.worm_hole = self
+
+		self.vertex_list = pyglet.graphics.vertex_list(
+			2, 'v2f', 
+			('c3B/static', 
+				(
+					0,0,96,
+					0,0,96
+				)
+			)
+		)
+
+	def scale_coordinates(self):
+		'When stars scale, their position changes, so update the wormhole vertex list'
+		self.vertex_list.vertices = [
+			self.endpoints[0].sprite.x, self.endpoints[0].sprite.y,
+			self.endpoints[1].sprite.x, self.endpoints[1].sprite.y
+		]
 
 # doesn't make sense to call this standalone, so no __main__

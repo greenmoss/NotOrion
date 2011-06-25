@@ -121,6 +121,27 @@ class TestNebula(unittest.TestCase):
 			self.assertEqual(test_nebula.lobes[0]['sprite'].y, y)
 			self.assertEqual(test_nebula.lobes[0]['sprite'].scale, sprite_scale)
 
+class TestWormHole(unittest.TestCase):
+
+	def testUniqueWormHole(self):
+		"Named stars may only have one wormhole"
+		(star1, star2, star3) = (
+			galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
+			galaxy_objects.ForegroundStar((-500, 2000), 'Alpha Centauri'),
+			galaxy_objects.ForegroundStar((1000, -1000), 'Sol')
+			)
+		(bgstar1, bgstar2) = (
+			galaxy_objects.BackgroundStar((0, 0), (0, 0, 255)),
+			galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
+			)
+		self.assertRaises(
+			galaxy_objects.DataError, 
+			galaxy_objects.All,
+			[ star1, star2, star3 ],
+			[ bgstar1, bgstar2 ],
+			worm_holes=[ (0,1), (0,2) ]
+		)
+
 class TestAll(unittest.TestCase):
 	# some test data
 	(star1, star2, star3, star4) = (
