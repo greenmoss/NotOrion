@@ -157,10 +157,20 @@ class TestAll(unittest.TestCase):
 	valid_star_set = [ star1, star2, star3, star4 ]
 	valid_background_star_set = [ bgstar1, bgstar2 ]
 	valid_black_hole_set = [ galaxy_objects.BlackHole((300, 1000), 120) ]
+	valid_nebulae_set = [
+		galaxy_objects.Nebula(
+			(0, 0), 'red', [
+				(0, 1, (5, -5), 0, 1.0)
+			]
+		)
+	]
+	valid_worm_hole_set = [(0,1)]
 	galaxy_objects = galaxy_objects.All(
 		valid_star_set,
 		valid_background_star_set,
-		valid_black_hole_set
+		valid_black_hole_set,
+		valid_nebulae_set,
+		valid_worm_hole_set
 	)
 
 	def testDisallowedStarBlackHoleOverlap(self):
@@ -234,6 +244,16 @@ class TestAll(unittest.TestCase):
 	def testMissingBackgroundStars(self):
 		"Providing too few background stars should be disallowed."
 		self.assertRaises(galaxy_objects.MissingDataException, galaxy_objects.All, self.valid_star_set, [])
+	
+	def testPickle(self):
+		"If we are pickled, the unpickled object should match the original."
+		import pickle
+		pickled = pickle.dumps(self.galaxy_objects)
+		restored = pickle.loads(pickled)
+		# some simple equality tests, that will be improved upon once objects have equality functions
+		self.assertEqual(self.galaxy_objects.left_bounding_x, restored.left_bounding_x)
+		self.assertEqual(self.galaxy_objects.background_star_vertices, restored.background_star_vertices)
+		self.assertEqual(self.galaxy_objects.min_coords, restored.min_coords)
 
 	def testBoundingArea(self):
 		"Bounding area of galaxy_objects using test data should return known test values."

@@ -86,11 +86,8 @@ class All(object):
 		for background_star in self.background_stars:
 			[self.background_star_vertices.append(vertex) for vertex in background_star.coordinates]
 			[self.background_star_colors.append(vertex) for vertex in background_star.color]
-		self.background_vertex_list = pyglet.graphics.vertex_list(
-			len(self.background_stars),
-			('v3i/static', self.background_star_vertices),
-			('c3B/static', self.background_star_colors)
-		)
+
+		self.constitute_background_star_vertices()
 
 		# create worm holes
 		self.worm_holes = []
@@ -102,6 +99,13 @@ class All(object):
 			self.worm_holes.append(WormHole(self.named_stars[endpoint1], self.named_stars[endpoint2]))
 
 		self.scaling_factor = None
+
+	def constitute_background_star_vertices(self):
+		self.background_vertex_list = pyglet.graphics.vertex_list(
+			len(self.background_stars),
+			('v3i/static', self.background_star_vertices),
+			('c3B/static', self.background_star_colors)
+		)
 	
 	def draw(self, scaling_factor):
 		"Draw all galaxy objects"
@@ -153,6 +157,17 @@ class All(object):
 		black_hole_rotation_delta = 18.*dt
 		for black_hole in self.black_holes:
 			black_hole.sprite.rotation -= black_hole_rotation_delta
+	
+	def __getstate__(self):
+		"Exclude unpicklable attributes"
+		out_dict = self.__dict__.copy()
+		del out_dict['background_vertex_list']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		self.__dict__.update(dict)
+		self.constitute_background_star_vertices()
 
 class BackgroundStar(All):
 	'A simplified star for the background, to be drawn only as a point source'
@@ -160,6 +175,10 @@ class BackgroundStar(All):
 	def __init__(self, coordinates, color):
 		self.coordinates = (coordinates[0], coordinates[1], 0)
 		self.color = color
+	
+	def __getstate__(self):
+		"This is required to allow All to be pickled"
+		self.__dict__
 
 class ForegroundObject(All):
 	'All foreground objects that appear in the galaxy window, eg stars, black holes, and nebulae.'
@@ -173,35 +192,59 @@ class ForegroundObject(All):
 			raise RangeException, "coordinates must be between -10000 and 10000"
 
 		self.coordinates = coordinates
+	
+	def __getstate__(self):
+		"This is required to allow All to be pickled"
+		self.__dict__
 
 class ScaledForegroundObject(ForegroundObject):
 	'All foreground objects that maintain a constant size across rescales, eg stars and black holes.'
 
-	def __init__(self, coordinates, image, group=None):
+	def __init__(self, coordinates, image_file, group):
 		super(ScaledForegroundObject, self).__init__(coordinates)
+		self.group = group
+
+		self.image_file = image_file
+		self.group = group
+		self.coordinates = coordinates
+
+		self.constitute_scaled_foreground_sprite()
+
+		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
+
+	def constitute_scaled_foreground_sprite(self):
+		'sprites must be reconstituted after pickling'
+		image = pyglet.resource.image(self.image_file)
 		self.sprite = pyglet.sprite.Sprite(image,
-			x=coordinates[0], y=coordinates[1]
+			x=self.coordinates[0], y=self.coordinates[1]
 		)
-		self.sprite_origin = (self.image.width/2, self.image.height/2)
+		self.sprite_origin = (image.width/2, image.height/2)
 		self.sprite.image.anchor_x = self.sprite_origin[0]
 		self.sprite.image.anchor_y = self.sprite_origin[1]
 		self.sprite.batch = self.sprites_batch2
-		if group:
-			self.sprite.group = group
-
+		self.sprite.group = self.group
 		self.sprite.scale = 0.1
-
-		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
 
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
 		self.sprite.x = self.coordinates[0]/scaling_factor
 		self.sprite.y = self.coordinates[1]/scaling_factor
+	
+	def __getstate__(self):
+		"Exclude unpicklable attributes"
+		out_dict = self.__dict__.copy()
+		del out_dict['sprite']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		self.__dict__.update(dict)
+		self.constitute_scaled_foreground_sprite()
 
 class ForegroundStar(ScaledForegroundObject):
 	'A named star and all its properties.'
 	# this is B/W, and will be colored using pyglet's sprite.color
-	image = pyglet.resource.image('star.png')
+	image_file = 'star.png'
 
 	color_maps = {
 		'white': (255, 255, 255),
@@ -214,24 +257,30 @@ class ForegroundStar(ScaledForegroundObject):
 	}
 
 	def __init__(self, coordinates, name, type='yellow'):
-		super(ForegroundStar, self).__init__(coordinates, self.image, self.stars_group)
-
 		if (len(name) > 15) or (len(name) < 3):
 			raise RangeException, "name must be between 3 and 15 characters long"
 		self.name = name
 
 		if not self.color_maps.has_key(type):
 			raise DataError, 'unknown star type: %s'%type
-		self.sprite.color = self.color_maps[type]
+		self.type = type
 
-		self.label = pyglet.text.Label(name,
-			font_name='Arial', font_size=8,
-			# x and y will immediately be recalculated, but are required to initialize the label
-			x=coordinates[0], y=coordinates[1],
-			anchor_x='center', anchor_y='top', 
-			batch=self.sprites_batch2, group=self.labels_group)
+		super(ForegroundStar, self).__init__(coordinates, self.image_file, self.stars_group)
+
+		self.constitute_foreground_star_sprite_and_label()
 
 		self.worm_hole = None
+
+	def constitute_foreground_star_sprite_and_label(self):
+		'Allow these to be repickled'
+		self.sprite.color = self.color_maps[self.type]
+
+		self.label = pyglet.text.Label(self.name,
+			font_name='Arial', font_size=8,
+			# x and y will immediately be recalculated, but are required to initialize the label
+			x=self.coordinates[0], y=self.coordinates[1],
+			anchor_x='center', anchor_y='top', 
+			batch=self.sprites_batch2, group=self.labels_group)
 
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."
@@ -240,13 +289,30 @@ class ForegroundStar(ScaledForegroundObject):
 		# center label under sprite
 		self.label.x = self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2)
 		self.label.y = self.sprite.y-self.scaled_sprite_origin[1]
+	
+	def __getstate__(self):
+		"Exclude unpicklable attributes"
+		out_dict = super(ForegroundStar, self).__getstate__()
+		del out_dict['label']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		super(ForegroundStar, self).__setstate__(dict)
+		self.constitute_foreground_star_sprite_and_label()
 
 class BlackHole(ScaledForegroundObject):
-	image = pyglet.resource.image('black_hole.png')
+	image_file = 'black_hole.png'
 
 	def __init__(self, coordinates, initial_rotation=0):
-		super(BlackHole, self).__init__(coordinates, self.image, self.black_holes_group)
-		self.sprite.rotation = initial_rotation
+		super(BlackHole, self).__init__(coordinates, self.image_file, self.black_holes_group)
+		self.initial_rotation = initial_rotation
+		self.sprite.rotation = self.initial_rotation
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		super(BlackHole, self).__setstate__(dict)
+		self.sprite.rotation = self.initial_rotation
 
 class Nebula(ForegroundObject):
 	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:
@@ -255,14 +321,14 @@ class Nebula(ForegroundObject):
 		'green': ['cyan', 'yellow'],
 		'blue': ['cyan', 'pink']
 	}
-	lobe_images = {}
+
+	# load all available lobe image files
+	lobe_image_files = {}
 	for primary in lobe_colors.keys():
 		for secondary in lobe_colors[primary]:
 			for sprite_number in [1,2]:
-				sprite_identifier = '%s_%s_%d'%(primary, secondary, sprite_number)
-				lobe_images[sprite_identifier] = pyglet.resource.image(
-					'%s_%s_nebula_%d.png'%(primary, secondary ,sprite_number)
-				)
+				id = '%s_%s_%d'%(primary, secondary, sprite_number)
+				lobe_image_files[id] = '%s_%s_nebula_%d.png'%(primary, secondary ,sprite_number)
 	max_offset = 200
 	min_scale = 0.25
 	max_scale = 4.0
@@ -281,40 +347,73 @@ class Nebula(ForegroundObject):
 			if (lobe[0] > 1) or (lobe[0] < 0):
 				raise RangeException, "lobe secondary color must be between 0 and 1"
 			lobe_info['secondary'] = self.lobe_colors[color][lobe[0]]
+
 			if (lobe[1] > 2) or (lobe[1] < 1):
 				raise RangeException, "lobe sprite identifier must be between 1 and 2"
+			lobe_info['image_id'] = lobe[1]
+
 			if (lobe[2][0] > self.max_offset) or (lobe[2][0] < -self.max_offset) or (lobe[2][1] > self.max_offset) or (lobe[2][1] < -self.max_offset):
 				raise RangeException, "lobe x and y coordinates must fall between %d and %d"%(self.max_offset, -self.max_offset)
 			lobe_info['coordinates'] = lobe[2]
+
 			if (lobe[3] > 360) or (lobe[3] < 0):
 				raise RangeException, "lobe rotation must be between 0 and 360"
 			lobe_info['rotation'] = lobe[3]
+
 			if (lobe[4] > self.max_scale) or (lobe[4] < self.min_scale):
 				raise RangeException, "lobe scale must fall between %0.2f and %0.2f"%(self.min_scale, self.max_scale)
 			lobe_info['scale'] = lobe[4]
 
-			sprite_identifier = '%s_%s_%d'%(self.primary_color, lobe_info['secondary'], lobe[1])
-			image = self.lobe_images[sprite_identifier]
-			lobe_info['sprite'] = pyglet.sprite.Sprite(
-				image,
-				# initial coordinates will never be used
-				x=0, y=0
-			)
-			lobe_info['sprite_origin'] = (image.width/2, image.height/2)
-			lobe_info['sprite'].image.anchor_x = lobe_info['sprite_origin'][0]
-			lobe_info['sprite'].image.anchor_y = lobe_info['sprite_origin'][1]
-			lobe_info['sprite'].rotation = lobe_info['rotation']
-			lobe_info['sprite'].batch = self.sprites_batch1
-			lobe_info['sprite'].group = self.nebulae_group
+			lobe_info['rendered_scale'] = 1.0
+			lobe_info['rendered_coordinates'] = (0,0)
+
+			self.constitute_lobe_sprite(lobe_info)
 
 			self.lobes.append(lobe_info)
+
+	def constitute_lobe_sprite(self, lobe):
+		'Allow these to be repickled'
+		image_id = '%s_%s_%d'%(self.primary_color, lobe['secondary'], lobe['image_id'])
+		image = pyglet.resource.image(
+			self.lobe_image_files[image_id]
+		)
+		lobe['sprite'] = pyglet.sprite.Sprite(
+			image,
+			# initial coordinates will never be used
+			x=lobe['rendered_coordinates'][0], y=lobe['rendered_coordinates'][1]
+		)
+		lobe['sprite_origin'] = (image.width/2, image.height/2)
+		lobe['sprite'].image.anchor_x = lobe['sprite_origin'][0]
+		lobe['sprite'].image.anchor_y = lobe['sprite_origin'][1]
+		lobe['sprite'].rotation = lobe['rotation']
+		lobe['sprite'].batch = self.sprites_batch1
+		lobe['sprite'].group = self.nebulae_group
+		lobe['sprite'].scale = lobe['rendered_scale']
 
 	def scale_coordinates_and_size(self, scaling_factor):
 		"Set each lobe's coordinates and size based on a scaling factor."
 		for lobe in self.lobes:
-			lobe['sprite'].x = (self.coordinates[0]+lobe['coordinates'][0])/scaling_factor
-			lobe['sprite'].y = (self.coordinates[1]+lobe['coordinates'][1])/scaling_factor
-			lobe['sprite'].scale = 1/scaling_factor*lobe['scale']
+			lobe['rendered_coordinates'] = (
+				(self.coordinates[0]+lobe['coordinates'][0])/scaling_factor,
+				(self.coordinates[1]+lobe['coordinates'][1])/scaling_factor
+			)
+			lobe['rendered_scale'] = 1/scaling_factor*lobe['scale']
+			lobe['sprite'].x = lobe['rendered_coordinates'][0]
+			lobe['sprite'].y = lobe['rendered_coordinates'][1]
+			lobe['sprite'].scale = lobe['rendered_scale']
+	
+	def __getstate__(self):
+		"Exclude unpicklable attributes"
+		out_dict = self.__dict__.copy()
+		for lobe in out_dict['lobes']:
+			del lobe['sprite']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		self.__dict__.update(dict)
+		for lobe in self.lobes:
+			self.constitute_lobe_sprite(lobe)
 
 class WormHole(All):
 	'Worm holes; one maximum to any given star'
@@ -330,6 +429,14 @@ class WormHole(All):
 		star1.worm_hole = self
 		star2.worm_hole = self
 
+		self.vertices = [
+			self.endpoints[0].sprite.x, self.endpoints[0].sprite.y,
+			self.endpoints[1].sprite.x, self.endpoints[1].sprite.y
+		]
+		self.constitute_worm_hole_vertices()
+
+	def constitute_worm_hole_vertices(self):
+		'Allow these to be repickled'
 		self.vertex_list = pyglet.graphics.vertex_list(
 			2, 'v2f', 
 			('c3B/static', 
@@ -339,12 +446,25 @@ class WormHole(All):
 				)
 			)
 		)
+		self.vertex_list.vertices = self.vertices
 
 	def scale_coordinates(self):
 		'When stars scale, their position changes, so update the wormhole vertex list'
-		self.vertex_list.vertices = [
+		self.vertices = [
 			self.endpoints[0].sprite.x, self.endpoints[0].sprite.y,
 			self.endpoints[1].sprite.x, self.endpoints[1].sprite.y
 		]
+		self.vertex_list.vertices = self.vertices
+	
+	def __getstate__(self):
+		"Exclude unpicklable attributes"
+		out_dict = self.__dict__.copy()
+		del out_dict['vertex_list']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"Reconstitute unpicklable attributes"
+		self.__dict__.update(dict)
+		self.constitute_worm_hole_vertices()
 
 # doesn't make sense to call this standalone, so no __main__
