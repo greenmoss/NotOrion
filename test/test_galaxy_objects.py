@@ -3,6 +3,7 @@ import pyglet
 import sys
 sys.path.append('../src')
 import galaxy_objects
+import pickle
 
 pyglet.resource.path = ['../images']
 pyglet.resource.reindex()
@@ -247,13 +248,17 @@ class TestAll(unittest.TestCase):
 	
 	def testPickle(self):
 		"If we are pickled, the unpickled object should match the original."
-		import pickle
 		pickled = pickle.dumps(self.galaxy_objects)
 		restored = pickle.loads(pickled)
 		# some simple equality tests, that will be improved upon once objects have equality functions
 		self.assertEqual(self.galaxy_objects.left_bounding_x, restored.left_bounding_x)
 		self.assertEqual(self.galaxy_objects.background_star_vertices, restored.background_star_vertices)
 		self.assertEqual(self.galaxy_objects.min_coords, restored.min_coords)
+		for index in range(len(self.galaxy_objects.named_stars)):
+			self.assertEqual(
+				self.galaxy_objects.named_stars[index].sprite.x, 
+				restored.named_stars[index].sprite.x, 
+			)
 
 	def testBoundingArea(self):
 		"Bounding area of galaxy_objects using test data should return known test values."

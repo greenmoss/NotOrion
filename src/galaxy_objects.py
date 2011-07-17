@@ -208,6 +208,7 @@ class ScaledForegroundObject(ForegroundObject):
 		self.group = group
 		self.coordinates = coordinates
 
+		self.sprite_coordinates = self.coordinates
 		self.constitute_scaled_foreground_sprite()
 
 		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
@@ -216,7 +217,7 @@ class ScaledForegroundObject(ForegroundObject):
 		'sprites must be reconstituted after pickling'
 		image = pyglet.resource.image(self.image_file)
 		self.sprite = pyglet.sprite.Sprite(image,
-			x=self.coordinates[0], y=self.coordinates[1]
+			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
 		)
 		self.sprite_origin = (image.width/2, image.height/2)
 		self.sprite.image.anchor_x = self.sprite_origin[0]
@@ -227,8 +228,9 @@ class ScaledForegroundObject(ForegroundObject):
 
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
-		self.sprite.x = self.coordinates[0]/scaling_factor
-		self.sprite.y = self.coordinates[1]/scaling_factor
+		self.sprite_coordinates = (self.coordinates[0]/scaling_factor, self.coordinates[1]/scaling_factor)
+		self.sprite.x = self.sprite_coordinates[0]
+		self.sprite.y = self.sprite_coordinates[1]
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
@@ -278,7 +280,7 @@ class ForegroundStar(ScaledForegroundObject):
 		self.label = pyglet.text.Label(self.name,
 			font_name='Arial', font_size=8,
 			# x and y will immediately be recalculated, but are required to initialize the label
-			x=self.coordinates[0], y=self.coordinates[1],
+			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1],
 			anchor_x='center', anchor_y='top', 
 			batch=self.sprites_batch2, group=self.labels_group)
 

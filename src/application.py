@@ -2,7 +2,7 @@
 from __future__ import division
 import pyglet
 import galaxy
-#import jsonpickle
+import pickle
 import argparse
 import imp
 import sys
@@ -17,7 +17,7 @@ class Application(object):
 	"Controller class for all game objects and functionality."
 
 	def __init__(self, data=None):
-		#self.game_file_path = "/tmp/notorion.save" # temporary, until we find OS-appropriate location
+		self.game_file_path = "/tmp/notorion.save" # temporary, until we find OS-appropriate location
 
 		parser = argparse.ArgumentParser(description='NotOrion')
 		parser.add_argument('--save-game-file')
@@ -35,10 +35,9 @@ class Application(object):
 			self.data = imported.data
 
 		elif args.save_game_file:
-			# unpickle a jsonpickled file as source of self.data
-			pass
-			#self.data = jsonpickle.decode(args.save_game_file)
-			#args.save_game_file.close()
+			# unpickle a pickled file as source of self.data
+			with open(args.save_game_file) as save_game_file:
+				self.data = pickle.load(save_game_file)
 
 		else:
 			# generate a new galaxy
@@ -46,9 +45,8 @@ class Application(object):
 
 		galaxy_window = galaxy.Window(1024, 768, self.data)
 		pyglet.app.run()
-		#with open(self.game_file_path, 'w') as saved_game_file:
-		#	saved_game_file.write(jsonpickle.encode(self.data))
-		#print pickled
+		with open(self.game_file_path, 'w') as save_game_file:
+			pickle.dump(self.data, save_game_file)
 
 if __name__ == "__main__":
 	Application()
