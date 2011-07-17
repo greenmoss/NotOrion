@@ -269,6 +269,7 @@ class ForegroundStar(ScaledForegroundObject):
 
 		super(ForegroundStar, self).__init__(coordinates, self.image_file, self.stars_group)
 
+		self.label_coordinates = self.sprite_coordinates
 		self.constitute_foreground_star_sprite_and_label()
 
 		self.worm_hole = None
@@ -280,7 +281,7 @@ class ForegroundStar(ScaledForegroundObject):
 		self.label = pyglet.text.Label(self.name,
 			font_name='Arial', font_size=8,
 			# x and y will immediately be recalculated, but are required to initialize the label
-			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1],
+			x=self.label_coordinates[0], y=self.label_coordinates[1],
 			anchor_x='center', anchor_y='top', 
 			batch=self.sprites_batch2, group=self.labels_group)
 
@@ -289,8 +290,12 @@ class ForegroundStar(ScaledForegroundObject):
 		super(ForegroundStar, self).scale_coordinates(scaling_factor)
 
 		# center label under sprite
-		self.label.x = self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2)
-		self.label.y = self.sprite.y-self.scaled_sprite_origin[1]
+		self.label_coordinates = (
+			self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2),
+			self.sprite.y-self.scaled_sprite_origin[1]
+		)
+		self.label.x = self.label_coordinates[0]
+		self.label.y = self.label_coordinates[1]
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
