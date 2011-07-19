@@ -12,6 +12,7 @@ class DataContainer(object):
 
 	def __init__(self):
 		self.galaxy_objects = None
+		self.galaxy_window_state = galaxy.WindowState()
 
 class Application(object):
 	"Controller class for all game objects and functionality."
@@ -43,7 +44,7 @@ class Application(object):
 			# generate a new galaxy
 			pass
 
-		galaxy_window = galaxy.Window(1024, 768, self.data)
+		galaxy_window = galaxy.Window(self.data)
 		pyglet.app.run()
 		with open(self.game_file_path, 'w') as save_game_file:
 			pickle.dump(self.data, save_game_file)

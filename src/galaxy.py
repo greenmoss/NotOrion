@@ -7,6 +7,14 @@ import galaxy_objects
 class RangeException(Exception): pass
 class MissingDataException(Exception): pass
 
+class WindowState(object):
+	"A collection of attributes necessary for saving and restoring window state"
+	def __init__(self):
+		self.width = None
+		self.height = None
+		self.absolute_center = None
+		self.foreground_scale = None
+
 class Window(pyglet.window.Window):
 	'All methods that are attached to the galaxy window.'
 	max_dimension = 5000
@@ -20,13 +28,19 @@ class Window(pyglet.window.Window):
 	# size of mini-map; depending on which is greater, this will either be width or height
 	mini_map_size = 75
 
-	def __init__(self, width=1024, height=768, data=None):
+	def __init__(self, data, width=1024, height=768):
+		self.data = data
+		if not hasattr(self.data, 'galaxy_window_state'):
+			raise MissingDataException, "self.data must have attribute galaxy_window_state"
+		if not isinstance(self.data.galaxy_window_state, WindowState):
+			raise MissingDataException, "self.data.galaxy_window_state must be an instance of WindowState"
+		if self.data.galaxy_window_state.width and self.data.galaxy_window_state.height:
+			width = self.data.galaxy_window_state.width
+			height = self.data.galaxy_window_state.height
+
 		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
 			raise RangeException, "width and height must be between 50 and 5000"
 		super(Window, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
-		if not data:
-			raise MissingDataException, "shared data parameter is required"
-		self.data = data
 
 		# MUST have galaxy_objects
 		if not hasattr(self.data, 'galaxy_objects'):
@@ -48,9 +62,15 @@ class Window(pyglet.window.Window):
 		}
 
 		self.derive_from_window_dimensions(self.width, self.height)
-		self.set_scale(self.maximum_scale)
+		if self.data.galaxy_window_state.foreground_scale:
+			self.set_scale(self.data.galaxy_window_state.foreground_scale)
+		else:
+			self.set_scale(self.maximum_scale)
 
-		self.set_center((0, 0))
+		if self.data.galaxy_window_state.absolute_center:
+			self.set_center(self.data.galaxy_window_state.absolute_center)
+		else:
+			self.set_center((0, 0))
 
 		pyglet.clock.schedule_interval(self.animate, 1/60.)
 
@@ -207,6 +227,7 @@ class Window(pyglet.window.Window):
 		elif coordinates[0] < self.center_limits['left']:
 			coordinates[0] = self.center_limits['left']
 		self.absolute_center = (coordinates[0], coordinates[1])
+		self.data.galaxy_window_state.absolute_center = self.absolute_center
 
 		# every time we update the center, the mini-map will change
 		self.derive_mini_map()
@@ -237,6 +258,7 @@ class Window(pyglet.window.Window):
 			self.center_limits['left'] = 0
 
 		self.foreground_scale = foreground_scale
+		self.data.galaxy_window_state.foreground_scale = self.foreground_scale
 
 	def absolute_to_window(self, coordinates):
 		"Translate absolute foreground coordinates into a window coordinate, accounting for window center and scale."
@@ -357,6 +379,9 @@ class Window(pyglet.window.Window):
 		self.set_scale(self.foreground_scale)
 		# ensure center is still in a valid position
 		self.set_center((self.absolute_center[0], self.absolute_center[1]))
+
+		self.data.galaxy_window_state.width = width
+		self.data.galaxy_window_state.height = height
 	
 	def animate(self, dt):
 		'Do any/all animations.'
