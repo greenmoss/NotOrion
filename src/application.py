@@ -46,7 +46,8 @@ class Application(object):
 
 		# if we do not yet have game data, we need to generate a new galaxy
 		else:
-			setup_window = setup.Create()
+			self.data = DataContainer()
+			setup_window = setup.Choose(self.data)
 
 		pyglet.app.run()
 
