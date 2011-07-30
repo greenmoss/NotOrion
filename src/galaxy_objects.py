@@ -248,7 +248,7 @@ class ForegroundStar(ScaledForegroundObject):
 	# this is B/W, and will be colored using pyglet's sprite.color
 	image_file = 'star.png'
 
-	color_maps = {
+	colors = {
 		'white': (255, 255, 255),
 		'blue': (76, 177, 255),
 		'green': (78, 255, 47),
@@ -263,7 +263,7 @@ class ForegroundStar(ScaledForegroundObject):
 			raise RangeException, "name must be between 3 and 15 characters long"
 		self.name = name
 
-		if not self.color_maps.has_key(type):
+		if not self.colors.has_key(type):
 			raise DataError, 'unknown star type: %s'%type
 		self.type = type
 
@@ -276,7 +276,7 @@ class ForegroundStar(ScaledForegroundObject):
 
 	def constitute_foreground_star_sprite_and_label(self):
 		'Allow these to be repickled'
-		self.sprite.color = self.color_maps[self.type]
+		self.sprite.color = self.colors[self.type]
 
 		self.label = pyglet.text.Label(self.name,
 			font_name='Arial', font_size=8,

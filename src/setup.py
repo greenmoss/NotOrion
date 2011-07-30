@@ -56,21 +56,31 @@ class Choose(object):
 				galaxy_objects.BackgroundStar(coordinate, color),
 			)
 
-		self.data.galaxy_objects = galaxy_objects.All(
-				# foreground stars
-				[
-					galaxy_objects.ForegroundStar((-1000, 900), 'Xi Bootis', 'red'),
-					galaxy_objects.ForegroundStar((1225, 125), 'Alpha Centauri', 'green'),
-					galaxy_objects.ForegroundStar((250, 250), 'Sol', 'blue'),
-					galaxy_objects.ForegroundStar((0, 0), 'Tau Ceti', 'yellow'),
-					galaxy_objects.ForegroundStar((-1125, -125), 'Eta Cassiopeiae', 'white'),
-					galaxy_objects.ForegroundStar((750, -950), 'Delta Pavonis', 'brown'),
-					galaxy_objects.ForegroundStar((-250, -250), 'Eridani', 'orange'),
-				],
-				background_stars
+		# randomly generate foreground stars
+		foreground_stars = []
+		available_colors = galaxy_objects.ForegroundStar.colors.keys()
+		available_star_names = []
+		with open('resources/star_names.txt') as star_names_file:
+			for line in star_names_file:
+				available_star_names.append(line.rstrip())
+		for coordinate in utilities.random_dispersed_coordinates(
+			-500, -500, 500, 500,
+			amount=50, dispersion=100
+		):
+			foreground_stars.append(
+				galaxy_objects.ForegroundStar(
+					coordinate, 
+					available_star_names.pop(random.randint(0, len(available_star_names)-1)), 
+					available_colors[random.randint(0, len(available_colors)-1)]
+				),
 			)
+
+		self.data.galaxy_objects = galaxy_objects.All(
+			foreground_stars,
+			background_stars
+		)
 		galaxy.Window(self.data)
-		#self.window.close()
+		self.window.close()
 	
 class SetupWindow(pyglet.window.Window):
 

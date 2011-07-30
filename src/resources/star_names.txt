@@ -22,7 +22,7 @@ Alderamin
 Aldhanab
 Aldhibah
 Al Fawaris
-Alfecca Meridiana
+Alfecca
 Alfirk
 Algedi
 Algenib
@@ -34,12 +34,12 @@ Alhena
 Alioth
 Alkaid
 Al Kurud
-Al Kalb al Rai
+Al Kalb
 Alkalurops
 Al Kaphrah
 Alkes
 Almach
-Al Minliar al Asad
+Al Minliar
 Al Nair
 Alnasl
 Alnilam
@@ -242,7 +242,7 @@ Porrima
 Praecipua
 Procyon
 Propus
-Proxima Centauri
+Centauri
 Pulcherrima
 Rana
 Ras Algethi
@@ -282,7 +282,6 @@ Seginus
 Sham
 Shaula
 Sheliak
-Shurnarkabtishashutu
 Sinistra
 Sirius
 Situla
@@ -307,7 +306,7 @@ Theemin
 Thuban
 Tien Kwan
 Toliman
-Torcularis Septentrionalis
+Torcularis
 Tseen Kee
 Tureis
 Tyl
@@ -325,6 +324,4 @@ Zaniah
 Zaurak
 Zavijava
 Zosma
-Zuben-el-Akrab
-Zubenelgenubi
-Zuben-el-schemali
+Zuben
