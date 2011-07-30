@@ -61,16 +61,17 @@ class TestGalaxyWindow(unittest.TestCase):
 
 	def testLackingStars(self):
 		"Should complain if no galaxy_objects have been defined."
-		self.assertRaises(galaxy.MissingDataException, galaxy.Window)
+		self.assertRaises(galaxy.MissingDataException, galaxy.Window, application.DataContainer())
 	
 	def testWindowDimensionsOutOfBounds(self):
 		"Should not allow width or height outside of boundary limits."
+		self.data.galaxy_window_state = galaxy.WindowState()
 		for width, height in self.out_of_bounds_window_dimensions:
-			self.assertRaises(galaxy.RangeException, galaxy.Window, width, height)
+			self.assertRaises(galaxy.RangeException, galaxy.Window, self.data, width, height)
 	
 	def testResizeWindowDimensionsOutOfBounds(self):
 		"Resize should not allow width or height outside of boundary limits."
-		galaxy_window = galaxy.Window(data=self.data)
+		galaxy_window = galaxy.Window(self.data)
 		for width, height in self.out_of_bounds_window_dimensions:
 			self.assertRaises(galaxy.RangeException, galaxy_window.on_resize, width, height)
 		galaxy_window.close()
@@ -78,7 +79,7 @@ class TestGalaxyWindow(unittest.TestCase):
 	def testScaleOutOfBounds(self):
 		"Scale should raise an exception if it is set to 0 or less"
 		for scale in (0, -10):
-			new_window = galaxy.Window(640, 480, self.data)
+			new_window = galaxy.Window(self.data, 640, 480)
 			self.assertRaises(galaxy.RangeException, new_window.set_scale, scale)
 			new_window.close()
 	
@@ -143,7 +144,7 @@ class TestGalaxyWindow(unittest.TestCase):
 				[
 					galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
 				])
-			galaxy_window = galaxy.Window(width, height, data)
+			galaxy_window = galaxy.Window(data, width, height)
 			galaxy_window.set_scale(scale)
 			self.assertEqual(galaxy_window.center_limits, {'top': top, 'right': right, 'bottom': bottom, 'left': left})
 			galaxy_window.close()
@@ -161,7 +162,7 @@ class TestGalaxyWindow(unittest.TestCase):
 			[
 				galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
 			])
-		galaxy_window = galaxy.Window(data=data)
+		galaxy_window = galaxy.Window(data)
 		galaxy_window.set_scale(1.0)
 		before_and_after_center_coordinates = (
 			((30, 25), (0.5, 25)),
@@ -177,13 +178,13 @@ class TestGalaxyWindow(unittest.TestCase):
 	def testNewWindowMinimumDimension(self):
 		"Given various window dimensions, new windows should have minimum_dimension attribute set to known values."
 		for width, height, minimum in self.window_and_minimum_dimensions:
-			galaxy_window = galaxy.Window(width, height, data=self.data)
+			galaxy_window = galaxy.Window(self.data, width, height)
 			self.assertEqual(galaxy_window.minimum_dimension, minimum)
 			galaxy_window.close()
 	
 	def testResizeWindowMinimumDimension(self):
 		"Given various window dimensions, resized windows should have minimum_dimension attribute set to known values."
-		galaxy_window = galaxy.Window(400, 400, data=self.data)
+		galaxy_window = galaxy.Window(self.data, 400, 400)
 		for width, height, minimum in self.window_and_minimum_dimensions:
 			galaxy_window.on_resize(width, height)
 			self.assertEqual(galaxy_window.minimum_dimension, minimum)
@@ -192,13 +193,13 @@ class TestGalaxyWindow(unittest.TestCase):
 	def testNewWindowMinimumScale(self):
 		"Given various window dimensions, new windows should have minimum_scale attribute set to known values."
 		for width, height, scale in self.window_and_minimum_scales:
-			galaxy_window = galaxy.Window(width, height, data=self.data)
+			galaxy_window = galaxy.Window(self.data, width, height)
 			self.assertEqual(galaxy_window.minimum_scale, scale)
 			galaxy_window.close()
 	
 	def testResizeWindowMinimumScale(self):
 		"Given various window dimensions, resized windows should have minimum_scale attribute set to known values."
-		galaxy_window = galaxy.Window(400, 400, data=self.data)
+		galaxy_window = galaxy.Window(self.data, 400, 400)
 		for width, height, scale in self.window_and_minimum_scales:
 			galaxy_window.on_resize(width, height)
 			self.assertEqual(galaxy_window.minimum_scale, scale)
@@ -207,13 +208,13 @@ class TestGalaxyWindow(unittest.TestCase):
 	def testNewWindowMaximumScale(self):
 		"Given various window dimensions, new windows should have maximum_scale attribute set to known values."
 		for width, height, scale in self.window_and_maximum_scales:
-			galaxy_window = galaxy.Window(width, height, data=self.data)
+			galaxy_window = galaxy.Window(self.data, width, height)
 			self.assertEqual(galaxy_window.maximum_scale, scale)
 			galaxy_window.close()
 	
 	def testResizeWindowMaximumScale(self):
 		"Given various window dimensions, resized windows should have maximum_scale attribute set to known values."
-		galaxy_window = galaxy.Window(400, 400, data=self.data)
+		galaxy_window = galaxy.Window(self.data, 400, 400)
 		for width, height, scale in self.window_and_maximum_scales:
 			galaxy_window.on_resize(width, height)
 			self.assertEqual(galaxy_window.maximum_scale, scale)
@@ -226,7 +227,7 @@ class TestGalaxyWindow(unittest.TestCase):
 			(200, 200),
 			(600, 800))
 		for width, height in window_dimensions_and_vertices:
-			galaxy_window = galaxy.Window(width, height, data=self.data)
+			galaxy_window = galaxy.Window(self.data, width, height)
 			self.assertEqual(galaxy_window.mini_map_visible, False)
 			galaxy_window.close()
 	
@@ -237,7 +238,7 @@ class TestGalaxyWindow(unittest.TestCase):
 			(200, 200, {'top': 95, 'right': 180, 'left': 123.75, 'bottom': 20}),
 			(600, 800, {'top': 95, 'right': 580, 'left': 523.75, 'bottom': 20}))
 		for width, height, mini_map_corners in window_dimensions_and_vertices:
-			galaxy_window = galaxy.Window(width, height, data=self.more_data)
+			galaxy_window = galaxy.Window(self.more_data, width, height)
 			galaxy_window.set_scale(0.5)
 			self.assertEqual(galaxy_window.mini_map_corners, mini_map_corners)
 			galaxy_window.close()
@@ -249,7 +250,8 @@ class TestGalaxyWindow(unittest.TestCase):
 			(200, 200, {'top': 61.82692307692308, 'right': 156.20192307692307, 'left': 147.54807692307693, 'bottom': 53.17307692307692}),
 			(600, 800, {'top': 74.8076923076923, 'right': 564.8557692307693, 'left': 538.8942307692307, 'bottom': 40.19230769230769}))
 		for width, height, mini_map_window_corners in window_dimensions_and_vertices:
-			galaxy_window = galaxy.Window(width, height, data=self.more_data)
+			self.more_data.galaxy_window_state = galaxy.WindowState()
+			galaxy_window = galaxy.Window(self.more_data, width, height)
 			galaxy_window.set_scale(0.5)
 			self.assertEqual(galaxy_window.mini_map_window_corners, mini_map_window_corners)
 			galaxy_window.close()
@@ -262,7 +264,8 @@ class TestGalaxyWindow(unittest.TestCase):
 			(730, 128, 0, (-27.650589566867552, 50.68371862755737)),
 			(2, 2, 31, (0, 102.2439908222284))
 		)
-		galaxy_window = galaxy.Window(1024, 768, data=self.more_data)
+		self.more_data.galaxy_window_state = galaxy.WindowState()
+		galaxy_window = galaxy.Window(self.more_data, 1024, 768)
 		for x, y, scroll_y, new_absolute_center in scroll_data:
 			galaxy_window.on_mouse_scroll(x, y, 0, scroll_y)
 			self.assertEqual(galaxy_window.absolute_center, new_absolute_center)
