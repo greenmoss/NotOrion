@@ -6,6 +6,7 @@ import os
 import galaxy
 import galaxy_objects
 import random
+import utilities
 
 class Choose(object):
 	'Choose parameters for pre-game setup'
@@ -41,16 +42,20 @@ class Choose(object):
 	
 	def on_difficulty_select(self, choice):
 		print choice
+
+		# randomly generate background stars
 		background_stars = []
-		for coordinate in self.choose_object_coordinates(amount=8000):
+		for coordinate in utilities.random_dispersed_coordinates(amount=8000, dispersion=3):
 			color = []
 			for index in range(0,3):
-				color.append(255)
-			# allow one of the bytes to be less, which allows slight coloration
-			color[random.randint(0,2)] = random.randint(64,255)
+				color.append(64)
+			# allow one or two of the bytes to be less, which allows slight coloration
+			color[random.randint(0,2)] = random.randint(32,64)
+			color[random.randint(0,2)] = random.randint(32,64)
 			background_stars.append(
 				galaxy_objects.BackgroundStar(coordinate, color),
 			)
+
 		self.data.galaxy_objects = galaxy_objects.All(
 				# foreground stars
 				[
@@ -66,41 +71,6 @@ class Choose(object):
 			)
 		galaxy.Window(self.data)
 		#self.window.close()
-
-	def choose_object_coordinates(self, bottom=-1000, left=-1000, top=1000, right=1000, amount=500, dispersion=1):
-		'choose and return a set of  non-duplicate coordinates between min/max limits'
-
-		object_coordinates = {}
-		all_used_coordinates = {}
-		# never allow retries to exceed the number of available placement coordinates
-		# permissible retries starts with the full number of available coordinates
-		# and decrements for every used coordinate
-		# actually this is not an accurate way to define all remaining available coordinates
-		# so we're sacrifice accuracy in favor of simplicity
-		permissible_retries = (right-left+1) * (top-bottom+1)
-
-		retry_vector = (random.randint(int(left/10), int(right/10)),random.randint(int(bottom/10), int(top/10)))
-		for i in range(amount):
-			random_coordinate = (random.randint(left, right), random.randint(bottom, top))
-			first_coordinate = random_coordinate
-			retries = 0
-			while all_used_coordinates.has_key(random_coordinate):
-				random_coordinate = (random_coordinate[0]+retry_vector[0], random_coordinate[1]+retry_vector[1])
-				if (random_coordinate == first_coordinate):
-					# retry with a different random vector
-					retry_vector = (random.randint(int(left/10), int(right/10)),random.randint(int(bottom/10), int(top/10)))
-					if retries > permissible_retries:
-						raise Exception, 'ran out of available placement coordinates'
-			chosen = random_coordinate
-			# disallow use of neighbors, out to dispersion distance
-			for x in range(chosen[0]-dispersion+1,chosen[0]+dispersion):
-				for y in range(chosen[1]-dispersion+1,chosen[1]+dispersion):
-					if not all_used_coordinates.has_key((x,y)):
-						all_used_coordinates[(x,y)] = True
-						permissible_retries -= 1
-			object_coordinates[chosen] = True
-
-		return object_coordinates.keys()
 	
 class SetupWindow(pyglet.window.Window):
 
