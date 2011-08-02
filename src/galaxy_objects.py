@@ -339,9 +339,11 @@ class Nebula(ForegroundObject):
 	max_offset = 200
 	min_scale = 0.25
 	max_scale = 4.0
+	min_lobes = 1
+	max_lobes = 6
 
 	def __init__(self, coordinates, color, lobes):
-		if (len(lobes) > 6) or (len(lobes) < 1):
+		if (len(lobes) > self.max_lobes) or (len(lobes) < self.min_lobes):
 			raise RangeException, "number of lobes must be between 1 and 6"
 		if not self.lobe_colors.has_key(color):
 			raise DataError, "invalid primary color: %s"%color

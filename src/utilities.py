@@ -4,7 +4,7 @@ import random
 
 class RangeException(Exception): pass
 
-def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000, amount=500, dispersion=1, seed=None):
+def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000, amount=500, dispersion=1, seed=None, existing=None):
 	'within given min/max limits, generate a given number of coordinates, guaranteed to be a minimum distance apart'
 
 	if top <= bottom:
@@ -27,7 +27,10 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 	random.seed(seed)
 
 	object_coordinates = {}
-	all_used_coordinates = {}
+	if existing:
+		all_used_coordinates = existing
+	else:
+		all_used_coordinates = {}
 
 	retry_vector = (random.randint(int(left/10), int(right/10)),random.randint(int(bottom/10), int(top/10)))
 	for i in range(amount):
@@ -60,4 +63,4 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 					permissible_retries -= 1
 		object_coordinates[chosen] = True
 
-	return object_coordinates.keys()
+	return (object_coordinates.keys(), all_used_coordinates)
