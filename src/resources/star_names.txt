@@ -6,6 +6,7 @@ Acrux
 Acubens
 Adhafera
 Adhara
+Agena
 Ain
 Aladfar
 Alamak
@@ -45,6 +46,7 @@ Alnasl
 Alnilam
 Alnitak
 Al Niyat
+Alpha Centauri
 Alphard
 Alphecca
 Alpheratz
@@ -65,12 +67,18 @@ Alwaid
 Alya
 Alzir
 Ancha
+Andromedae
 Angetenar
 Ankaa
 Antares
+Antliae
+Apodis
+Aquarii
+Aquilae
 Arcturus
 Arich
 Arided
+Arietis
 Arkab
 Arm
 Arneb
@@ -78,11 +86,13 @@ Arrakis
 Asellus
 Ashlesha
 Askella
+Asmidiske
 Aspidiske
 Asterion
 Atik
 Atlas
 Atria
+Aurigae
 Auva
 Avior
 Azaleh
@@ -90,39 +100,61 @@ Azelfafage
 Azha
 Azimech
 Azmidiske
+Baade
 Baham
+Barnard
 Baten Kaitos
 Becrux
 Beid
 Bellatrix
 Benetnasch
+Bessel
 Betelgeuse
 Betria
+Bezek
 Bharani
 Biham
+Birdun
 Birhan Isat
+Bootis
 Botein
+Borealis
 Brachium
+Bradley
 Bunda
+Cancri
+Camelopardalis
+Canis Majoris
+Canis Minoris
 Canopus
 Capella
 Caph
+Cassiopieiae
 Castor
+Carinae
+Cayrel
 Cebalrai
 Celaeno
+Cephei
 Chara
 Cheleb
 Chertan
 Chort
 Chow
 Cor Caroli
+Corvi
 Cursa
+Crucis
+Cygnus
 Dabih
 Decrux
 Deneb
+Denebola
 Diadem
 Diphda
 Dnoces
+Doradus
+Draconis
 Dschubba
 Dubhe
 Duhr
@@ -132,6 +164,7 @@ Elmuthalleth
 Elnath
 Eltanin
 Enif
+Eridani
 Errai
 Etamin
 Fomalhaut
@@ -140,61 +173,86 @@ Furud
 Gacrux
 Garnet
 Gatria
+Geminorum
 Gemma
 Gianfar
 Giedi
-Gienah Gurab
 Giennah
 Girtab
+Gliese
 Gomeisa
 Gorgonea Tertia
+Gould
 Graffias
 Grassias
+Groombridge
+Gruid
 Grumium
 Hadir
 Haedus
 Haldus
 Hamal
 Hassaleh
-Hydrus
+Herculis
 Heka
 Heze
 Hoedus
 Homam
 Hyadum
 Hydrobius
+Hydrus
+Indi
+Innes
 Izar
 Jabbah
 Jih
 Kabdhilinan
 Kaffaljidhma
 Kajam
+Kakkab
+Kapteyn
 Kastra
 Kaus
 Keid
+Kepler
 Kitalpha
 Kleeia
 Kochab
 Kornephoros
+Koo She
 Kraz
+Krueger
+Krzeminski
 Ksora
 Kullat Nunu
 Kuma
+Lacaille
+Lacertae
+Lalande
 Lanx
 La Superba
+Leonis
+Leporis
 Lesath
 Lucida Anseris
+Luyten
+Lyrae
 Maasym
 Mahasim
 Maia
 Marfark
 Marfik
+Marfikent
+Markeb
 Matar
+Mayer
 Mebsuta
 Media
 Megrez
 Meissa
 Mekbuda
+Melnick
+Men
 Menchib
 Menkab
 Menkalinan
@@ -204,6 +262,7 @@ Merga
 Merope
 Mesarthim
 Miaplacidus
+Microscopii
 Mimosa
 Minchir
 Minelava
@@ -216,11 +275,13 @@ Mirfak
 Mirzam
 Misam
 Mizar
+Monocerotis
 Mothallah
 Muliphein
 Muphrid
 Murzim
 Muscida
+Nair al Zaurak
 Naos
 Nashira
 Navi
@@ -228,13 +289,23 @@ Nekkar
 Nembus
 Neshmet
 Nihal
+Normae
 Nunki
 Nusakan
 Okul
+Orionis
 Peacock
 Phact
 Phad
+Phecda
 Pherkad
+Pegasi
+Peony
+Persei
+Piazzi
+Piscium
+Pistol
+Plaskett
 Pleione
 Polaris
 Pollux
@@ -242,8 +313,9 @@ Porrima
 Praecipua
 Procyon
 Propus
-Centauri
+Przbylski
 Pulcherrima
+Puppis
 Rana
 Ras Algethi
 Ras Alhague
@@ -253,10 +325,12 @@ Rastaban
 Ras Thaoum
 Regor
 Regulus
+Reticuli
 Rigel
 Rigil Kentaurus
 Rijl al Awwa
 Rotanev
+Ross
 Ruchbah
 Rukbat
 Sabik
@@ -267,6 +341,7 @@ Sadalsuud
 Sadatoni
 Sadira
 Sadr
+Sagitarii
 Saiph
 Salm
 Sargas
@@ -277,6 +352,8 @@ Sceptrum
 Scheat
 Scheddi
 Schedir
+Scorpii
+Scuti
 Segin
 Seginus
 Sham
@@ -284,10 +361,12 @@ Shaula
 Sheliak
 Sinistra
 Sirius
+Sirrah
 Situla
 Skat
 Spica
 Sterope
+Struve
 Sualocin
 Subra
 Suhail
@@ -297,7 +376,10 @@ Tabit
 Talitha
 Tania
 Tarazet
+Tau Ceti
+Tauri
 Taygeta
+Teegarden
 Tegmen
 Terebellum
 Tejat
@@ -308,16 +390,27 @@ Tien Kwan
 Toliman
 Torcularis
 Tseen Kee
+Tsih
 Tureis
+Tycho
 Tyl
 Unuk
+Ursae
 Ushakaron
+Van Biesbroeck
+Van Maanen
 Vega
+Velorum
 Vindemiatrix
+Virginis
 Wasat
 Wazn
 Wei
+Weisse
+Westerlund
 Wezen
+Wolf
+Wray
 Yed
 Yildun
 Zaniah
