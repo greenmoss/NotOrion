@@ -15,11 +15,11 @@ window = pyglet.window.Window(width=1024, height=768)
 )
 (bottom, left, top, right) = (-300, -400, 300, 400)
 print ('bottom, left, top, right: ',(bottom, left, top, right))
-min_length = random.randint(2,20)
-min_length = 2
+dispersion = random.randint(2,20)
+dispersion = 1
 amount = random.randint(2,20)
-amount = 1097
-print 'min_length: %d; amount: %d'%(min_length, amount)
+amount = 4501
+print 'dispersion: %d; amount: %d'%(dispersion, amount)
 
 layer1 = pyglet.graphics.OrderedGroup(0)
 layer2 = pyglet.graphics.OrderedGroup(1)
@@ -35,29 +35,12 @@ batch1.add(4, GL_LINE_LOOP, layer1,
 	( 'c3B', (128,128,128, 128,128,128, 128,128,128, 128,128,128))
 )
 
-rectangles = []
-utilities.recurse_into_rectangle(bottom,left,top,right,amount,min_length,rectangles)
-for index, rect in enumerate(rectangles):
-	r = 256
-	g = 128
+for coordinate in utilities.random_dispersed_coordinates(bottom,left,top,right,amount,dispersion):
 	layer = layer2
-	batch = batch1
-	if index%2:
-		batch = batch2
-		layer = layer3
-	#	r = 128
-	#	g = 256
-	(sub_bottom, sub_left, sub_top, sub_right) = rect
-	# sub rectangles
-	batch.add(6, GL_LINE_LOOP, layer,
-		( 'v2i', (sub_left,sub_bottom, sub_left,sub_bottom, sub_left,sub_top, sub_right,sub_top, sub_right,sub_bottom, sub_right,sub_bottom)),
-		( 'c3B', (r,g,128, r,g,128, r,g,128, r,g,128, r,g,128, r,g,128))
+	batch2.add(1, GL_POINTS, layer,
+		( 'v2i', (coordinate[0], coordinate[1])),
+		( 'c3B', (0, 255, 255))
 	)
-
-# base pixel + margin
-batch2.add(4, GL_QUADS, layer4,
-	( 'v2i', (left,bottom, left,bottom+min_length-1, left+min_length-1,bottom+min_length-1, left+min_length-1,bottom)),
-)
 
 @window.event
 def on_draw():
@@ -70,3 +53,4 @@ def on_draw():
 	batch2.draw()
 
 pyglet.app.run()
+
