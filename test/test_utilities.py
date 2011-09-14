@@ -14,24 +14,39 @@ class TestRandomDispersedCoordinates(unittest.TestCase):
 		"If we pass in too many, too-widely-dispersed coordinates for the given area, should raise an exception."
 		self.assertRaises(utilities.RangeException, utilities.random_dispersed_coordinates, -5, -5, 5, 5, 200)
 		self.assertRaises(utilities.RangeException, utilities.random_dispersed_coordinates, -5, -5, 5, 5, 10, 15)
+	
+	def testDivisionLimits(self):
+		"If we request too many coordinates/divisions, or <= 0, should raise an error."
+		self.assertRaises(utilities.RangeException, utilities.random_dispersed_coordinates, amount=132000)
+		self.assertRaises(utilities.RangeException, utilities.random_dispersed_coordinates, amount=0)
 
-	def testKnownResults(self):
-		"Given a specific seed, random dispersion should produce known set of coordinates."
-		coordinates = utilities.random_dispersed_coordinates(
-			-5, -5, 5, 5,
-			amount=4, dispersion=3, seed=5322
-		)
-		self.assertEqual(coordinates, [(5, -1), (5, -5), (-4, -2), (2, 2)])
-		coordinates = utilities.random_dispersed_coordinates(
-			-20, -30, 10, 35,
-			amount=10, dispersion=10, seed=330
-		)
-		self.assertEqual(coordinates, 
-			[
-				(22, 3), (-23, -18), (-13, -13), (-8, 7), (11, 5),
-				(7, -19), (-29, -1), (-18, 8), (31, -8), (26, -20)
-			]
-		)
+	def testCoordinateCount(self):
+		"The number of coordinates returned should equal the number requested."
+		coordinates = utilities.random_dispersed_coordinates( amount=4, dispersion=3 )
+		self.assertEqual(len(coordinates), 4)
+		coordinates = utilities.random_dispersed_coordinates( amount=5133, dispersion=1 )
+		self.assertEqual(len(coordinates), 5133)
+	
+	def testRectangleDivisions(self):
+		"Divisions of rectangles with known inputs should produce known results."
+		rectangles = []
+		utilities.recurse_into_rectangle(-10, -10, 10, 10, 1, 2, rectangles)
+		self.assertEqual(rectangles, [(-10, -10, 10, 10)])
+		rectangles = []
+		utilities.recurse_into_rectangle(-10, -10, 10, 10, 3, 2, rectangles, seed=1)
+		self.assertEqual(rectangles, [(-10, -1, -2, 10), (-10, -10, -2, -2), (-1, -10, 10, 10)])
+
+	def testMinimumLength(self):
+		"When recursing into a rectangle, a length < 1 should raise an exception."
+		rectangles = []
+		self.assertRaises(utilities.RangeException, utilities.recurse_into_rectangle, -10, -10, 10, 10, 1, 0, rectangles)
+	
+	def testCoordinatesWithinMargin(self):
+		"Given an evenly-divisible rectangle and maximum margins, coordinates should be known."
+		coordinates = utilities.random_dispersed_coordinates( -1, -3, 2, 4, amount=2, dispersion=3 )
+		self.assertEqual(coordinates, [(-2, 0), (2, 0)])
+		coordinates = utilities.random_dispersed_coordinates( 10, 10, 15, 15, amount=4, dispersion=2 )
+		self.assertEqual(coordinates, [(14, 11), (11, 11), (11, 14), (14, 14)])
 
 if __name__ == "__main__":
 	unittest.main()

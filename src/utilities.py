@@ -16,7 +16,7 @@ powers_of_2 = [
 	1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072
 ]
 
-def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000, amount=500, dispersion=1, seed=None):
+def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000, amount=500, dispersion=1, seed=None, debug=False):
 	'within given min/max limits, generate a given number of coordinates, guaranteed to be a minimum distance apart'
 
 	if top <= bottom:
@@ -33,7 +33,7 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 
 	rectangles = []
 	minimum_length = dispersion+1
-	recurse_into_rectangle(bottom, left, top, right, amount, minimum_length, rectangles)
+	recurse_into_rectangle(bottom, left, top, right, amount, minimum_length, rectangles, debug=debug)
 	(margin, remainder) = divmod(dispersion, 2)
 	tr_margin = margin+remainder
 	bl_margin = margin
@@ -45,33 +45,39 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 		right_bound = rectangle[3]-tr_margin
 		x_coord = random.randint(left_bound, right_bound)
 		y_coord = random.randint(bottom_bound, top_bound)
-		object_coordinates.append( (x_coord, y_coord))
+		object_coordinates.append( (x_coord, y_coord) )
 
 	return object_coordinates
 
-def recurse_into_rectangle(bottom, left, top, right, coordinate_count, minimum_length, rectangles):
+def recurse_into_rectangle(bottom, left, top, right, coordinate_count, minimum_length, rectangles, seed=None, debug=False):
 	'''recursively split a rectangle into subrectangles
 	allow sufficient area within each subrectangle for the specified minimum_length
 		if each coordinate has margin 1, the minimum_length is 2, and the area is 4
 			a margin of 2 has minimum_length 3 and area 9, etc
 	continue dividing/recursing until each rectangle contains exactly one coordinate'''
+	if minimum_length < 1:
+		raise RangeException, "minimum_length must be >=1"
 	if coordinate_count == 0:
-		raise Exception, "invalid coordinate_count: 0"
+		raise RangeException, "invalid coordinate_count: 0"
 
 	if coordinate_count == 1:
 		rectangles.append((bottom, left, top, right))
 		return
 	
-	for sub_rectangle, sub_coordinate_count in randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinate_count).iteritems():
+	for sub_rectangle, sub_coordinate_count in randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinate_count, seed, debug).iteritems():
 		recurse_into_rectangle(
 			sub_rectangle[0], sub_rectangle[1], sub_rectangle[2], sub_rectangle[3], 
-			sub_coordinate_count, minimum_length, rectangles
+			sub_coordinate_count, minimum_length, rectangles, seed
 		)
 
-def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinate_count):
+def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinate_count, seed=None, debug=False):
 	'''partition a rectangle into two sub-rectangles
 	such that each has sufficient area to hold "coordinate_count"
 	with area also left over for margins/"minimum_length"'''
+
+	# passing in a seed is useful for testing, but likely nothing else
+	random.seed(seed)
+
 	minimum_area = minimum_length**2 
 
 	coordinate_count1 = int(math.ceil(coordinate_count/2)) 
@@ -115,7 +121,7 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 		remaining_x_chunks = x_chunks-minimum_left_x_chunks-minimum_right_x_chunks
 
 		if remaining_x_chunks < 0:
-			raise Exception, 'insufficient area to hold coordinates of given minimum width'
+			raise RangeException, 'insufficient area to hold coordinates of given minimum width'
 
 		# would eventually be nice to actually use "random", like this:
 		#random_x_chunk_offset = remaining_x_chunks and random.randint(0, remaining_x_chunks-1) 
@@ -124,8 +130,8 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 		# then try not to go below this amount
 		# this would also allow a new parameter "gappiness" to control the permitted range 
 		# offset between "half" and "minimum"
-		# for simpicity's sake, we'll say "random" actually means "half"
-		random_x_chunk_offset = int(math.floor((remaining_x_chunks-1)/2))
+		# for simpicity's sake, we'll say "random" actually returns "half"
+		random_x_chunk_offset = remaining_x_chunks and int(math.floor((remaining_x_chunks-1)/2))
 		random_x_remainder_offset = random.randint(0, x_remainder)
 
 		split_left = left + (minimum_left_x_chunks+random_x_chunk_offset)*minimum_length + random_x_remainder_offset - 1
@@ -159,12 +165,12 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 		remaining_y_chunks = y_chunks-minimum_bottom_y_chunks-minimum_top_y_chunks
 
 		if remaining_y_chunks < 0:
-			raise Exception, 'insufficient area to hold coordinates of given minimum height'
+			raise RangeException, 'insufficient area to hold coordinates of given minimum height'
 
 		# would eventually be nice to actually use "random", like this:
 		#random_y_chunk_offset = remaining_y_chunks and random.randint(0, remaining_y_chunks-1) 
 		# see note above about random_x_chunk_offset 
-		random_y_chunk_offset = int(math.floor((remaining_y_chunks-1)/2))
+		random_y_chunk_offset = remaining_y_chunks and int(math.floor((remaining_y_chunks-1)/2))
 		random_y_remainder_offset = random.randint(0, y_remainder)
 
 		split_bottom = bottom + (minimum_bottom_y_chunks+random_y_chunk_offset)*minimum_length + random_y_remainder_offset - 1
