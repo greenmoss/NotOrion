@@ -48,9 +48,10 @@ class Choose(object):
 	def generate_galaxy_objects(self):
 		'Generate foreground/background stars, black holes, and nebulae'
 		foreground_limits = (-1500,-1500,1500,1500)
-		foreground_dispersion = 175
+		foreground_dispersion = 200
 		foreground_star_count = 50
 		black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+		worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
 
 		# randomly generate background stars
 		background_stars = []
@@ -94,7 +95,7 @@ class Choose(object):
 				),
 			)
 
-		# generate a variable number of black holes, minimum distance from foreground stars
+		# generate black hole objects
 		black_holes = []
 		for coordinate in black_hole_coordinates:
 			black_holes.append(
@@ -151,11 +152,20 @@ class Choose(object):
 				)
 			nebulae.append( galaxy_objects.Nebula(coordinate, color, lobes) )
 
+		# generate worm holes
+		star_indexes = range(len(foreground_stars))
+		worm_holes = []
+		for repeat in range(worm_hole_count):
+			index1 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
+			index2 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
+			worm_holes.append((index1, index2))
+
 		self.data.galaxy_objects = galaxy_objects.All(
 			foreground_stars,
 			background_stars,
 			black_holes,
-			nebulae
+			nebulae,
+			worm_holes
 		)
 		galaxy.Window(self.data)
 		self.window.close()
