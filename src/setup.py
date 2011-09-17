@@ -12,6 +12,26 @@ import sys
 class Choose(object):
 	'Choose parameters for pre-game setup'
 
+	galaxy_age_help_text = """
+Young galaxies have proportionally more white and blue stars. Thus they have more mineral-rich planets, but these planets are likely to be hostile and thus unsuitable for farming.
+
+Mature galaxies have an even mix of all stars. Thus they have an even mix of farming planets vs mineral-rich planets.
+
+Old galaxies have proportionally more red stars and brown dwarves. Thus they have more planets suitable for farming, but these planets are likely to be mineral poor.
+"""
+	galaxy_size_help_text = """
+Galaxy size and number of stars is as follows:
+
+Tiny: 5 x 5 parsecs, 5 stars
+
+Small: 10 x 10 parsecs, 20 stars
+
+Medium: 20 x 20 parsecs, 50 stars
+
+Large: 40 x 40 parsecs, 100 stars
+
+Huge: 80 x 80 parsecs, 200 stars"""
+
 	def __init__(self, data):
 		self.data = data
 		self.window = SetupWindow()
@@ -26,20 +46,8 @@ class Choose(object):
 		)
 		self.window.batch = pyglet.graphics.Batch()
 		self.group = pyglet.graphics.OrderedGroup(0)
-		self.dialog = kytten.Dialog(
-			kytten.TitleFrame(
-				"Choose Game Difficulty",
-				kytten.VerticalLayout([
-					kytten.Menu(
-						options=["Beginner", "Easy", "Normal", "Challenging"],
-						on_select=self.on_difficulty_select
-					)
-				]),
-			),
-			window=self.window, batch=self.window.batch, group=self.group,
-			anchor=kytten.ANCHOR_CENTER,
-			theme=self.theme
-		)
+
+		self.show_difficulty_dialog()
 	
 	def on_difficulty_select(self, choice):
 		if choice == 'Beginner':
@@ -58,6 +66,158 @@ class Choose(object):
 				star_colors=['yellow']
 			)
 			self.window.close()
+
+		else:
+			self.difficulty_dialog.teardown()
+
+			if choice == "Easy":
+				self.galaxy_size = "Small"
+			elif choice == "Normal":
+				self.galaxy_size = "Medium"
+			else: # choice == "Challenging"
+				self.galaxy_size = "Large"
+
+			self.galaxy_age = "Mature"
+
+			self.show_options_dialog()
+
+	def on_galaxy_age_help(self):
+		self.show_help_dialog(self.galaxy_age_help_text)
+
+	def on_galaxy_age_select(self, choice):
+		self.galaxy_age = choice
+
+	def on_galaxy_size_help(self):
+		self.show_help_dialog(self.galaxy_size_help_text)
+
+	def on_galaxy_size_select(self, choice):
+		self.galaxy_size = choice
+	
+	def on_options_continue(self):
+		if self.galaxy_size == 'Tiny':
+			foreground_limits = (-250,-250,250,250)
+			foreground_star_count = 5
+			nebulae_count = random.randint(0,1)
+		elif self.galaxy_size == 'Small':
+			foreground_limits = (-500,-500,500,500)
+			foreground_star_count = 20
+			nebulae_count = random.randint(1,2)
+		elif self.galaxy_size == 'Medium':
+			foreground_limits = (-1000,-1000,1000,1000)
+			foreground_star_count = 50
+			nebulae_count = random.randint(2,5)
+		elif self.galaxy_size == 'Large':
+			foreground_limits = (-2000,-2000,2000,2000)
+			foreground_star_count = 100
+			nebulae_count = random.randint(4,8)
+		else: #self.galaxy_size == 'Huge'
+			foreground_limits = (-4000,-4000,4000,4000)
+			foreground_star_count = 200
+			nebulae_count = random.randint(6,12)
+
+		foreground_dispersion = 100
+		black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+		worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+
+		star_colors = galaxy_objects.ForegroundStar.colors.keys()
+		if self.galaxy_age == 'Young':
+			# weight a lot toward blue/white, a little toward orange/green/yellow
+			star_colors.extend(['white']*10)
+			star_colors.extend(['blue']*10)
+			star_colors.extend(['yellow']*3)
+			star_colors.extend(['green']*3)
+			star_colors.extend(['orange']*3)
+
+		elif self.galaxy_age == 'Mature':
+			# already correct proportions
+			pass
+
+		else: #self.galaxy_age == 'Old'
+			# weight a lot toward red/brown, a little toward orange/green/yellow
+			star_colors.extend(['red']*10)
+			star_colors.extend(['brown']*10)
+			star_colors.extend(['yellow']*3)
+			star_colors.extend(['green']*3)
+			star_colors.extend(['orange']*3)
+
+		self.generate_galaxy_objects(
+			foreground_limits,
+			foreground_dispersion,
+			foreground_star_count,
+			black_hole_count, 
+			worm_hole_count, 
+			nebulae_count,
+			star_colors
+		)
+		self.window.close()
+	
+	def show_difficulty_dialog(self):
+		self.difficulty_dialog = kytten.Dialog(
+			kytten.TitleFrame(
+				"Choose Game Difficulty",
+				kytten.VerticalLayout([
+					kytten.Menu(
+						options=["Beginner", "Easy", "Normal", "Challenging"],
+						on_select=self.on_difficulty_select
+					)
+				]),
+			),
+			window=self.window, batch=self.window.batch, group=self.group,
+			anchor=kytten.ANCHOR_CENTER,
+			theme=self.theme
+		)
+	
+	def show_help_dialog(self, message):
+		# must initially set to None in order to be able to define teardown()
+		self.help_dialog = None
+
+		def teardown():
+			self.help_dialog.teardown()
+
+		self.help_dialog = kytten.Dialog(
+			kytten.Frame(
+				kytten.VerticalLayout([
+					kytten.Document(message, width=400),
+					kytten.Button("Done", on_click=teardown),
+				]),
+			),
+			window=self.window, batch=self.window.batch, group=self.group,
+			anchor=kytten.ANCHOR_CENTER,
+			theme=self.theme
+		)
+
+	def show_options_dialog(self):
+		self.options_dialog = kytten.Dialog(
+			kytten.TitleFrame(
+				"Choose Game Options",
+				kytten.VerticalLayout([
+					kytten.HorizontalLayout([
+						kytten.Label("Galaxy Size"),
+						None,
+						kytten.Dropdown(
+							["Tiny", "Small", "Medium", "Large", "Huge"],
+							selected=self.galaxy_size,
+							on_select=self.on_galaxy_size_select,
+						),
+						kytten.Button("?", on_click=self.on_galaxy_size_help),
+					]),
+					kytten.HorizontalLayout([
+						kytten.Label("Galaxy Age"),
+						None,
+						kytten.Dropdown(
+							["Young", "Mature", "Old"],
+							selected=self.galaxy_age,
+							on_select=self.on_galaxy_age_select,
+						),
+						kytten.Button("?", on_click=self.on_galaxy_age_help),
+					]),
+					kytten.Button("Continue", on_click=self.on_options_continue),
+				]),
+			),
+			window=self.window, batch=self.window.batch, group=self.group,
+			anchor=kytten.ANCHOR_CENTER,
+			theme=self.theme
+		)
 
 	def generate_galaxy_objects(self, foreground_limits, foreground_dispersion, foreground_star_count, black_hole_count=0, worm_hole_count=0, nebulae_count=0, star_colors=None):
 		'Generate foreground/background stars, black holes, and nebulae'
