@@ -42,16 +42,28 @@ class Choose(object):
 		)
 	
 	def on_difficulty_select(self, choice):
-		print choice
-		self.generate_galaxy_objects()
+		if choice == 'Beginner':
+			# simplest: only a few stars, type yellow, no other objects
+			# distribute the stars evenly over a small area
+			foreground_limits = (-250,-250,250,250)
+			foreground_dispersion = 100
+			foreground_star_count = 5
+			#black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+			#worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+			#nebulae_count = random.randint(3,6)
+			self.generate_galaxy_objects(
+				foreground_limits,
+				foreground_dispersion,
+				foreground_star_count,
+				star_colors=['yellow']
+			)
+			self.window.close()
 
-	def generate_galaxy_objects(self):
+	def generate_galaxy_objects(self, foreground_limits, foreground_dispersion, foreground_star_count, black_hole_count=0, worm_hole_count=0, nebulae_count=0, star_colors=None):
 		'Generate foreground/background stars, black holes, and nebulae'
-		foreground_limits = (-1500,-1500,1500,1500)
-		foreground_dispersion = 200
-		foreground_star_count = 50
-		black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
-		worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
+
+		if star_colors == None:
+			star_colors = galaxy_objects.ForegroundStar.colors.keys()
 
 		# randomly generate background stars
 		background_stars = []
@@ -81,7 +93,6 @@ class Choose(object):
 
 		# randomly generate foreground stars
 		foreground_stars = []
-		available_colors = galaxy_objects.ForegroundStar.colors.keys()
 		available_star_names = []
 		with open('resources/star_names.txt') as star_names_file:
 			for line in star_names_file:
@@ -91,7 +102,7 @@ class Choose(object):
 				galaxy_objects.ForegroundStar(
 					coordinate, 
 					available_star_names.pop(random.randint(0, len(available_star_names)-1)), 
-					available_colors[random.randint(0, len(available_colors)-1)]
+					star_colors[random.randint(0, len(star_colors)-1)]
 				),
 			)
 
@@ -116,41 +127,42 @@ class Choose(object):
 		]
 		nebula_permutations_index = random.randint(0,3)
 
-		for coordinate in utilities.random_dispersed_coordinates(
-			foreground_limits[0], foreground_limits[1], foreground_limits[2], foreground_limits[3],
-			amount=random.randint(3,6),
-			dispersion=galaxy_objects.Nebula.max_offset*2
-		):
-			color = nebula_colors[nebula_color_index]
-			# cycle through all nebula colors
-			nebula_color_index -= 1
-			if nebula_color_index < 0:
-				nebula_color_index = len(nebula_colors)-1
-
-			lobe_count = random.randint(min_lobes, max_lobes)
-			lobes = []
-			for lobe_coordinate in utilities.random_dispersed_coordinates(
-				-nebula_offset, -nebula_offset, nebula_offset, nebula_offset,
-				amount = lobe_count,
-				dispersion = 15
+		if nebulae_count:
+			for coordinate in utilities.random_dispersed_coordinates(
+				foreground_limits[0], foreground_limits[1], foreground_limits[2], foreground_limits[3],
+				amount=nebulae_count,
+				dispersion=galaxy_objects.Nebula.max_offset*2
 			):
-				# cycle through all lobe secondary/sprite combinations
-				secondary_sprite = nebula_secondary_sprite_permutations[nebula_permutations_index]
-				nebula_permutations_index -= 1
-				if nebula_permutations_index < 0:
-					nebula_permutations_index = 3
+				color = nebula_colors[nebula_color_index]
+				# cycle through all nebula colors
+				nebula_color_index -= 1
+				if nebula_color_index < 0:
+					nebula_color_index = len(nebula_colors)-1
 
-				lobes.append(
-					(
-						random.randint(0,1),
-						random.randint(1,2),
-						lobe_coordinate,
-						random.randint(0,359),
-						# use exponentiation to ensure floats less than 1.0 are as common as floats greater than 1.0
-						10**random.uniform(-0.3, 0.3)
+				lobe_count = random.randint(min_lobes, max_lobes)
+				lobes = []
+				for lobe_coordinate in utilities.random_dispersed_coordinates(
+					-nebula_offset, -nebula_offset, nebula_offset, nebula_offset,
+					amount = lobe_count,
+					dispersion = 15
+				):
+					# cycle through all lobe secondary/sprite combinations
+					secondary_sprite = nebula_secondary_sprite_permutations[nebula_permutations_index]
+					nebula_permutations_index -= 1
+					if nebula_permutations_index < 0:
+						nebula_permutations_index = 3
+
+					lobes.append(
+						(
+							random.randint(0,1),
+							random.randint(1,2),
+							lobe_coordinate,
+							random.randint(0,359),
+							# use exponentiation to ensure floats less than 1.0 are as common as floats greater than 1.0
+							10**random.uniform(-0.3, 0.3)
+						)
 					)
-				)
-			nebulae.append( galaxy_objects.Nebula(coordinate, color, lobes) )
+				nebulae.append( galaxy_objects.Nebula(coordinate, color, lobes) )
 
 		# generate worm holes
 		star_indexes = range(len(foreground_stars))
@@ -168,7 +180,6 @@ class Choose(object):
 			worm_holes
 		)
 		galaxy.Window(self.data)
-		self.window.close()
 	
 class SetupWindow(pyglet.window.Window):
 
