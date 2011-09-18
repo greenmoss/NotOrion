@@ -121,24 +121,26 @@ Huge: 80 x 80 parsecs, 200 stars"""
 
 		star_colors = galaxy_objects.ForegroundStar.colors.keys()
 		if self.galaxy_age == 'Young':
-			# weight a lot toward blue/white, a little toward orange/green/yellow
-			star_colors.extend(['white']*10)
-			star_colors.extend(['blue']*10)
-			star_colors.extend(['yellow']*3)
-			star_colors.extend(['green']*3)
+			# weight towards white/blue
+			star_colors.extend(['white']*8)
+			star_colors.extend(['blue']*7)
+			star_colors.extend(['green']*5)
+			star_colors.extend(['yellow']*4)
 			star_colors.extend(['orange']*3)
+			star_colors.extend(['red']*1)
 
 		elif self.galaxy_age == 'Mature':
 			# already correct proportions
 			pass
 
 		else: #self.galaxy_age == 'Old'
-			# weight a lot toward red/brown, a little toward orange/green/yellow
-			star_colors.extend(['red']*10)
-			star_colors.extend(['brown']*10)
-			star_colors.extend(['yellow']*3)
+			# weight towards brown/red
+			star_colors.extend(['brown']*8)
+			star_colors.extend(['red']*7)
+			star_colors.extend(['orange']*5)
+			star_colors.extend(['yellow']*4)
 			star_colors.extend(['green']*3)
-			star_colors.extend(['orange']*3)
+			star_colors.extend(['blue']*1)
 
 		self.generate_galaxy_objects(
 			foreground_limits,
