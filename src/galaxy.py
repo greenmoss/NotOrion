@@ -18,15 +18,15 @@ class WindowState(object):
 class Window(pyglet.window.Window):
 	'All methods that are attached to the galaxy window.'
 	max_dimension = 5000
-	min_dimension = 50
+	min_dimension = 400
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
-	# empty margin around outermost foreground galaxy objects, in window pixels
-	window_margin = 100
 	# mini-map offset, from right/bottom
 	mini_map_offset = 20
 	# size of mini-map; depending on which is greater, this will either be width or height
 	mini_map_size = 75
+	# minimum distance between foreground stars/black holes
+	minimum_foreground_separation = 10
 
 	def __init__(self, data, width=1024, height=768):
 		self.data = data
@@ -38,8 +38,8 @@ class Window(pyglet.window.Window):
 			width = self.data.galaxy_window_state.width
 			height = self.data.galaxy_window_state.height
 
-		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
-			raise RangeException, "width and height must be between 50 and 5000"
+		if not (self.min_dimension <= width <= self.max_dimension) or not (self.min_dimension <= height <= self.max_dimension):
+			raise RangeException, "width and height must be between 400 and 5000"
 		super(Window, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
 
 		# MUST have galaxy_objects
@@ -79,26 +79,30 @@ class Window(pyglet.window.Window):
 	def derive_mini_map(self):
 		# mini-map play area dimensions should only need to be calculated once
 		if not hasattr(self, 'mini_map_width'):
-			if self.foreground_bounding_x > self.foreground_bounding_y:
+			map_height = self.foreground_bounding_y
+			map_width = self.foreground_bounding_x
+			ratio = map_height/map_width
+			if map_width > map_height:
 				self.mini_map_width = self.mini_map_size
-				self.mini_map_height = self.foreground_bounding_y/self.foreground_bounding_x*self.mini_map_size
-			else:
+				self.mini_map_height = self.mini_map_width*ratio
+			else: #map_width <= map_height
 				self.mini_map_height = self.mini_map_size
-				self.mini_map_width = self.foreground_bounding_x/self.foreground_bounding_y*self.mini_map_size
+				self.mini_map_width = self.mini_map_height/ratio
 			# ratio of absolute coordinates to mini-map coordinates
-			# *should* be the same for width/bounding_x as height/bounding_y
-			self.mini_map_to_absolute = self.mini_map_width/(self.foreground_bounding_x-(self.window_margin*2.0))/self.maximum_scale
+			# cached as a property of self
+			self.mini_map_ratio = self.mini_map_width/map_width
 
 		# where is the foreground window on the playing field?
 		right_top = self.window_to_absolute((self.width, self.height))
 		left_bottom = self.window_to_absolute((0, 0))
 
 		# hide the mini-map if the entire playing field is visible
+		# the integer modifiers ensure the mini-map becomes visible whenever a portion of a star or its label moves offscreen
 		if (
-			(right_top[0] >= self.foreground_bounding_x+self.window_margin) and
-			(right_top[1] >= self.foreground_bounding_y+self.window_margin) and
-			(left_bottom[0] <= -self.foreground_bounding_x-self.window_margin) and
-			(left_bottom[1] <= -self.foreground_bounding_y-self.window_margin)
+			(right_top[0] >= self.foreground_bounding_x+60) and
+			(right_top[1] >= self.foreground_bounding_y+20) and
+			(left_bottom[0] <= -self.foreground_bounding_x-60) and
+			(left_bottom[1] <= -self.foreground_bounding_y-40)
 		):
 			self.mini_map_visible = False
 			return
@@ -113,25 +117,27 @@ class Window(pyglet.window.Window):
 		}
 
 		mini_map_center = (
-			self.mini_map_corners['right']-(self.mini_map_corners['right']-self.mini_map_corners['left'])/2,
-			self.mini_map_corners['top']-(self.mini_map_corners['top']-self.mini_map_corners['bottom'])/2,
+			self.mini_map_corners['right']-(self.mini_map_corners['right']-self.mini_map_corners['left'])/2.0,
+			self.mini_map_corners['top']-(self.mini_map_corners['top']-self.mini_map_corners['bottom'])/2.0,
 		)
 
 		# position of viewing area within playing field
 		self.mini_map_window_corners = {
-			'top':mini_map_center[1]+(right_top[1]*self.mini_map_to_absolute),
-			'right':mini_map_center[0]+(right_top[0]*self.mini_map_to_absolute),
-			'bottom':mini_map_center[1]+(left_bottom[1]*self.mini_map_to_absolute),
-			'left':mini_map_center[0]+(left_bottom[0]*self.mini_map_to_absolute),
+			'top':mini_map_center[1]+int((right_top[1])*self.mini_map_ratio/2.0),
+			'right':mini_map_center[0]+int((right_top[0])*self.mini_map_ratio/2.0),
+			'bottom':mini_map_center[1]+int((left_bottom[1])*self.mini_map_ratio/2.0),
+			'left':mini_map_center[0]+int((left_bottom[0])*self.mini_map_ratio/2.0),
 		}
 
 		# ensure mini_map_window_corners do not fall outside mini_map_corners
-		for corner in ['top', 'right']:
-			if self.mini_map_window_corners[corner] > self.mini_map_corners[corner]:
-				self.mini_map_window_corners[corner] = self.mini_map_corners[corner]
-		for corner in ['bottom', 'left']:
-			if self.mini_map_window_corners[corner] < self.mini_map_corners[corner]:
-				self.mini_map_window_corners[corner] = self.mini_map_corners[corner]
+		if not(self.mini_map_corners['bottom'] < self.mini_map_window_corners['top'] < self.mini_map_corners['top']):
+			self.mini_map_window_corners['top'] = self.mini_map_corners['top']
+		if not(self.mini_map_corners['left'] < self.mini_map_window_corners['right'] < self.mini_map_corners['right']):
+			self.mini_map_window_corners['right'] = self.mini_map_corners['right']
+		if not(self.mini_map_corners['top'] > self.mini_map_window_corners['bottom'] > self.mini_map_corners['bottom']):
+			self.mini_map_window_corners['bottom'] = self.mini_map_corners['bottom']
+		if not(self.mini_map_corners['right'] > self.mini_map_window_corners['left'] > self.mini_map_corners['left']):
+			self.mini_map_window_corners['left'] = self.mini_map_corners['left']
 
 		# construct/update mini-map and mini-window vertex lists
 		self.mini_map_black_bg_vertex_list = pyglet.graphics.vertex_list( 4,
@@ -207,11 +213,13 @@ class Window(pyglet.window.Window):
 		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground galaxy objects.
 		self.minimum_dimension = (width < height) and width or height
 			
-		self.minimum_scale = self.data.galaxy_objects.min_distance/self.minimum_dimension*2.0
+		self.minimum_scale = self.data.galaxy_objects.min_distance/self.minimum_dimension*5.0
 		self.maximum_scale = self.data.galaxy_objects.max_distance/self.minimum_dimension
-		# 35 is the minimum window distance between each star sprite
-		if(self.data.galaxy_objects.min_distance/self.maximum_scale < 35.0):
-			self.maximum_scale = self.data.galaxy_objects.min_distance/35
+		# restrict zooming out to the minimum distance between foreground sprites
+		if(self.data.galaxy_objects.min_distance/self.maximum_scale < self.minimum_foreground_separation):
+			self.maximum_scale = self.data.galaxy_objects.min_distance/self.minimum_foreground_separation
+		if self.minimum_scale > self.maximum_scale:
+			self.maximum_scale = self.minimum_scale
 
 	def set_center(self, coordinates):
 		"Set the window center, for rendering foreground objects."
@@ -244,11 +252,12 @@ class Window(pyglet.window.Window):
 		elif (foreground_scale > self.maximum_scale):
 			foreground_scale = self.maximum_scale
 
+		# the integer modifiers ensure all stars and labels remain visible at the limits of the pan area
 		self.center_limits = {
-			'top':self.foreground_bounding_y/foreground_scale+self.window_margin-self.half_height,
-			'right':self.foreground_bounding_x/foreground_scale+self.window_margin-self.half_width,
-			'bottom':-self.foreground_bounding_y/foreground_scale-self.window_margin+self.half_height,
-			'left':-self.foreground_bounding_x/foreground_scale-self.window_margin+self.half_width,
+			'top':self.foreground_bounding_y/foreground_scale+110-self.half_height,
+			'right':self.foreground_bounding_x/foreground_scale+140-self.half_width,
+			'bottom':-self.foreground_bounding_y/foreground_scale-120+self.half_height,
+			'left':-self.foreground_bounding_x/foreground_scale-140+self.half_width,
 		}
 		if self.center_limits['top'] < self.center_limits['bottom']:
 			self.center_limits['top'] = 0
@@ -364,8 +373,19 @@ class Window(pyglet.window.Window):
 		)
 	
 	def on_resize(self, width, height):
-		if not (self.min_dimension < width < self.max_dimension) or not (self.min_dimension < height < self.max_dimension):
-			raise RangeException, "width and height must be between 50 and 5000"
+		# ensure resized window size falls within acceptable limits
+		if width < self.min_dimension:
+			self.width = self.min_dimension
+			width = self.min_dimension
+		if height < self.min_dimension:
+			self.height = self.min_dimension
+			height = self.min_dimension
+		if width > self.max_dimension:
+			self.width = self.max_dimension
+			width = self.max_dimension
+		if height > self.max_dimension:
+			self.height = self.max_dimension
+			height = self.max_dimension
 
 		# reset openGL attributes to match new window dimensions
 		glViewport(0, 0, width, height)
