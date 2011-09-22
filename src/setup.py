@@ -13,11 +13,11 @@ class Choose(object):
 	'Choose parameters for pre-game setup'
 
 	galaxy_age_help_text = """
-Young galaxies have proportionally more white and blue stars. Thus they have more mineral-rich planets, but these planets are likely to be hostile and thus unsuitable for farming.
+Young galaxies have proportionally more white and blue stars. Thus they have more mineral-rich planets, and fewer planets suitable for farming. They also have more nebulae and fewer black holes.
 
-Mature galaxies have an even mix of all stars. Thus they have an even mix of farming planets vs mineral-rich planets.
+Mature galaxies have an even mix of all stars. Thus they have an even mix of farming planets and mineral-rich planets.
 
-Old galaxies have proportionally more red stars and brown dwarves. Thus they have more planets suitable for farming, but these planets are likely to be mineral poor.
+Old galaxies have proportionally more red stars and brown dwarves. Thus they have more planets suitable for farming, and fewer mineral-rich planets. They also have more black holes and fewer nebulae.
 """
 	galaxy_size_help_text = """
 Galaxy size and number of stars is as follows:
@@ -121,6 +121,8 @@ Huge: 80 x 80 parsecs, 200 stars"""
 
 		star_colors = galaxy_objects.ForegroundStar.colors.keys()
 		if self.galaxy_age == 'Young':
+			black_hole_count = int(black_hole_count*0.75)
+			nebulae_count = int(nebulae_count*1.5)
 			# weight towards white/blue
 			star_colors.extend(['white']*8)
 			star_colors.extend(['blue']*7)
@@ -134,6 +136,8 @@ Huge: 80 x 80 parsecs, 200 stars"""
 			pass
 
 		else: #self.galaxy_age == 'Old'
+			black_hole_count = int(black_hole_count*1.5)
+			nebulae_count = int(nebulae_count*0.75)
 			# weight towards brown/red
 			star_colors.extend(['brown']*8)
 			star_colors.extend(['red']*7)
