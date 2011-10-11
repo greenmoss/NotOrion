@@ -352,7 +352,54 @@ class Window(pyglet.window.Window):
 		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
 
 	def on_mouse_press(self, x, y, button, modifiers):
-		pass
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+		glLoadIdentity()
+
+		print self.absolute_center
+
+		# draw the foreground object masks
+		self.data.galaxy_objects.draw_masks(self.foreground_scale)
+
+		# convert click coordinates into absolute coordinates
+		print self.foreground_scale
+		print ("click x,y: ",(x,y))
+		absolute_click = self.window_to_absolute((x,y))
+		print ("absolute click x,y: ",absolute_click)
+		absolute_click = (int(absolute_click[0]/self.foreground_scale),int(absolute_click[1]/self.foreground_scale))
+		print ("int/scaled absolute click x,y: ",absolute_click)
+
+		for star in self.data.galaxy_objects.named_stars:
+			print "name: %s"%star.name
+			print ("x,y: ",(star.sprite.x, star.sprite.y))
+			print ("sprite_image_mask_color: ",star.sprite_image_mask.color)
+
+		read_margin = 2
+		length = (read_margin*2)+1
+		area = length * length
+		read_x = absolute_click[0]-read_margin
+		read_y = absolute_click[1]-read_margin
+		pixel_data_length = 4 * area # 4, one for each byte: R, G, B, A
+		ctypes_buffer=(GLubyte * pixel_data_length)()
+		glReadBuffer(GL_BACK)
+		glReadPixels(read_x,read_y,length,length,GL_RGBA,GL_UNSIGNED_BYTE,ctypes_buffer)
+		print ctypes_buffer
+		colors = []
+		bytes = []
+		for byte_position in range(area):
+			ctypes_position = byte_position*4
+			colors.append(
+				(
+					ctypes_buffer[ctypes_position], # R component
+					ctypes_buffer[ctypes_position+1], # G component
+					ctypes_buffer[ctypes_position+2], # B component
+					#ctypes_buffer[ctypes_position+3] # A component, but this is not needed
+				)
+			)
+		print "Colors"
+		for row in range(length-1, -1, -1):
+			begin = row*length
+			end = begin + length
+			print colors[begin:end]
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		prescale_absolute_mouse = self.window_to_absolute((x,y))

@@ -1,6 +1,7 @@
 from __future__ import division
 import pyglet
 import math
+import struct # for pack/unpack operations on byte representations of images
 
 class MissingDataException(Exception): pass
 class DataError(Exception): pass
@@ -19,6 +20,11 @@ class All(object):
 	black_holes_group = pyglet.graphics.OrderedGroup(1)
 	stars_group = pyglet.graphics.OrderedGroup(2)
 	labels_group = pyglet.graphics.OrderedGroup(3)
+
+	# masks, for color picking
+	sprite_masks_batch = pyglet.graphics.Batch()
+	sprite_masks_group = pyglet.graphics.OrderedGroup(100)
+
 	min_foreground_separation = 10
 
 	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[], worm_holes=[]):
@@ -98,6 +104,12 @@ class All(object):
 				raise RangeException, "both ends of wormhole must be within list of existing stars"
 			self.worm_holes.append(WormHole(self.named_stars[endpoint1], self.named_stars[endpoint2]))
 
+		# assign unique sprite mask colors
+		id_color = 255
+		for scalable in self.scalable_objects:
+			scalable.sprite_image_mask.color = (id_color,id_color,id_color)
+			id_color -= 80
+
 		self.scaling_factor = None
 
 	def constitute_background_star_vertices(self):
@@ -107,9 +119,8 @@ class All(object):
 			('c3B/static', self.background_star_colors)
 		)
 	
-	def draw(self, scaling_factor):
-		"Draw all galaxy objects"
-		# if we are not at the same scaling factor, recalculate scales
+	def rescale(self, scaling_factor):
+		"Recalculate scales if necessary"
 		if not (self.scaling_factor == scaling_factor):
 			self.scaling_factor = scaling_factor
 			for star in self.named_stars:
@@ -121,10 +132,20 @@ class All(object):
 			for worm_hole in self.worm_holes:
 				worm_hole.scale_coordinates()
 
+	def draw(self, scaling_factor):
+		"Draw all galaxy objects"
+		self.rescale(scaling_factor)
+
 		self.sprites_batch1.draw()
 		for worm_hole in self.worm_holes:
 			worm_hole.vertex_list.draw(pyglet.gl.GL_LINES)
 		self.sprites_batch2.draw()
+	
+	def draw_masks(self, scaling_factor):
+		"Draw all galaxy object masks"
+		self.rescale(scaling_factor)
+
+		self.sprite_masks_batch.draw()
 
 	def normalize(self):
 		'Force extreme foreground objects to be equidistant from (0,0)'
@@ -157,6 +178,7 @@ class All(object):
 		black_hole_rotation_delta = 18.*dt
 		for black_hole in self.black_holes:
 			black_hole.sprite.rotation -= black_hole_rotation_delta
+			black_hole.sprite_image_mask.rotation = black_hole.sprite.rotation
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
@@ -215,6 +237,7 @@ class ScaledForegroundObject(ForegroundObject):
 
 	def constitute_scaled_foreground_sprite(self):
 		'sprites must be reconstituted after pickling'
+		print self.image_file
 		image = pyglet.resource.image(self.image_file)
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
@@ -226,16 +249,44 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite.group = self.group
 		self.sprite.scale = 0.1
 
+		mask = pyglet.image.create(image.width, image.height)
+		image_data = image.get_image_data()
+		pixel_bytes = image_data.get_data('RGBA', image_data.width * 4)
+		mask_bytes = ''
+		for position in range(int(len(pixel_bytes)/4)):
+			bytes = struct.unpack_from('4c', pixel_bytes, 4*position)
+
+			# alpha channel is partially opaque, set alpha to 255
+			if ord(bytes[3]) > 0:
+				mask_bytes += '\xff\xff\xff\xff'
+
+			# alpha channel is fully transparent, set alpha to 0
+			else:
+				mask_bytes += '\xff\xff\xff\x00'
+		mask.image_data.set_data('RGBA', image_data.width * 4, mask_bytes)
+		self.sprite_image_mask = pyglet.sprite.Sprite(mask.texture,
+			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
+		)
+
+		self.sprite_image_mask.image.anchor_x = self.sprite_origin[0]
+		self.sprite_image_mask.image.anchor_y = self.sprite_origin[1]
+		self.sprite_image_mask.batch = self.sprite_masks_batch
+		self.sprite_image_mask.group = self.sprite_masks_group
+		self.sprite_image_mask.scale = 0.1
+
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
 		self.sprite_coordinates = (self.coordinates[0]/scaling_factor, self.coordinates[1]/scaling_factor)
 		self.sprite.x = self.sprite_coordinates[0]
 		self.sprite.y = self.sprite_coordinates[1]
+		self.sprite_image_mask.x = self.sprite_coordinates[0]
+		self.sprite_image_mask.y = self.sprite_coordinates[1]
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
 		out_dict = self.__dict__.copy()
 		del out_dict['sprite']
+		del out_dict['sprite_image_mask']
 		return(out_dict)
 	
 	def __setstate__(self, dict):
@@ -315,11 +366,13 @@ class BlackHole(ScaledForegroundObject):
 		super(BlackHole, self).__init__(coordinates, self.image_file, self.black_holes_group)
 		self.initial_rotation = initial_rotation
 		self.sprite.rotation = self.initial_rotation
+		self.sprite_image_mask.rotation = self.initial_rotation
 	
 	def __setstate__(self, dict):
 		"Reconstitute unpicklable attributes"
 		super(BlackHole, self).__setstate__(dict)
 		self.sprite.rotation = self.initial_rotation
+		self.sprite_image_mask.rotation = self.initial_rotation
 
 class Nebula(ForegroundObject):
 	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:
