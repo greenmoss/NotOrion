@@ -355,7 +355,14 @@ class Window(pyglet.window.Window):
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 		glLoadIdentity()
 
-		print self.absolute_center
+		glPushMatrix()
+
+		# in normal rendered scene, we use gluLookAt
+		# but this won't work with back buffer
+		# so instead we'll use glTranslated
+		translate_x = int(self.half_width - self.absolute_center[0])
+		translate_y = int(self.half_height - self.absolute_center[1])
+		glTranslated(translate_x,translate_y,0)
 
 		# draw the foreground object masks
 		self.data.galaxy_objects.draw_masks(self.foreground_scale)
@@ -376,8 +383,8 @@ class Window(pyglet.window.Window):
 		read_margin = 2
 		length = (read_margin*2)+1
 		area = length * length
-		read_x = absolute_click[0]-read_margin
-		read_y = absolute_click[1]-read_margin
+		read_x = absolute_click[0]-read_margin+translate_x
+		read_y = absolute_click[1]-read_margin+translate_y
 		pixel_data_length = 4 * area # 4, one for each byte: R, G, B, A
 		ctypes_buffer=(GLubyte * pixel_data_length)()
 		glReadBuffer(GL_BACK)
@@ -400,6 +407,8 @@ class Window(pyglet.window.Window):
 			begin = row*length
 			end = begin + length
 			print colors[begin:end]
+
+		glPopMatrix()
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		prescale_absolute_mouse = self.window_to_absolute((x,y))

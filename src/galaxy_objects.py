@@ -24,6 +24,8 @@ class All(object):
 	# masks, for color picking
 	sprite_masks_batch = pyglet.graphics.Batch()
 	sprite_masks_group = pyglet.graphics.OrderedGroup(100)
+	# ensure mask bitmaps are only calculated once per bitmap path
+	mask_bitmaps = {}
 
 	min_foreground_separation = 10
 
@@ -104,13 +106,36 @@ class All(object):
 				raise RangeException, "both ends of wormhole must be within list of existing stars"
 			self.worm_holes.append(WormHole(self.named_stars[endpoint1], self.named_stars[endpoint2]))
 
-		# assign unique sprite mask colors
-		id_color = 255
-		for scalable in self.scalable_objects:
-			scalable.sprite_image_mask.color = (id_color,id_color,id_color)
-			id_color -= 80
-
 		self.scaling_factor = None
+
+		self.assign_pick_colors()
+
+	def assign_pick_colors(self):
+		'For color mouse picking, assign a unique color to each pickable object'
+
+		# assign unique sprite mask colors
+		red,green,blue = 255,255,255
+		for scalable in self.scalable_objects:
+			scalable.sprite_image_mask.color = (red,green,blue)
+			(red,green,blue) = self.get_next_mask_color(red,green,blue)
+
+	def get_next_mask_color(self, red, green, blue):
+		'Decrement through mask colors, always returning one less than was given'
+		red -= 1
+		# "wrap" red, then green, then blue
+		if red < 0:
+			red = 255
+			green -= 1
+		if green < 0:
+			green = 255
+			blue -= 1
+		if blue < 0:
+			# we'd have to have many millions of objects to get here
+			# with that many objects, this game would have already encountered other issues
+			# so it is very unlikely we'll ever hit this condition
+			raise RangeException, "ran out of available ID colors"
+
+		return (red,green,blue)
 
 	def constitute_background_star_vertices(self):
 		self.background_vertex_list = pyglet.graphics.vertex_list(
@@ -161,7 +186,7 @@ class All(object):
 
 	def derive_bounding_lines(self):
 		'Find bounding lines that contain all scalable objects.'
-		(self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y) = [0, 0, 0, 0]
+		self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y = 0, 0, 0, 0
 		for scalable in self.scalable_objects:
 			if scalable.coordinates[0] < self.left_bounding_x:
 				self.left_bounding_x = scalable.coordinates[0]
@@ -190,6 +215,7 @@ class All(object):
 		"Reconstitute unpicklable attributes"
 		self.__dict__.update(dict)
 		self.constitute_background_star_vertices()
+		self.assign_pick_colors()
 
 class BackgroundStar(All):
 	'A simplified star for the background, to be drawn only as a point source'
@@ -237,7 +263,6 @@ class ScaledForegroundObject(ForegroundObject):
 
 	def constitute_scaled_foreground_sprite(self):
 		'sprites must be reconstituted after pickling'
-		print self.image_file
 		image = pyglet.resource.image(self.image_file)
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
@@ -249,25 +274,31 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite.group = self.group
 		self.sprite.scale = 0.1
 
-		mask = pyglet.image.create(image.width, image.height)
-		image_data = image.get_image_data()
-		pixel_bytes = image_data.get_data('RGBA', image_data.width * 4)
-		mask_bytes = ''
-		for position in range(int(len(pixel_bytes)/4)):
-			bytes = struct.unpack_from('4c', pixel_bytes, 4*position)
+		if self.mask_bitmaps.has_key(self.image_file):
+			# reuse existing bitmap
+			mask = self.mask_bitmaps[image_file]
 
-			# alpha channel is partially opaque, set alpha to 255
-			if ord(bytes[3]) > 0:
-				mask_bytes += '\xff\xff\xff\xff'
+		else:
+			# generate new bitmap
+			mask = pyglet.image.create(image.width, image.height)
+			image_data = image.get_image_data()
+			pixel_bytes = image_data.get_data('RGBA', image_data.width * 4)
+			mask_bytes = ''
+			for position in range(int(len(pixel_bytes)/4)):
+				bytes = struct.unpack_from('4c', pixel_bytes, 4*position)
 
-			# alpha channel is fully transparent, set alpha to 0
-			else:
-				mask_bytes += '\xff\xff\xff\x00'
-		mask.image_data.set_data('RGBA', image_data.width * 4, mask_bytes)
+				# alpha channel is partially opaque, set alpha to 255
+				if ord(bytes[3]) > 0:
+					mask_bytes += '\xff\xff\xff\xff'
+
+				# alpha channel is fully transparent, set alpha to 0
+				else:
+					mask_bytes += '\xff\xff\xff\x00'
+			mask.image_data.set_data('RGBA', image_data.width * 4, mask_bytes)
+
 		self.sprite_image_mask = pyglet.sprite.Sprite(mask.texture,
 			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
 		)
-
 		self.sprite_image_mask.image.anchor_x = self.sprite_origin[0]
 		self.sprite_image_mask.image.anchor_y = self.sprite_origin[1]
 		self.sprite_image_mask.batch = self.sprite_masks_batch
