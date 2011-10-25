@@ -360,25 +360,16 @@ class Window(pyglet.window.Window):
 		# in normal rendered scene, we use gluLookAt
 		# but this won't work with back buffer
 		# so instead we'll use glTranslated
-		translate_x = int(self.half_width - self.absolute_center[0])
-		translate_y = int(self.half_height - self.absolute_center[1])
+		translate_x = int(self.half_width - self.absolute_center[0] - 1)
+		translate_y = int(self.half_height - self.absolute_center[1] - 1)
 		glTranslated(translate_x,translate_y,0)
 
 		# draw the foreground object masks
 		self.data.galaxy_objects.draw_masks(self.foreground_scale)
 
 		# convert click coordinates into absolute coordinates
-		print self.foreground_scale
-		print ("click x,y: ",(x,y))
 		absolute_click = self.window_to_absolute((x,y))
-		print ("absolute click x,y: ",absolute_click)
 		absolute_click = (int(absolute_click[0]/self.foreground_scale),int(absolute_click[1]/self.foreground_scale))
-		print ("int/scaled absolute click x,y: ",absolute_click)
-
-		for star in self.data.galaxy_objects.named_stars:
-			print "name: %s"%star.name
-			print ("x,y: ",(star.sprite.x, star.sprite.y))
-			print ("sprite_image_mask_color: ",star.sprite_image_mask.color)
 
 		read_margin = 2
 		length = (read_margin*2)+1
@@ -389,24 +380,43 @@ class Window(pyglet.window.Window):
 		ctypes_buffer=(GLubyte * pixel_data_length)()
 		glReadBuffer(GL_BACK)
 		glReadPixels(read_x,read_y,length,length,GL_RGBA,GL_UNSIGNED_BYTE,ctypes_buffer)
-		print ctypes_buffer
+
+		# find object(s) under the cursor
 		colors = []
 		bytes = []
+		detected = {}
 		for byte_position in range(area):
 			ctypes_position = byte_position*4
-			colors.append(
-				(
-					ctypes_buffer[ctypes_position], # R component
-					ctypes_buffer[ctypes_position+1], # G component
-					ctypes_buffer[ctypes_position+2], # B component
-					#ctypes_buffer[ctypes_position+3] # A component, but this is not needed
-				)
+
+			alpha = ctypes_buffer[ctypes_position+3]
+			if alpha < 255:
+				colors.append( (0, 0, 0) )
+				continue
+
+			color = (
+				ctypes_buffer[ctypes_position], #red
+				ctypes_buffer[ctypes_position+1], #green
+				ctypes_buffer[ctypes_position+2], #blue
 			)
+			detected_object = self.data.galaxy_objects.color_picks[color]
+			if not detected.has_key(detected_object):
+				detected[detected_object] = 0
+			detected[detected_object] += 1
+			colors.append( color )
+
 		print "Colors"
 		for row in range(length-1, -1, -1):
 			begin = row*length
 			end = begin + length
 			print colors[begin:end]
+
+		# maximally-seen object is first
+		for object in sorted(detected, key=detected.get, reverse=True):
+			if type(object) == galaxy_objects.ForegroundStar:
+				print "star: %s"%object.name
+			elif type(object) == galaxy_objects.WormHole:
+				print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
+			# maybe some day we'll also allow black holes to be picked
 
 		glPopMatrix()
 

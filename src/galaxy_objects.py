@@ -1,11 +1,19 @@
 from __future__ import division
 import pyglet
+from pyglet.gl import *
 import math
 import struct # for pack/unpack operations on byte representations of images
 
 class MissingDataException(Exception): pass
 class DataError(Exception): pass
 class RangeException(Exception): pass
+
+class SpriteMasksGroup(pyglet.graphics.Group):
+	def set_state(self):
+		glDisable(GL_BLEND)
+
+	def unset_state(self):
+		glEnable(GL_BLEND)
 
 class All(object):
 	"""All galaxy objects are referenced from this object."""
@@ -23,7 +31,7 @@ class All(object):
 
 	# masks, for color picking
 	sprite_masks_batch = pyglet.graphics.Batch()
-	sprite_masks_group = pyglet.graphics.OrderedGroup(100)
+	sprite_masks_group = SpriteMasksGroup()
 	# ensure mask bitmaps are only calculated once per bitmap path
 	mask_bitmaps = {}
 
@@ -112,11 +120,27 @@ class All(object):
 
 	def assign_pick_colors(self):
 		'For color mouse picking, assign a unique color to each pickable object'
-
-		# assign unique sprite mask colors
 		red,green,blue = 255,255,255
-		for scalable in self.scalable_objects:
-			scalable.sprite_image_mask.color = (red,green,blue)
+
+		# store backreferences (eg color to object) here
+		self.color_picks = {}
+
+		# stars
+		for star in self.named_stars:
+			star.sprite_image_mask.color = (red,green,blue)
+			self.color_picks[(red,green,blue)] = star
+			(red,green,blue) = self.get_next_mask_color(red,green,blue)
+
+		# black holes (currently unpickable)
+		for black_hole in self.black_holes:
+			black_hole.sprite_image_mask.color = (red,green,blue)
+			self.color_picks[(red,green,blue)] = black_hole
+			(red,green,blue) = self.get_next_mask_color(red,green,blue)
+
+		# worm holes
+		for worm_hole in self.worm_holes:
+			worm_hole.mask_vertex_list.colors = [red,green,blue,red,green,blue]
+			self.color_picks[(red,green,blue)] = worm_hole
 			(red,green,blue) = self.get_next_mask_color(red,green,blue)
 
 	def get_next_mask_color(self, red, green, blue):
@@ -130,9 +154,9 @@ class All(object):
 			green = 255
 			blue -= 1
 		if blue < 0:
-			# we'd have to have many millions of objects to get here
+			# this gives us potentially millions of object colors
 			# with that many objects, this game would have already encountered other issues
-			# so it is very unlikely we'll ever hit this condition
+			# so it is very unlikely we will ever hit this condition
 			raise RangeException, "ran out of available ID colors"
 
 		return (red,green,blue)
@@ -170,6 +194,8 @@ class All(object):
 		"Draw all galaxy object masks"
 		self.rescale(scaling_factor)
 
+		for worm_hole in self.worm_holes:
+			worm_hole.mask_vertex_list.draw(pyglet.gl.GL_LINES)
 		self.sprite_masks_batch.draw()
 
 	def normalize(self):
@@ -341,8 +367,8 @@ class ForegroundStar(ScaledForegroundObject):
 	}
 
 	def __init__(self, coordinates, name, type='yellow'):
-		if (len(name) > 15) or (len(name) < 3):
-			raise RangeException, "name must be between 3 and 15 characters long"
+		if (len(name) > 18) or (len(name) < 2):
+			raise RangeException, "name must be 2 to 18 characters long"
 		self.name = name
 
 		if not self.colors.has_key(type):
@@ -541,6 +567,11 @@ class WormHole(All):
 		)
 		self.vertex_list.vertices = self.vertices
 
+		self.mask_vertex_list = pyglet.graphics.vertex_list(
+			2, 'v2f', 'c3B'
+		)
+		self.mask_vertex_list.vertices = self.vertices
+
 	def scale_coordinates(self):
 		'When stars scale, their position changes, so update the wormhole vertex list'
 		self.vertices = [
@@ -548,11 +579,13 @@ class WormHole(All):
 			self.endpoints[1].sprite.x, self.endpoints[1].sprite.y
 		]
 		self.vertex_list.vertices = self.vertices
+		self.mask_vertex_list.vertices = self.vertices
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
 		out_dict = self.__dict__.copy()
 		del out_dict['vertex_list']
+		del out_dict['mask_vertex_list']
 		return(out_dict)
 	
 	def __setstate__(self, dict):

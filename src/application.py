@@ -1,4 +1,4 @@
-#! python -O
+#! /usr/bin/env python -O
 from __future__ import division
 import pyglet
 import galaxy
