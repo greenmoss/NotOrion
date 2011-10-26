@@ -1,3 +1,4 @@
+Aagjuuk
 Acamar
 Achernar
 Achird
@@ -8,10 +9,20 @@ Adhafera
 Adhara
 Agena
 Ain
+Ak-Ek'
+Akkuttujuuk
+Al Fawaris
+Al Kalb
+Al Kaphrah
+Al Kurud
+Al Minliar
+Al Nair
+Al Niyat
+Al Thalimain
 Aladfar
 Alamak
-Alathfar
 Alaraph
+Alathfar
 Albaldah
 Albali
 Albireo
@@ -22,7 +33,6 @@ Aldebaran
 Alderamin
 Aldhanab
 Aldhibah
-Al Fawaris
 Alfecca
 Alfirk
 Algedi
@@ -34,18 +44,12 @@ Alhajoth
 Alhena
 Alioth
 Alkaid
-Al Kurud
-Al Kalb
 Alkalurops
-Al Kaphrah
 Alkes
 Almach
-Al Minliar
-Al Nair
 Alnasl
 Alnilam
 Alnitak
-Al Niyat
 Alpha Centauri
 Alphard
 Alphecca
@@ -60,118 +64,185 @@ Alshat
 Altair
 Altais
 Altarf
-Al Thalimain
 Aludra
 Alula
 Alwaid
 Alya
 Alzir
 Ancha
+Andromeda
 Andromedae
 Angetenar
+Anizham
 Ankaa
 Antares
+Antlia
 Antliae
+Anuradha
 Apodis
+Apus
 Aquarii
+Aquarius
+Aquila
 Aquilae
+Ara
 Arcturus
+Ardra
 Arich
 Arided
+Aries
 Arietis
 Arkab
 Arm
 Arneb
 Arrakis
+Artyna
 Asellus
 Ashlesha
+Ashvati
+Ashwini
 Askella
 Asmidiske
 Aspidiske
 Asterion
+Astham
 Atik
+Atira
 Atlas
 Atria
+Attam
+Auriga
 Aurigae
+Autahi
 Auva
+Aviguti
 Avior
+Avittam
+Ayilyam
 Azaleh
 Azelfafage
 Azha
 Azimech
 Azmidiske
+A'a
 Baade
+Baang
+BaekHo
 Baham
+Bakodlak
+Balam
 Barnard
+Barsytje
 Baten Kaitos
 Becrux
 Beid
 Bellatrix
+Belova
 Benetnasch
 Bessel
 Betelgeuse
 Betria
 Bezek
 Bharani
+Bi
 Biham
 Birdun
 Birhan Isat
+Bootes
 Bootis
-Botein
 Borealis
+Botein
 Brachium
 Bradley
+Bravarica
 Bunda
-Cancri
+Buymer
+Byeok
+Caelum
 Camelopardalis
+Cancri
+Canes Venatici
 Canis Majoris
 Canis Minoris
 Canopus
 Capella
 Caph
+Capricornus
+Carina
+Carinae
 Cassiopieiae
 Castor
-Carinae
 Cayrel
 Cebalrai
 Celaeno
+Centaurus
 Cephei
+Cetus
+Chamaeleon
+Chan
 Chara
+Chatayam
 Cheleb
+CheongRyong
 Chertan
+Chitam
+Chithirai
+Chitta
 Chort
+Choti
 Chow
+Circinus
+Columba
+Coma Berenices
 Cor Caroli
+Corona Australis
+Corona Borealis
 Corvi
-Cursa
+Crater
 Crucis
+Crux
+Cursa
 Cygnus
 Dabih
 Decrux
+Delphinus
 Deneb
 Denebola
+Dhanishta
+Di
 Diadem
 Diphda
+Divyce
 Dnoces
 Doradus
+Dou
 Draconis
+Dragar
 Dschubba
 Dubhe
 Duhr
+Duu
+Dvoydi
 Edasich
 Electra
 Elmuthalleth
 Elnath
 Eltanin
 Enif
+Equuleus
 Eridani
 Errai
 Etamin
+Fang
 Fomalhaut
+Fornax
 Fum al Samakah
 Furud
+Gaak
 Gacrux
+Garmyna
 Garnet
+Gata
 Gatria
 Geminorum
 Gemma
@@ -181,6 +252,7 @@ Giennah
 Girtab
 Gliese
 Gomeisa
+Goncyne
 Gorgonea Tertia
 Gould
 Graffias
@@ -188,62 +260,131 @@ Grassias
 Groombridge
 Gruid
 Grumium
+Grus
+Gui
+Gyu
+Haang
 Hadir
 Haedus
 Haldus
 Hamal
+Hanaiakamalama
+Hao o rua
 Hassaleh
-Herculis
+Hastha
+Hayebaje
 Heka
+Heo
+Herculis
 Heze
+Hikianalia
 Hoedus
+Hokulei
+Hokule'a
+Hokupa'a
+Hoku'ula
+Holopuni
 Homam
+Horologium
+Hubba
+Humu
 Hyadum
 Hydrobius
 Hydrus
+HyeonMu
+Ik
 Indi
 Innes
+Iwa Keli'i
 Izar
 Jabbah
+Jaryna
+Ji
+Jiao
 Jih
+Jin
+Jing
+Jyeshtha
+Ka Iwikuamo'o
+Ka Lupe a Kawelo
+Ka Maka
+Ka Mole Honua
 Kabdhilinan
 Kaffaljidhma
 Kajam
 Kakkab
+Kang
 Kapteyn
+Kaske
+Kaskyna
 Kastra
+Kaulia
+Kauluakoko
 Kaus
+Ke Ka o Makali'i
 Keid
+Keoe
 Kepler
+Kettai
+Ki
+Kingulliq
 Kitalpha
 Kleeia
 Kochab
-Kornephoros
 Koo She
+Kornephoros
+Kosyre
+Kozlytje
 Kraz
+Krithika
+Krizac
+Krizevali
+Krolevic
 Krueger
 Krzeminski
 Ksora
+Kuc
+Kuh
+Kui
 Kullat Nunu
 Kuma
+Kunjelabor
+La Superba
 Lacaille
 Lacertae
 Lalande
 Lanx
-La Superba
+Lastryb
+Lehua-kona
 Leonis
 Leporis
+Lepus
 Lesath
+Libra
+Liu
+Lou
 Lucida Anseris
+Lupus
 Luyten
+Lynx
 Lyrae
 Maasym
+Maghe
 Mahasim
 Maia
+Makali'i
+Makam
+Makayiram
+Malytje
+Manaiakalani
+Mantre
+Mao
 Marfark
-Marfik
 Marfikent
+Mariao
+Marjakyr
 Markeb
+Maryan
 Matar
 Mayer
 Mebsuta
@@ -257,12 +398,21 @@ Menchib
 Menkab
 Menkalinan
 Menkent
+Mensa
 Merak
 Merga
 Merope
 Mesarthim
+Me'e
+Mi
 Miaplacidus
-Microscopii
+Micakrys
+Micamatja
+Micanav
+Micapas
+Micekolo
+Microscopium
+Mikula
 Mimosa
 Minchir
 Minelava
@@ -277,144 +427,294 @@ Misam
 Mizar
 Monocerotis
 Mothallah
+Mrigashira
+Mulam
 Muliphein
 Muphrid
 Murzim
+Musca
 Muscida
+Myo
+Na Hiku
+Na Kuhikuhi
+Na Mahoe
 Nair al Zaurak
 Naos
 Nashira
+Navakyr
 Navi
 Nekkar
 Nembus
 Neshmet
 Nihal
+Niu
+Noavyna
 Normae
+Nu
 Nunki
 Nusakan
+Nuuttuittuq
+Nylova
+Octans
+Ok
 Okul
+Ophiuchus
 Orionis
+Orkulytje
+Ostan
+Pasoglavi
+Pasyca
+Pavo
 Peacock
+Pegasi
+Pekehawani
+Peony
+Persei
 Phact
 Phad
 Phecda
 Pherkad
-Pegasi
-Peony
-Persei
+Phoenix
 Piazzi
+Pictor
+Pil
+Pira'etea
 Piscium
 Pistol
+Pituaq
 Plaskett
 Pleione
+Plenyce
 Polaris
 Pollux
+Polo'ula
+Pooram
 Porrima
+Poutu te Rangi
 Praecipua
 Procyon
 Propus
 Przbylski
+Puana
+Puanakau
+Puanga
+Pubba
 Pulcherrima
+Punarpoosam
+Punartam
+Punarvasu
 Puppis
+Pururuttati
+Purva Ashadha
+Purva Bhadrapada
+Pushya
+Puyam
+Pyxis
+Qangimmaariik
+Qimmiitt
+Quturjuuk
 Rana
 Ras Algethi
 Ras Alhague
 Ras Elased
+Ras Thaoum
 Rasalas
 Rastaban
-Ras Thaoum
 Regor
 Regulus
-Reticuli
+Rehua
+Reticulum
+Revathi
 Rigel
 Rigil Kentaurus
 Rijl al Awwa
-Rotanev
+Rohini
 Ross
+Rotanev
+Ru
+Ruawahia
 Ruchbah
-Rukbat
+Ruhi
+Ryboj
+Ryu
+Saam
 Sabik
 Sadachbia
 Sadalbari
 Sadalmelik
 Sadalsuud
 Sadatoni
+Sadayam
 Sadira
 Sadr
 Sagitarii
+Sagitta
 Saiph
+Sakiattiak
 Salm
 Sargas
 Sarin
 Sarir
 Sasin
+Scapi
+Scemeryna
 Sceptrum
 Scheat
 Scheddi
 Schedir
-Scorpii
-Scuti
-Segin
+Scorpius
+Sculptor
+Scutum
+Sedan Brodih
 Seginus
+Seong
+Serpens
+Sextans
 Sham
+Shatabhisham
+Shatataraka
 Shaula
 Sheliak
+Shen
+Shi
+Shil
+Shim
+Shravana
+Shravishtha
+Sikuliaqsiujuittuq
+Sinan-Ek'
 Sinistra
+Sionav
+Sionget
+Sionorkul
+Sionpas
+Sionzmyn
 Sirius
 Sirrah
 Situla
+Sivulliik
 Skat
+Skraplune
+Sparnac
 Spica
 Sterope
+Stomoryna Kruna
 Struve
 Sualocin
 Subra
 Suhail
 Sulafat
+Sundre
+Swarhi
+Swathi
 Syrma
 Tabit
+Takarua
 Talitha
 Tania
 Tarazet
 Tau Ceti
+Tau toro
+Taumatakuku
 Tauri
 Taygeta
+Te Kakau
 Teegarden
 Tegmen
-Terebellum
 Tejat
+Telescopium
+Terebellum
 Thabit
 Theemin
 Thuban
 Tien Kwan
+Tiruvatira
+Tiruvonam
+Tjarmal
+Tohorje
+Tohornica
 Toliman
 Torcularis
+Tovorytje
+Triangulum
+Trikketta
+Troydi
 Tseen Kee
 Tsih
+Tucana
+Tukturjuit
 Tureis
+Turu
 Tycho
 Tyl
+Ullaktut
 Unuk
-Ursae
+Uqsuutaattiaq
+Ursa Major
+Ursa Minor
 Ushakaron
+Uthiram
+Utratam
+Uttara Ashadha
+Uttara Bhadrapada
+Uttrttadhi
 Van Biesbroeck
 Van Maanen
+Vardice
 Vega
+Vela
+Veletyci
 Velorum
 Vindemiatrix
 Virginis
+Visakam
+Vishakhe
+Vlahynica
+Vlahytje
+Volans
+Volytje
+Vulpecula
 Wasat
 Wazn
 Wei
 Weisse
 Westerlund
 Wezen
+Whakaahu
+Whakaonge kai
+Whanui
+Whiti Kapeka
+Wii
 Wolf
 Wray
+Wuu
+Xin
+Xing
+Xoc
+Xu
+Yance
 Yed
+Yeo
+Yi
 Yildun
+Yzdene
+Zaa
+Zaang
 Zaniah
+Zarje-Harvatje
+Zarnyk
 Zaurak
 Zavijava
+Zeo
+Zeong
+Zhang
+Zhen
+Zi
+Zminiver
+Zmuli
+Zmyni
 Zosma
+Zotz
+ZuZak
 Zuben
+i Svera
