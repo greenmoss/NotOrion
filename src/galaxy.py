@@ -220,6 +220,78 @@ class Window(pyglet.window.Window):
 			self.maximum_scale = self.data.galaxy_objects.min_distance/self.minimum_foreground_separation
 		if self.minimum_scale > self.maximum_scale:
 			self.maximum_scale = self.minimum_scale
+	
+	def detect_mouseover_objects(self, x, y, radius=2, debug=False):
+		'Given a mouse x/y position, detect any objects at/around this position'
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+		glLoadIdentity()
+
+		glPushMatrix()
+
+		# in normal rendered scene, we use gluLookAt
+		# but this won't work with back buffer
+		# so instead we'll use glTranslated
+		translate_x = int(self.half_width - self.absolute_center[0] - 1)
+		translate_y = int(self.half_height - self.absolute_center[1] - 1)
+		glTranslated(translate_x,translate_y,0)
+
+		# draw the foreground object masks
+		self.data.galaxy_objects.draw_masks(self.foreground_scale)
+
+		# convert click coordinates into absolute coordinates
+		absolute_click = self.window_to_absolute((x,y))
+		absolute_click = (int(absolute_click[0]/self.foreground_scale),int(absolute_click[1]/self.foreground_scale))
+
+		length = (radius*2)+1
+		area = length * length
+		read_x = absolute_click[0]-radius+translate_x
+		read_y = absolute_click[1]-radius+translate_y
+		pixel_data_length = 4 * area # 4, one for each byte: R, G, B, A
+		ctypes_buffer=(GLubyte * pixel_data_length)()
+		glReadBuffer(GL_BACK)
+		glReadPixels(read_x,read_y,length,length,GL_RGBA,GL_UNSIGNED_BYTE,ctypes_buffer)
+
+		# find object(s) under the cursor
+		colors = []
+		bytes = []
+		detected_objects = {}
+		for byte_position in range(area):
+			ctypes_position = byte_position*4
+
+			alpha = ctypes_buffer[ctypes_position+3]
+			if alpha < 255:
+				colors.append( (0, 0, 0) )
+				continue
+
+			color = (
+				ctypes_buffer[ctypes_position], #red
+				ctypes_buffer[ctypes_position+1], #green
+				ctypes_buffer[ctypes_position+2], #blue
+			)
+			detected_object = self.data.galaxy_objects.color_picks[color]
+			if not detected_objects.has_key(detected_object):
+				detected_objects[detected_object] = 0
+			detected_objects[detected_object] += 1
+			colors.append( color )
+
+		if debug:
+			print "pixel colors"
+			for row in range(length-1, -1, -1):
+				begin = row*length
+				end = begin + length
+				print colors[begin:end]
+
+			# maximally-seen object is first
+			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
+				if type(object) == galaxy_objects.ForegroundStar:
+					print "star: %s"%object.name
+				elif type(object) == galaxy_objects.WormHole:
+					print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
+				# maybe some day we'll also allow black holes to be picked
+
+		glPopMatrix()
+
+		return detected_objects
 
 	def set_center(self, coordinates):
 		"Set the window center, for rendering foreground objects."
@@ -351,74 +423,18 @@ class Window(pyglet.window.Window):
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
 
+	def on_mouse_motion(self, x, y, dx, dy):
+		detected_objects = self.detect_mouseover_objects(x,y)
+		if len(detected_objects) > 0:
+			# maximally-seen object is first
+			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
+				if type(object) == galaxy_objects.ForegroundStar:
+					print "star: %s"%object.name
+				elif type(object) == galaxy_objects.WormHole:
+					print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
+
 	def on_mouse_press(self, x, y, button, modifiers):
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-		glLoadIdentity()
-
-		glPushMatrix()
-
-		# in normal rendered scene, we use gluLookAt
-		# but this won't work with back buffer
-		# so instead we'll use glTranslated
-		translate_x = int(self.half_width - self.absolute_center[0] - 1)
-		translate_y = int(self.half_height - self.absolute_center[1] - 1)
-		glTranslated(translate_x,translate_y,0)
-
-		# draw the foreground object masks
-		self.data.galaxy_objects.draw_masks(self.foreground_scale)
-
-		# convert click coordinates into absolute coordinates
-		absolute_click = self.window_to_absolute((x,y))
-		absolute_click = (int(absolute_click[0]/self.foreground_scale),int(absolute_click[1]/self.foreground_scale))
-
-		read_margin = 2
-		length = (read_margin*2)+1
-		area = length * length
-		read_x = absolute_click[0]-read_margin+translate_x
-		read_y = absolute_click[1]-read_margin+translate_y
-		pixel_data_length = 4 * area # 4, one for each byte: R, G, B, A
-		ctypes_buffer=(GLubyte * pixel_data_length)()
-		glReadBuffer(GL_BACK)
-		glReadPixels(read_x,read_y,length,length,GL_RGBA,GL_UNSIGNED_BYTE,ctypes_buffer)
-
-		# find object(s) under the cursor
-		colors = []
-		bytes = []
-		detected = {}
-		for byte_position in range(area):
-			ctypes_position = byte_position*4
-
-			alpha = ctypes_buffer[ctypes_position+3]
-			if alpha < 255:
-				colors.append( (0, 0, 0) )
-				continue
-
-			color = (
-				ctypes_buffer[ctypes_position], #red
-				ctypes_buffer[ctypes_position+1], #green
-				ctypes_buffer[ctypes_position+2], #blue
-			)
-			detected_object = self.data.galaxy_objects.color_picks[color]
-			if not detected.has_key(detected_object):
-				detected[detected_object] = 0
-			detected[detected_object] += 1
-			colors.append( color )
-
-		print "Colors"
-		for row in range(length-1, -1, -1):
-			begin = row*length
-			end = begin + length
-			print colors[begin:end]
-
-		# maximally-seen object is first
-		for object in sorted(detected, key=detected.get, reverse=True):
-			if type(object) == galaxy_objects.ForegroundStar:
-				print "star: %s"%object.name
-			elif type(object) == galaxy_objects.WormHole:
-				print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
-			# maybe some day we'll also allow black holes to be picked
-
-		glPopMatrix()
+		detected_objects = self.detect_mouseover_objects(x,y,debug=True)
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		prescale_absolute_mouse = self.window_to_absolute((x,y))
