@@ -37,6 +37,10 @@ class All(object):
 
 	min_foreground_separation = 10
 
+	marker_outline_stipple = 0xf0f0
+	# keep track of fractional dt for marker animation
+	marker_animation_fractional_dt = 0.
+
 	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[], worm_holes=[]):
 		if len(background_stars) < 1:
 			raise MissingDataException, "background_stars must have at least one element"
@@ -188,6 +192,15 @@ class All(object):
 		self.sprites_batch1.draw()
 		for worm_hole in self.worm_holes:
 			worm_hole.vertex_list.draw(pyglet.gl.GL_LINES)
+
+		glPushAttrib(GL_ENABLE_BIT)
+		glEnable(GL_LINE_STIPPLE)
+		for star in self.named_stars:
+			if star.marker_visible:
+				glLineStipple(1, self.marker_outline_stipple)
+				star.marker_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+		glPopAttrib()
+
 		self.sprites_batch2.draw()
 	
 	def draw_masks(self, scaling_factor):
@@ -230,6 +243,16 @@ class All(object):
 		for black_hole in self.black_holes:
 			black_hole.sprite.rotation -= black_hole_rotation_delta
 			black_hole.sprite_image_mask.rotation = black_hole.sprite.rotation
+
+		self.marker_animation_fractional_dt += dt
+		if self.marker_animation_fractional_dt > .1:
+			self.marker_animation_fractional_dt -= .1
+
+			# advance outline stipple pattern; presumes exactly 4 bytes
+			(divided, remainder) = divmod(self.marker_outline_stipple, 32768)
+			self.marker_outline_stipple = remainder*2
+			if divided:
+				self.marker_outline_stipple += 1
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
@@ -378,11 +401,17 @@ class ForegroundStar(ScaledForegroundObject):
 		super(ForegroundStar, self).__init__(coordinates, self.image_file, self.stars_group)
 
 		self.label_coordinates = self.sprite_coordinates
-		self.constitute_foreground_star_sprite_and_label()
+		self.marker_vertices = [
+			self.sprite_coordinates[0]+6,self.sprite_coordinates[0]+6,
+			self.sprite_coordinates[0]+6,self.sprite_coordinates[0]-6,
+			self.sprite_coordinates[0]-6,self.sprite_coordinates[0]-6,
+			self.sprite_coordinates[0]-6,self.sprite_coordinates[0]+6,
+		]
+		self.constitute_foreground_star_and_decorations()
 
 		self.worm_hole = None
 
-	def constitute_foreground_star_sprite_and_label(self):
+	def constitute_foreground_star_and_decorations(self):
 		'Allow these to be repickled'
 		self.sprite.color = self.colors[self.type]
 
@@ -392,6 +421,21 @@ class ForegroundStar(ScaledForegroundObject):
 			x=self.label_coordinates[0], y=self.label_coordinates[1],
 			anchor_x='center', anchor_y='top', 
 			batch=self.sprites_batch2, group=self.labels_group)
+
+		self.marker_vertex_list = pyglet.graphics.vertex_list(
+			4, 'v2f', 
+			('c3B/static', 
+				(
+					240,240,240,
+					240,240,240,
+					240,240,240,
+					240,240,240
+				)
+			)
+		)
+		self.marker_vertex_list.vertices = self.marker_vertices
+
+		self.marker_visible = False
 
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."
@@ -404,17 +448,33 @@ class ForegroundStar(ScaledForegroundObject):
 		)
 		self.label.x = self.label_coordinates[0]
 		self.label.y = self.label_coordinates[1]
+
+		# recalculate marker
+		self.marker_vertices = [
+			self.sprite.x+6,self.sprite.y+6,
+			self.sprite.x+6,self.sprite.y-6,
+			self.sprite.x-6,self.sprite.y-6,
+			self.sprite.x-6,self.sprite.y+6,
+		]
+		self.marker_vertex_list.vertices = self.marker_vertices
+	
+	def hide_marker(self):
+		self.marker_visible = False
+	
+	def reveal_marker(self):
+		self.marker_visible = True
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
 		out_dict = super(ForegroundStar, self).__getstate__()
 		del out_dict['label']
+		del out_dict['marker_vertex_list']
 		return(out_dict)
 	
 	def __setstate__(self, dict):
 		"Reconstitute unpicklable attributes"
 		super(ForegroundStar, self).__setstate__(dict)
-		self.constitute_foreground_star_sprite_and_label()
+		self.constitute_foreground_star_and_decorations()
 
 class BlackHole(ScaledForegroundObject):
 	image_file = 'black_hole.png'
@@ -554,6 +614,9 @@ class WormHole(All):
 		]
 		self.constitute_worm_hole_vertices()
 
+		self.star1 = star1
+		self.star2 = star2
+
 	def constitute_worm_hole_vertices(self):
 		'Allow these to be repickled'
 		self.vertex_list = pyglet.graphics.vertex_list(
@@ -580,6 +643,14 @@ class WormHole(All):
 		]
 		self.vertex_list.vertices = self.vertices
 		self.mask_vertex_list.vertices = self.vertices
+	
+	def hide_marker(self):
+		self.star1.marker_visible = False
+		self.star2.marker_visible = False
+	
+	def reveal_marker(self):
+		self.star1.marker_visible = True
+		self.star2.marker_visible = True
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"

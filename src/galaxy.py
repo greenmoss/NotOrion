@@ -27,6 +27,10 @@ class Window(pyglet.window.Window):
 	mini_map_size = 75
 	# minimum distance between foreground stars/black holes
 	minimum_foreground_separation = 10
+	# are we hovering over one or more objects?
+	over_objects = []
+	# which objects are being highlighted?
+	highlight_objects = []
 
 	def __init__(self, data, width=1024, height=768):
 		self.data = data
@@ -424,14 +428,25 @@ class Window(pyglet.window.Window):
 		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
 
 	def on_mouse_motion(self, x, y, dx, dy):
+		over_objects = []
 		detected_objects = self.detect_mouseover_objects(x,y)
 		if len(detected_objects) > 0:
 			# maximally-seen object is first
 			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
 				if type(object) == galaxy_objects.ForegroundStar:
-					print "star: %s"%object.name
+					over_objects.append(object)
 				elif type(object) == galaxy_objects.WormHole:
-					print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
+					over_objects.append(object)
+				else: # black hole
+					detected_objects.pop(object)
+
+		if not(over_objects == self.over_objects):
+			for object in self.over_objects:
+				if not detected_objects.has_key(object):
+					object.hide_marker()
+			for object in over_objects:
+				object.reveal_marker()
+			self.over_objects = over_objects
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		detected_objects = self.detect_mouseover_objects(x,y,debug=True)
@@ -488,5 +503,10 @@ class Window(pyglet.window.Window):
 	def animate(self, dt):
 		'Do any/all animations.'
 		self.data.galaxy_objects.animate(dt)
+
+		# markers for items under mouse
+		if not(self.over_objects == self.highlight_objects):
+			# new set of animations
+			self.highlight_objects = self.over_objects
 
 # doesn't make sense to call this standalone, so no __main__
