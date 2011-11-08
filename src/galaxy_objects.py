@@ -37,10 +37,6 @@ class All(object):
 
 	min_foreground_separation = 10
 
-	marker_outline_stipple = 0xf0f0
-	# keep track of fractional dt for marker animation
-	marker_animation_fractional_dt = 0.
-
 	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[], worm_holes=[]):
 		if len(background_stars) < 1:
 			raise MissingDataException, "background_stars must have at least one element"
@@ -193,13 +189,9 @@ class All(object):
 		for worm_hole in self.worm_holes:
 			worm_hole.vertex_list.draw(pyglet.gl.GL_LINES)
 
-		glPushAttrib(GL_ENABLE_BIT)
-		glEnable(GL_LINE_STIPPLE)
 		for star in self.named_stars:
 			if star.marker_visible:
-				glLineStipple(1, self.marker_outline_stipple)
-				star.marker_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
-		glPopAttrib()
+				star.marker.draw()
 
 		self.sprites_batch2.draw()
 	
@@ -243,16 +235,6 @@ class All(object):
 		for black_hole in self.black_holes:
 			black_hole.sprite.rotation -= black_hole_rotation_delta
 			black_hole.sprite_image_mask.rotation = black_hole.sprite.rotation
-
-		self.marker_animation_fractional_dt += dt
-		if self.marker_animation_fractional_dt > .1:
-			self.marker_animation_fractional_dt -= .1
-
-			# advance outline stipple pattern; presumes exactly 4 bytes
-			(divided, remainder) = divmod(self.marker_outline_stipple, 32768)
-			self.marker_outline_stipple = remainder*2
-			if divided:
-				self.marker_outline_stipple += 1
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
@@ -308,7 +290,7 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite_coordinates = self.coordinates
 		self.constitute_scaled_foreground_sprite()
 
-		self.scaled_sprite_origin = (self.sprite_origin[0]*self.sprite.scale, self.sprite_origin[1]*self.sprite.scale)
+		self.scaled_sprite_origin = (int(self.sprite_origin[0]*self.sprite.scale), int(self.sprite_origin[1]*self.sprite.scale))
 
 	def constitute_scaled_foreground_sprite(self):
 		'sprites must be reconstituted after pickling'
@@ -316,12 +298,11 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite = pyglet.sprite.Sprite(image,
 			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
 		)
-		self.sprite_origin = (image.width/2, image.height/2)
+		self.sprite_origin = (int(image.width/2), int(image.height/2))
 		self.sprite.image.anchor_x = self.sprite_origin[0]
 		self.sprite.image.anchor_y = self.sprite_origin[1]
 		self.sprite.batch = self.sprites_batch2
 		self.sprite.group = self.group
-		self.sprite.scale = 0.1
 
 		if self.mask_bitmaps.has_key(self.image_file):
 			# reuse existing bitmap
@@ -352,11 +333,10 @@ class ScaledForegroundObject(ForegroundObject):
 		self.sprite_image_mask.image.anchor_y = self.sprite_origin[1]
 		self.sprite_image_mask.batch = self.sprite_masks_batch
 		self.sprite_image_mask.group = self.sprite_masks_group
-		self.sprite_image_mask.scale = 0.1
 
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
-		self.sprite_coordinates = (self.coordinates[0]/scaling_factor, self.coordinates[1]/scaling_factor)
+		self.sprite_coordinates = (int(self.coordinates[0]/scaling_factor), int(self.coordinates[1]/scaling_factor))
 		self.sprite.x = self.sprite_coordinates[0]
 		self.sprite.y = self.sprite_coordinates[1]
 		self.sprite_image_mask.x = self.sprite_coordinates[0]
@@ -401,12 +381,6 @@ class ForegroundStar(ScaledForegroundObject):
 		super(ForegroundStar, self).__init__(coordinates, self.image_file, self.stars_group)
 
 		self.label_coordinates = self.sprite_coordinates
-		self.marker_vertices = [
-			self.sprite_coordinates[0]+6,self.sprite_coordinates[0]+6,
-			self.sprite_coordinates[0]+6,self.sprite_coordinates[0]-6,
-			self.sprite_coordinates[0]-6,self.sprite_coordinates[0]-6,
-			self.sprite_coordinates[0]-6,self.sprite_coordinates[0]+6,
-		]
 		self.constitute_foreground_star_and_decorations()
 
 		self.worm_hole = None
@@ -416,24 +390,21 @@ class ForegroundStar(ScaledForegroundObject):
 		self.sprite.color = self.colors[self.type]
 
 		self.label = pyglet.text.Label(self.name,
-			font_name='Arial', font_size=8,
+			font_name='Arial', font_size=10,
 			# x and y will immediately be recalculated, but are required to initialize the label
 			x=self.label_coordinates[0], y=self.label_coordinates[1],
 			anchor_x='center', anchor_y='top', 
 			batch=self.sprites_batch2, group=self.labels_group)
 
-		self.marker_vertex_list = pyglet.graphics.vertex_list(
-			4, 'v2f', 
-			('c3B/static', 
-				(
-					240,240,240,
-					240,240,240,
-					240,240,240,
-					240,240,240
-				)
-			)
+		marker_image = pyglet.resource.image('star_marker_animation.png')
+		marker_image_seq = pyglet.image.ImageGrid(marker_image, 1, 24)
+		for image in marker_image_seq:
+			image.anchor_x = image.width // 2
+			image.anchor_y = image.height // 2
+		marker_animation = pyglet.image.Animation.from_image_sequence(marker_image_seq, 0.04)
+		self.marker = pyglet.sprite.Sprite(marker_animation,
+			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
 		)
-		self.marker_vertex_list.vertices = self.marker_vertices
 
 		self.marker_visible = False
 
@@ -443,20 +414,15 @@ class ForegroundStar(ScaledForegroundObject):
 
 		# center label under sprite
 		self.label_coordinates = (
-			self.sprite.x-self.scaled_sprite_origin[0]+(self.sprite.width/2),
-			self.sprite.y-self.scaled_sprite_origin[1]
+			self.sprite.x-self.scaled_sprite_origin[0]+int(self.sprite.width/2),
+			self.sprite.y-self.scaled_sprite_origin[1]-1
 		)
 		self.label.x = self.label_coordinates[0]
 		self.label.y = self.label_coordinates[1]
 
 		# recalculate marker
-		self.marker_vertices = [
-			self.sprite.x+6,self.sprite.y+6,
-			self.sprite.x+6,self.sprite.y-6,
-			self.sprite.x-6,self.sprite.y-6,
-			self.sprite.x-6,self.sprite.y+6,
-		]
-		self.marker_vertex_list.vertices = self.marker_vertices
+		self.marker.x = self.sprite.x
+		self.marker.y = self.sprite.y
 	
 	def hide_marker(self):
 		self.marker_visible = False
@@ -468,7 +434,7 @@ class ForegroundStar(ScaledForegroundObject):
 		"Exclude unpicklable attributes"
 		out_dict = super(ForegroundStar, self).__getstate__()
 		del out_dict['label']
-		del out_dict['marker_vertex_list']
+		del out_dict['marker']
 		return(out_dict)
 	
 	def __setstate__(self, dict):
@@ -483,12 +449,15 @@ class BlackHole(ScaledForegroundObject):
 		super(BlackHole, self).__init__(coordinates, self.image_file, self.black_holes_group)
 		self.initial_rotation = initial_rotation
 		self.sprite.rotation = self.initial_rotation
+		self.sprite.scale = 0.1
 		self.sprite_image_mask.rotation = self.initial_rotation
+		self.sprite_image_mask.scale = 0.1
 	
 	def __setstate__(self, dict):
 		"Reconstitute unpicklable attributes"
 		super(BlackHole, self).__setstate__(dict)
 		self.sprite.rotation = self.initial_rotation
+		self.sprite.scale = 0.1
 		self.sprite_image_mask.rotation = self.initial_rotation
 
 class Nebula(ForegroundObject):

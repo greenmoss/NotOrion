@@ -315,6 +315,7 @@ Kajam
 Kakkab
 Kang
 Kapteyn
+Karal Yn
 Kaske
 Kaskyna
 Kastra
@@ -384,6 +385,7 @@ Marfikent
 Mariao
 Marjakyr
 Markeb
+Mar'k
 Maryan
 Matar
 Mayer
@@ -701,6 +703,7 @@ Yzdene
 Zaa
 Zaang
 Zaniah
+Zarah
 Zarje-Harvatje
 Zarnyk
 Zaurak
