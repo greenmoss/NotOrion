@@ -48,6 +48,7 @@ class TestGalaxyWindow(unittest.TestCase):
 			galaxy_objects.ForegroundStar((-2000, -2000), 'Sol1'),
 			galaxy_objects.ForegroundStar((100, -100), 'Sol2'),
 			galaxy_objects.ForegroundStar((200, -200), 'Sol3'),
+			galaxy_objects.ForegroundStar((0, 0), 'Sol4'),
 		],
 		[
 			galaxy_objects.BackgroundStar((10, 0), (128, 0, 255))
@@ -264,6 +265,13 @@ class TestGalaxyWindow(unittest.TestCase):
 			galaxy_window.on_mouse_scroll(x, y, 0, scroll_y)
 			self.assertEqual(galaxy_window.absolute_center, new_absolute_center)
 		galaxy_window.close()
+	
+	# this does not work?!
+	#def testMouseOverSeesObjects(self):
+	#	"Given known window dimensions and foreground objects, mouseovers should 'see' them"
+	#	galaxy_window = galaxy.Window(self.more_data, width=400, height=400)
+	#	over_objects = galaxy_window.detect_mouseover_objects(0,0,radius=4)
+	#	galaxy_window.close()
 	
 if __name__ == "__main__":
 	unittest.main()

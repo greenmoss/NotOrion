@@ -37,28 +37,54 @@ class TestForegroundStar(unittest.TestCase):
 	def testScalingCoordinates(self):
 		"Given scaling factors, star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 3748.1259370314847),
+			(0.1334, 3748),
 			(1.0, 500.0),
-			(7.5321, 66.38254935542545))
+			(7.5321, 66))
 		for scaler, result in conversions:
 			self.test_star.scale_coordinates(scaler)
 			self.assertEqual(self.test_star.sprite.x, result)
 			self.assertEqual(self.test_star.sprite.y, result)
 	
 	def testScalingLabels(self):
-		"Given scaling factors, star with known coordinates should scale to known test values."
+		"Given scaling factors, label of star with known coordinates should scale to known test values."
 		conversions = (
-			(0.1334, 3748.025937031485, 3742.525937031485),
-			(1.0, 499.9, 494.4),
-			(7.5321, 66.28254935542546, 60.78254935542545))
+			(0.1334, 3748, 3744),
+			(1.0, 500, 496),
+			(7.5321, 66, 62))
 		for scaler, resultx, resulty in conversions:
 			self.test_star.scale_coordinates(scaler)
 			self.assertEqual(self.test_star.label.x, resultx)
 			self.assertEqual(self.test_star.label.y, resulty)
 	
+	def testScalingMarkers(self):
+		"Given scaling factors, marker of star with known coordinates should scale to known test values."
+		conversions = (
+			(0.1334, 3748, 3748),
+			(1.0, 500, 500),
+			(7.5321, 66, 66))
+		for scaler, resultx, resulty in conversions:
+			self.test_star.scale_coordinates(scaler)
+			self.assertEqual(self.test_star.marker.x, resultx)
+			self.assertEqual(self.test_star.marker.y, resulty)
+	
 	def testColor(self):
 		"Star color should have known values."
 		self.assertEqual(self.test_star.sprite.color, [255,255,0])
+	
+	def testHideMarker(self):
+		"After calling hide_marker, marker should not be visible"
+		self.test_star.hide_marker()
+		self.assertEqual(self.test_star.marker_visible, False)
+	
+	def testRevealMarker(self):
+		"After calling reveal_marker, marker should be visible"
+		self.test_star.reveal_marker()
+		self.assertEqual(self.test_star.marker_visible, True)
+	
+	def testMarkerHiddenUponCreate(self):
+		"When a star is first created, its marker should be invisible"
+		test_star = galaxy_objects.ForegroundStar((500, 500), 'sol', 'yellow')
+		self.assertEqual(self.test_star.marker_visible, False)
 
 class TestNebula(unittest.TestCase):
 
@@ -166,8 +192,20 @@ class TestAll(unittest.TestCase):
 		)
 	]
 	valid_worm_hole_set = [(0,1)]
-	galaxy_objects = galaxy_objects.All(
+
+	sample_galaxy_objects = galaxy_objects.All(
 		valid_star_set,
+		valid_background_star_set,
+		valid_black_hole_set,
+		valid_nebulae_set,
+		valid_worm_hole_set
+	)
+
+	sample_galaxy_pick_objects = galaxy_objects.All(
+		[
+			galaxy_objects.ForegroundStar((-4000, -200), 'Xi Bootis'),
+			galaxy_objects.ForegroundStar((-500, 2000), 'Alpha Centauri'),
+		],
 		valid_background_star_set,
 		valid_black_hole_set,
 		valid_nebulae_set,
@@ -248,48 +286,63 @@ class TestAll(unittest.TestCase):
 	
 	def testPickle(self):
 		"If we are pickled, the unpickled object should match the original."
-		pickled = pickle.dumps(self.galaxy_objects)
+		pickled = pickle.dumps(self.sample_galaxy_objects)
 		restored = pickle.loads(pickled)
 		# some simple equality tests, that will be improved upon once objects have equality functions
-		self.assertEqual(self.galaxy_objects.left_bounding_x, restored.left_bounding_x)
-		self.assertEqual(self.galaxy_objects.background_star_vertices, restored.background_star_vertices)
-		self.assertEqual(self.galaxy_objects.min_coords, restored.min_coords)
-		for index in range(len(self.galaxy_objects.named_stars)):
+		self.assertEqual(self.sample_galaxy_objects.left_bounding_x, restored.left_bounding_x)
+		self.assertEqual(self.sample_galaxy_objects.background_star_vertices, restored.background_star_vertices)
+		self.assertEqual(self.sample_galaxy_objects.min_coords, restored.min_coords)
+		for index in range(len(self.sample_galaxy_objects.named_stars)):
 			self.assertEqual(
-				self.galaxy_objects.named_stars[index].sprite.x, 
+				self.sample_galaxy_objects.named_stars[index].sprite.x, 
 				restored.named_stars[index].sprite.x, 
 			)
 
 	def testBoundingArea(self):
 		"Bounding area of galaxy_objects using test data should return known test values."
-		self.assertEqual(self.galaxy_objects.left_bounding_x, -4000)
-		self.assertEqual(self.galaxy_objects.right_bounding_x, 4000)
-		self.assertEqual(self.galaxy_objects.top_bounding_y, 1500)
-		self.assertEqual(self.galaxy_objects.bottom_bounding_y, -1500)
+		self.assertEqual(self.sample_galaxy_objects.left_bounding_x, -4000)
+		self.assertEqual(self.sample_galaxy_objects.right_bounding_x, 4000)
+		self.assertEqual(self.sample_galaxy_objects.top_bounding_y, 1500)
+		self.assertEqual(self.sample_galaxy_objects.bottom_bounding_y, -1500)
 	
 	def testBackgroundStarVertices(self):
 		"Vertices of background stars using test data should return known test values."
 		# would be better to test on the constructed pyglect vertex list
 		# but I don't know how to do that :(
 		# then I could also delete testBackgroundStarColors
-		self.assertEqual(self.galaxy_objects.background_star_vertices, [0, 0, 0, 10, 0, 0])
+		self.assertEqual(self.sample_galaxy_objects.background_star_vertices, [0, 0, 0, 10, 0, 0])
 	
 	def testBackgroundStarColors(self):
 		"Colors of background stars using test data should return known test values."
-		self.assertEqual(self.galaxy_objects.background_star_colors, [0, 0, 255, 128, 0, 255])
+		self.assertEqual(self.sample_galaxy_objects.background_star_colors, [0, 0, 255, 128, 0, 255])
 	
 	def testMaxDistance(self):
 		"Given test data, ensure maximum distance has been set correctly."
-		self.assertEqual(self.galaxy_objects.max_distance, 8075.270893288967)
+		self.assertEqual(self.sample_galaxy_objects.max_distance, 8075.270893288967)
 	
 	def testMinDistance(self):
 		"Given test data, ensure minimum distance has been set correctly."
-		self.assertEqual(self.galaxy_objects.min_distance, 1280.6248474865697)
+		self.assertEqual(self.sample_galaxy_objects.min_distance, 1280.6248474865697)
 	
 	def testAnimate(self):
 		"Given a set of black holes and a given time delta, final sprite rotation should be a known value."
-		self.galaxy_objects.animate(0.2)
-		self.assertEqual(self.galaxy_objects.black_holes[0].sprite.rotation, 116.4)
+		self.sample_galaxy_objects.animate(0.2)
+		self.assertEqual(self.sample_galaxy_objects.black_holes[0].sprite.rotation, 116.4)
+	
+	def testMaskColors(self):
+		"Given a set of foreground objects, mask colors should be known."
+		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[0].sprite_image_mask.color, [255,255,255])
+		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[1].sprite_image_mask.color, [254,255,255])
+		self.assertEqual(self.sample_galaxy_pick_objects.black_holes[0].sprite_image_mask.color, [253,255,255])
+		# would like to test this too, but how?
+		#galaxy.worm_holes[0].mask_vertex_list.colors
+	
+	def testBackMaskColors(self):
+		"Given a set of foreground objects, pick colors to objects should be known."
+		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(255,255,255)], self.sample_galaxy_pick_objects.named_stars[0])
+		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(254,255,255)], self.sample_galaxy_pick_objects.named_stars[1])
+		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(253,255,255)], self.sample_galaxy_pick_objects.black_holes[0])
+		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(252,255,255)], self.sample_galaxy_pick_objects.worm_holes[0])
 
 if __name__ == "__main__":
 	unittest.main()
