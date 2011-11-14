@@ -1,8 +1,17 @@
 import unittest
 import pyglet
+
+# path to our code (in unix): "../src"
+import os
 import sys
-sys.path.append('../src')
+sys.path.append(
+	os.path.join(
+		os.path.dirname(os.path.abspath( __file__ )), os.path.pardir, 'src'
+	)
+)
 import application
+application.set_paths()
+
 import galaxy
 import galaxy_objects
 

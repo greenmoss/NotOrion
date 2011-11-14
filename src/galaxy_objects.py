@@ -38,6 +38,7 @@ class All(object):
 	min_foreground_separation = 10
 
 	def __init__(self, named_stars, background_stars, black_holes=[], nebulae=[], worm_holes=[]):
+		
 		if len(background_stars) < 1:
 			raise MissingDataException, "background_stars must have at least one element"
 		self.background_stars = background_stars
@@ -261,10 +262,6 @@ class BackgroundStar(All):
 
 class ForegroundObject(All):
 	'All foreground objects that appear in the galaxy window, eg stars, black holes, and nebulae.'
-
-	# all will need to load images from pyglet's resource path
-	pyglet.resource.path = ['../images']
-	pyglet.resource.reindex()
 
 	def __init__(self, coordinates):
 		if not (-10000 < coordinates[0] < 10000) or not (-10000 < coordinates[1] < 10000):

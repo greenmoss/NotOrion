@@ -1,13 +1,19 @@
 import unittest
 import pyglet
-import sys
-sys.path.append('../src')
-import galaxy_objects
 import pickle
 
-pyglet.resource.path = ['../images']
-pyglet.resource.reindex()
-star_image = pyglet.resource.image('star.png')
+# path to our code (in unix): "../src"
+import os
+import sys
+sys.path.append(
+	os.path.join(
+		os.path.dirname(os.path.abspath( __file__ )), os.path.pardir, 'src'
+	)
+)
+import application
+application.set_paths()
+
+import galaxy_objects
 
 class TestForegroundStar(unittest.TestCase):
 	test_star = galaxy_objects.ForegroundStar((500, 500), 'sol', 'yellow')

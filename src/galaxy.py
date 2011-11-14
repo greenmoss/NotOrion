@@ -243,13 +243,13 @@ class Window(pyglet.window.Window):
 		self.data.galaxy_objects.draw_masks(self.foreground_scale)
 
 		# convert click coordinates into absolute coordinates
-		absolute_click = self.window_to_absolute((x,y))
-		absolute_click = (int(absolute_click[0]/self.foreground_scale),int(absolute_click[1]/self.foreground_scale))
+		absolute_position = self.window_to_absolute((x,y))
+		absolute_position = (int(absolute_position[0]/self.foreground_scale),int(absolute_position[1]/self.foreground_scale))
 
 		length = (radius*2)+1
 		area = length * length
-		read_x = absolute_click[0]-radius+translate_x
-		read_y = absolute_click[1]-radius+translate_y
+		read_x = absolute_position[0]-radius+translate_x
+		read_y = absolute_position[1]-radius+translate_y
 		pixel_data_length = 4 * area # 4, one for each byte: R, G, B, A
 		ctypes_buffer=(GLubyte * pixel_data_length)()
 		glReadBuffer(GL_BACK)

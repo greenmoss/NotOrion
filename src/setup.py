@@ -38,7 +38,7 @@ Huge: 80 x 80 parsecs, 200 stars"""
 
 		# Default theme, blue-colored
 		self.theme = kytten.Theme(
-			os.path.join(os.getcwd(), 'resources', 'gui'), 
+			os.path.join(self.data.paths['resources_dir'], 'gui'), 
 			override={
 				"gui_color": [64, 128, 255, 255],
 				"font_size": 12
@@ -260,7 +260,7 @@ Huge: 80 x 80 parsecs, 200 stars"""
 		# randomly generate foreground stars
 		foreground_stars = []
 		available_star_names = []
-		with open('resources/star_names.txt') as star_names_file:
+		with open(os.path.join(self.data.paths['resources_dir'], 'star_names.txt')) as star_names_file:
 			for line in star_names_file:
 				available_star_names.append(line.rstrip())
 		for coordinate in star_coordinates:
