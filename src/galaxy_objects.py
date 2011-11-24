@@ -3,6 +3,7 @@ import pyglet
 from pyglet.gl import *
 import math
 import struct # for pack/unpack operations on byte representations of images
+import random
 
 class MissingDataException(Exception): pass
 class DataError(Exception): pass
@@ -128,14 +129,8 @@ class All(object):
 
 		# stars
 		for star in self.named_stars:
-			star.sprite_image_mask.color = (red,green,blue)
+			star.image_mask.color = (red,green,blue)
 			self.color_picks[(red,green,blue)] = star
-			(red,green,blue) = self.get_next_mask_color(red,green,blue)
-
-		# black holes (currently unpickable)
-		for black_hole in self.black_holes:
-			black_hole.sprite_image_mask.color = (red,green,blue)
-			self.color_picks[(red,green,blue)] = black_hole
 			(red,green,blue) = self.get_next_mask_color(red,green,blue)
 
 		# worm holes
@@ -231,11 +226,8 @@ class All(object):
 	
 	def animate(self, dt):
 		'Perform animations.'
-		# 360 * dt / 20 == 18 * dt
-		black_hole_rotation_delta = 18.*dt
-		for black_hole in self.black_holes:
-			black_hole.sprite.rotation -= black_hole_rotation_delta
-			black_hole.sprite_image_mask.rotation = black_hole.sprite.rotation
+		# all animations are currently pyglet animation sequences, so nothing to do here right now
+		pass
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
@@ -285,30 +277,87 @@ class ScaledForegroundObject(ForegroundObject):
 		self.coordinates = coordinates
 
 		self.sprite_coordinates = self.coordinates
-		self.constitute_scaled_foreground_sprite()
 
-		self.scaled_sprite_origin = (int(self.sprite_origin[0]*self.sprite.scale), int(self.sprite_origin[1]*self.sprite.scale))
+		self.constitute_scaled_foreground_sprite()
 
 	def constitute_scaled_foreground_sprite(self):
 		'sprites must be reconstituted after pickling'
-		image = pyglet.resource.image(self.image_file)
-		self.sprite = pyglet.sprite.Sprite(image,
-			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
+		self.sprite = self.generate_centered_sprite()
+
+		self.scaled_sprite_origin = (
+			int(self.sprite.image.anchor_x*self.sprite.scale), 
+			int(self.sprite.image.anchor_y*self.sprite.scale)
 		)
-		self.sprite_origin = (int(image.width/2), int(image.height/2))
-		self.sprite.image.anchor_x = self.sprite_origin[0]
-		self.sprite.image.anchor_y = self.sprite_origin[1]
+	
+		# eventually we *will* want an image mask for animations as well
+		self.generate_sprite_image_mask()
+
 		self.sprite.batch = self.sprites_batch2
 		self.sprite.group = self.group
 
+	def generate_centered_animated_sprite(self, coordinates=None, image_file=None, frame_count=None, duration=None, offset=None):
+		"""Generate an animated sprite with its anchor in the center of the first image. 
+		If coordinates or image are not specified, it is assumed these should be retrieved 
+		from self."""
+		if coordinates is None:
+			coordinates = self.sprite_coordinates
+
+		if image_file is None:
+			image_file = self.image_file
+		animation_image = pyglet.resource.image(image_file)
+
+		if frame_count is None:
+			# derive number of frames from width divided by height
+			(count, remainder) = divmod(animation_image.width, animation_image.height)
+			if remainder > 0:
+				raise DataError, "animation image width could not be divided evenly by animation image height" 
+			frame_count = count
+
+		if duration is None:
+			duration = random.uniform(0.1,0.3)
+
+		animation_image_seq = pyglet.image.ImageGrid(animation_image, 1, frame_count)
+		for image in animation_image_seq:
+			image.anchor_x = image.width // 2
+			image.anchor_y = image.height // 2
+		if offset is None:
+			offset = random.randint(1, frame_count)
+		offset_animation = animation_image_seq[offset:] + animation_image_seq[:offset]
+
+		animation = pyglet.image.Animation.from_image_sequence(offset_animation, duration)
+		return(
+			pyglet.sprite.Sprite(animation,
+				coordinates[0], coordinates[1]
+			)
+		)
+
+	def generate_centered_sprite(self, coordinates=None, image=None):
+		"""Generate a sprite with its anchor in the center. 
+		If coordinates or image are not specified, it is assumed these should be retrieved 
+		from self."""
+		if coordinates is None:
+			coordinates = self.sprite_coordinates
+		if image is None:
+			image = self.image_file
+
+		image = pyglet.resource.image(image)
+		image.anchor_x = image.width // 2
+		image.anchor_y = image.height // 2
+		return(
+			pyglet.sprite.Sprite(image,
+				coordinates[0], coordinates[1]
+			)
+		)
+
+	def generate_sprite_image_mask(self):
 		if self.mask_bitmaps.has_key(self.image_file):
 			# reuse existing bitmap
 			mask = self.mask_bitmaps[image_file]
 
 		else:
 			# generate new bitmap
-			mask = pyglet.image.create(image.width, image.height)
-			image_data = image.get_image_data()
+			mask = pyglet.image.create(self.sprite.image.width, self.sprite.image.height)
+			image_data = self.sprite.image.get_image_data()
 			pixel_bytes = image_data.get_data('RGBA', image_data.width * 4)
 			mask_bytes = ''
 			for position in range(int(len(pixel_bytes)/4)):
@@ -323,33 +372,49 @@ class ScaledForegroundObject(ForegroundObject):
 					mask_bytes += '\xff\xff\xff\x00'
 			mask.image_data.set_data('RGBA', image_data.width * 4, mask_bytes)
 
-		self.sprite_image_mask = pyglet.sprite.Sprite(mask.texture,
+		self.image_mask = pyglet.sprite.Sprite(mask.texture,
 			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
 		)
-		self.sprite_image_mask.image.anchor_x = self.sprite_origin[0]
-		self.sprite_image_mask.image.anchor_y = self.sprite_origin[1]
-		self.sprite_image_mask.batch = self.sprite_masks_batch
-		self.sprite_image_mask.group = self.sprite_masks_group
+		self.image_mask.image.anchor_x = self.sprite.image.anchor_x
+		self.image_mask.image.anchor_y = self.sprite.image.anchor_y
+		self.image_mask.batch = self.sprite_masks_batch
+		self.image_mask.group = self.sprite_masks_group
 
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
 		self.sprite_coordinates = (int(self.coordinates[0]/scaling_factor), int(self.coordinates[1]/scaling_factor))
 		self.sprite.x = self.sprite_coordinates[0]
 		self.sprite.y = self.sprite_coordinates[1]
-		self.sprite_image_mask.x = self.sprite_coordinates[0]
-		self.sprite_image_mask.y = self.sprite_coordinates[1]
+		if hasattr(self, 'image_mask'):
+			self.image_mask.x = self.sprite_coordinates[0]
+			self.image_mask.y = self.sprite_coordinates[1]
 	
 	def __getstate__(self):
 		"Exclude unpicklable attributes"
 		out_dict = self.__dict__.copy()
 		del out_dict['sprite']
-		del out_dict['sprite_image_mask']
+		if out_dict.has_key('image_mask'):
+			del out_dict['image_mask']
 		return(out_dict)
 	
 	def __setstate__(self, dict):
 		"Reconstitute unpicklable attributes"
 		self.__dict__.update(dict)
 		self.constitute_scaled_foreground_sprite()
+
+class AnimatedScaledForegroundObject(ScaledForegroundObject):
+	'All animated foreground objects that maintain a constant size across rescales, eg black holes.'
+
+	def __init__(self, coordinates, image_file, group, frame_count=None):
+		self.frame_count = frame_count
+
+		super(AnimatedScaledForegroundObject, self).__init__(coordinates, image_file, group)
+
+	def constitute_scaled_foreground_sprite(self):
+		'sprites must be reconstituted after pickling'
+		self.sprite = self.generate_centered_animated_sprite()
+		self.sprite.batch = self.sprites_batch2
+		self.sprite.group = self.group
 
 class ForegroundStar(ScaledForegroundObject):
 	'A named star and all its properties.'
@@ -439,24 +504,12 @@ class ForegroundStar(ScaledForegroundObject):
 		super(ForegroundStar, self).__setstate__(dict)
 		self.constitute_foreground_star_and_decorations()
 
-class BlackHole(ScaledForegroundObject):
-	image_file = 'black_hole.png'
+class BlackHole(AnimatedScaledForegroundObject):
+	image_file = 'black_hole_animation.png'
 
-	def __init__(self, coordinates, initial_rotation=0):
+	def __init__(self, coordinates):
 		super(BlackHole, self).__init__(coordinates, self.image_file, self.black_holes_group)
-		self.initial_rotation = initial_rotation
-		self.sprite.rotation = self.initial_rotation
-		self.sprite.scale = 0.1
-		self.sprite_image_mask.rotation = self.initial_rotation
-		self.sprite_image_mask.scale = 0.1
 	
-	def __setstate__(self, dict):
-		"Reconstitute unpicklable attributes"
-		super(BlackHole, self).__setstate__(dict)
-		self.sprite.rotation = self.initial_rotation
-		self.sprite.scale = 0.1
-		self.sprite_image_mask.rotation = self.initial_rotation
-
 class Nebula(ForegroundObject):
 	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:
 	lobe_colors = {

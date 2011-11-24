@@ -53,6 +53,7 @@ class Application(object):
 		elif args.save_game_file:
 			# unpickle a pickled file as source of self.data
 			with open(args.save_game_file) as save_game_file:
+				set_paths()
 				self.data = pickle.load(save_game_file)
 
 		if hasattr(self, 'data'):

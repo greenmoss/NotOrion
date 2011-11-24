@@ -90,7 +90,12 @@ class TestForegroundStar(unittest.TestCase):
 	def testMarkerHiddenUponCreate(self):
 		"When a star is first created, its marker should be invisible"
 		test_star = galaxy_objects.ForegroundStar((500, 500), 'sol', 'yellow')
-		self.assertEqual(self.test_star.marker_visible, False)
+		self.assertEqual(test_star.marker_visible, False)
+	
+	def testScaledSpriteOrigin(self):
+		"A star with given coordinates should have a known scaled_sprite_origin"
+		test_star = galaxy_objects.ForegroundStar((500, 500), 'sol', 'yellow')
+		self.assertEqual(test_star.scaled_sprite_origin, (3,3))
 
 class TestNebula(unittest.TestCase):
 
@@ -175,6 +180,13 @@ class TestWormHole(unittest.TestCase):
 			worm_holes=[ (0,1), (0,2) ]
 		)
 
+class TestBlackHole(unittest.TestCase):
+	
+	def testBlackHoleAnimation(self):
+		"Black holes should have animations with known attributes."
+		black_hole = galaxy_objects.BlackHole((0, 0))
+		self.assertEqual(len(black_hole.sprite.image.frames), 24)
+
 class TestAll(unittest.TestCase):
 	# some test data
 	(star1, star2, star3, star4) = (
@@ -189,7 +201,7 @@ class TestAll(unittest.TestCase):
 		)
 	valid_star_set = [ star1, star2, star3, star4 ]
 	valid_background_star_set = [ bgstar1, bgstar2 ]
-	valid_black_hole_set = [ galaxy_objects.BlackHole((300, 1000), 120) ]
+	valid_black_hole_set = [ galaxy_objects.BlackHole((300, 1000)) ]
 	valid_nebulae_set = [
 		galaxy_objects.Nebula(
 			(0, 0), 'red', [
@@ -237,7 +249,7 @@ class TestAll(unittest.TestCase):
 				galaxy_objects.ForegroundStar((-4000, 200), 'Spica'),
 			], 
 			self.valid_background_star_set,
-			[ galaxy_objects.BlackHole((-4000, 200), 120) ]
+			[ galaxy_objects.BlackHole((-4000, 200)) ]
 		)
 	
 	def testDisallowedNebulaOverlap(self):
@@ -330,25 +342,22 @@ class TestAll(unittest.TestCase):
 		"Given test data, ensure minimum distance has been set correctly."
 		self.assertEqual(self.sample_galaxy_objects.min_distance, 1280.6248474865697)
 	
-	def testAnimate(self):
-		"Given a set of black holes and a given time delta, final sprite rotation should be a known value."
-		self.sample_galaxy_objects.animate(0.2)
-		self.assertEqual(self.sample_galaxy_objects.black_holes[0].sprite.rotation, 116.4)
-	
 	def testMaskColors(self):
 		"Given a set of foreground objects, mask colors should be known."
-		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[0].sprite_image_mask.color, [255,255,255])
-		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[1].sprite_image_mask.color, [254,255,255])
-		self.assertEqual(self.sample_galaxy_pick_objects.black_holes[0].sprite_image_mask.color, [253,255,255])
+		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[0].image_mask.color, [255,255,255])
+		self.assertEqual(self.sample_galaxy_pick_objects.named_stars[1].image_mask.color, [254,255,255])
 		# would like to test this too, but how?
 		#galaxy.worm_holes[0].mask_vertex_list.colors
+		# black holes don't get image masks; temporarily removed
+		#self.assertEqual(self.sample_galaxy_pick_objects.black_holes[0].image_mask.color, [253,255,255])
 	
 	def testBackMaskColors(self):
 		"Given a set of foreground objects, pick colors to objects should be known."
 		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(255,255,255)], self.sample_galaxy_pick_objects.named_stars[0])
 		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(254,255,255)], self.sample_galaxy_pick_objects.named_stars[1])
-		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(253,255,255)], self.sample_galaxy_pick_objects.black_holes[0])
-		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(252,255,255)], self.sample_galaxy_pick_objects.worm_holes[0])
+		self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(253,255,255)], self.sample_galaxy_pick_objects.worm_holes[0])
+		# black holes don't get image masks; temporarily removed
+		#self.assertEqual(self.sample_galaxy_pick_objects.color_picks[(252,255,255)], self.sample_galaxy_pick_objects.black_holes[0])
 
 if __name__ == "__main__":
 	unittest.main()

@@ -276,7 +276,7 @@ Huge: 80 x 80 parsecs, 200 stars"""
 		black_holes = []
 		for coordinate in black_hole_coordinates:
 			black_holes.append(
-				galaxy_objects.BlackHole(coordinate, initial_rotation=random.randint(0,359))
+				galaxy_objects.BlackHole(coordinate)
 			)
 
 		# generate nebulae
