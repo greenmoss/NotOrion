@@ -13,24 +13,24 @@ class Choose(object):
 	'Choose parameters for pre-game setup'
 
 	galaxy_age_help_text = """
-Young galaxies have proportionally more white and blue stars. Thus they have more mineral-rich planets, and fewer planets suitable for farming. They also have more nebulae and fewer black holes.
+Young galaxies have more mineral-rich planets and fewer planets suitable for farming.
 
-Mature galaxies have an even mix of all stars. Thus they have an even mix of farming planets and mineral-rich planets.
+Mature galaxies have an even mix of farming planets and mineral-rich planets.
 
-Old galaxies have proportionally more red stars and brown dwarves. Thus they have more planets suitable for farming, and fewer mineral-rich planets. They also have more black holes and fewer nebulae.
+Old galaxies have more planets suitable for farming and fewer mineral-rich planets.
 """
 	galaxy_size_help_text = """
-Galaxy size and number of stars is as follows:
+Galaxy sizes and number of stars:
 
-Tiny: 5 x 5 parsecs, 5 stars
+Tiny: 10 x 7 parsecs, 5 stars
 
-Small: 10 x 10 parsecs, 20 stars
+Small: 20 x 14 parsecs, 20 stars
 
-Medium: 20 x 20 parsecs, 50 stars
+Medium: 27 x 19 parsecs, 36 stars
 
-Large: 40 x 40 parsecs, 100 stars
+Large: 33 x 24 parsecs, 54 stars
 
-Huge: 80 x 80 parsecs, 200 stars"""
+Huge: 38 x 27 parsecs, 71 stars"""
 
 	def __init__(self, data):
 		self.data = data
@@ -55,15 +55,11 @@ Huge: 80 x 80 parsecs, 200 stars"""
 			# distribute the stars evenly over a small area
 			foreground_limits = (-250,-250,250,250)
 			foreground_dispersion = 100
-			foreground_star_count = 5
-			#black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
-			#worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
-			#nebulae_count = random.randint(3,6)
 			self.generate_galaxy_objects(
 				foreground_limits,
 				foreground_dispersion,
-				foreground_star_count,
-				star_colors=['yellow']
+				5, # number of stars
+				object_pool=['yellow']
 			)
 			self.window.close()
 
@@ -94,66 +90,70 @@ Huge: 80 x 80 parsecs, 200 stars"""
 		self.galaxy_size = choice
 	
 	def on_options_continue(self):
+		# copying estimated proportions from
+		# http://masteroforion2.blogspot.com/2006/01/moo2-map-generator.html
 		if self.galaxy_size == 'Tiny':
-			foreground_limits = (-250,-250,250,250)
+			foreground_limits = (-350,-500,350,500)
 			foreground_star_count = 5
 			nebulae_count = random.randint(0,1)
 		elif self.galaxy_size == 'Small':
-			foreground_limits = (-500,-500,500,500)
+			foreground_limits = (-700,-1000,700,1000)
 			foreground_star_count = 20
 			nebulae_count = random.randint(1,2)
 		elif self.galaxy_size == 'Medium':
-			foreground_limits = (-1000,-1000,1000,1000)
-			foreground_star_count = 50
+			foreground_limits = (-950,-1350,950,1350)
+			foreground_star_count = 36
 			nebulae_count = random.randint(2,5)
 		elif self.galaxy_size == 'Large':
-			foreground_limits = (-2000,-2000,2000,2000)
-			foreground_star_count = 100
+			foreground_limits = (-1200,-1650,1200,1650)
+			foreground_star_count = 54
 			nebulae_count = random.randint(4,8)
 		else: #self.galaxy_size == 'Huge'
-			foreground_limits = (-4000,-4000,4000,4000)
-			foreground_star_count = 200
+			foreground_limits = (-1350,-1900,1350,1900)
+			foreground_star_count = 71
 			nebulae_count = random.randint(6,12)
 
 		foreground_dispersion = 100
-		black_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
 		worm_hole_count = random.randint(int(foreground_star_count/10), int(foreground_star_count)/5)
 
-		star_colors = galaxy_objects.ForegroundStar.colors.keys()
+		object_pool = []
 		if self.galaxy_age == 'Young':
-			black_hole_count = int(black_hole_count*0.75)
-			nebulae_count = int(nebulae_count*1.5)
-			# weight towards white/blue
-			star_colors.extend(['white']*8)
-			star_colors.extend(['blue']*7)
-			star_colors.extend(['green']*5)
-			star_colors.extend(['yellow']*4)
-			star_colors.extend(['orange']*3)
-			star_colors.extend(['red']*1)
+			# MoO2: "mineral rich"
+			object_pool.extend(['black hole']*30)
+			object_pool.extend(['blue']*185)
+			object_pool.extend(['white']*220)
+			object_pool.extend(['yellow']*97)
+			object_pool.extend(['orange']*89)
+			object_pool.extend(['red']*372)
+			object_pool.extend(['brown']*7)
 
 		elif self.galaxy_age == 'Mature':
-			# already correct proportions
-			pass
+			# MoO2: "average"
+			object_pool.extend(['black hole']*40)
+			object_pool.extend(['blue']*105)
+			object_pool.extend(['white']*145)
+			object_pool.extend(['yellow']*136)
+			object_pool.extend(['orange']*144)
+			object_pool.extend(['red']*404)
+			object_pool.extend(['brown']*26)
 
 		else: #self.galaxy_age == 'Old'
-			black_hole_count = int(black_hole_count*1.5)
-			nebulae_count = int(nebulae_count*0.75)
-			# weight towards brown/red
-			star_colors.extend(['brown']*8)
-			star_colors.extend(['red']*7)
-			star_colors.extend(['orange']*5)
-			star_colors.extend(['yellow']*4)
-			star_colors.extend(['green']*3)
-			star_colors.extend(['blue']*1)
+			# MoO2: "organic rich"
+			object_pool.extend(['black hole']*70)
+			object_pool.extend(['blue']*40)
+			object_pool.extend(['white']*40)
+			object_pool.extend(['yellow']*305)
+			object_pool.extend(['orange']*195)
+			object_pool.extend(['red']*327)
+			object_pool.extend(['brown']*23)
 
 		self.generate_galaxy_objects(
 			foreground_limits,
 			foreground_dispersion,
 			foreground_star_count,
-			black_hole_count, 
 			worm_hole_count, 
 			nebulae_count,
-			star_colors
+			object_pool
 		)
 		self.window.close()
 	
@@ -225,11 +225,11 @@ Huge: 80 x 80 parsecs, 200 stars"""
 			theme=self.theme
 		)
 
-	def generate_galaxy_objects(self, foreground_limits, foreground_dispersion, foreground_star_count, black_hole_count=0, worm_hole_count=0, nebulae_count=0, star_colors=None):
+	def generate_galaxy_objects(self, foreground_limits, foreground_dispersion, foreground_object_count, worm_hole_count=0, nebulae_count=0, object_pool=None):
 		'Generate foreground/background stars, black holes, and nebulae'
 
-		if star_colors == None:
-			star_colors = galaxy_objects.ForegroundStar.colors.keys()
+		if object_pool == None:
+			object_pool = galaxy_objects.ForegroundStar.colors.keys()
 
 		# randomly generate background stars
 		background_stars = []
@@ -246,38 +246,36 @@ Huge: 80 x 80 parsecs, 200 stars"""
 
 		# generate coordinates for foreground stars AND black holes in one pass
 		# since they may not overlap
-		star_coordinates = utilities.random_dispersed_coordinates(
+		object_coordinates = utilities.random_dispersed_coordinates(
 			foreground_limits[0], foreground_limits[1], foreground_limits[2], foreground_limits[3],
-			amount=foreground_star_count+black_hole_count, dispersion=foreground_dispersion
+			amount=foreground_object_count, dispersion=foreground_dispersion
 		)
-		# randomly pull coordinates out as black holes
-		black_hole_coordinates = []
-		for repeated in range(black_hole_count):
-			black_hole_coordinates.append( 
-				star_coordinates.pop(random.randint(0,len(star_coordinates)-1))
-			)
 
-		# randomly generate foreground stars
-		foreground_stars = []
 		available_star_names = []
 		with open(os.path.join(self.data.paths['resources_dir'], 'star_names.txt')) as star_names_file:
 			for line in star_names_file:
 				available_star_names.append(line.rstrip())
-		for coordinate in star_coordinates:
-			foreground_stars.append(
-				galaxy_objects.ForegroundStar(
-					coordinate, 
-					available_star_names.pop(random.randint(0, len(available_star_names)-1)), 
-					star_colors[random.randint(0, len(star_colors)-1)]
-				),
-			)
 
-		# generate black hole objects
+		foreground_stars = []
 		black_holes = []
-		for coordinate in black_hole_coordinates:
-			black_holes.append(
-				galaxy_objects.BlackHole(coordinate)
-			)
+
+		# randomly generate foreground stars
+		for coordinate in object_coordinates:
+			object = object_pool[random.randint(0, len(object_pool)-1)]
+
+			if object == 'black hole':
+				black_holes.append(
+					galaxy_objects.BlackHole(coordinate)
+				)
+
+			else:
+				foreground_stars.append(
+					galaxy_objects.ForegroundStar(
+						coordinate, 
+						available_star_names.pop(random.randint(0, len(available_star_names)-1)), 
+						object
+					),
+				)
 
 		# generate nebulae
 		nebulae = []
