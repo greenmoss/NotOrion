@@ -2,7 +2,6 @@
 # a set of utilities, which should be useful without any associated objects
 from __future__ import division
 import random
-import math
 import sys
 import math
 
@@ -182,3 +181,18 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 		}
 
 	return part_counts
+
+def circle_vertices(radius):
+	"""
+	Calculate vertices sufficient to approximate a circle, centered around 0,0
+	algorithm copied from https://sites.google.com/site/swinesmallpygletexamples/immediate-circle
+	"""
+	vertices = []
+	iterations = int(2*radius*math.pi)
+	sin = math.sin(2*math.pi / iterations)
+	cos = math.cos(2*math.pi / iterations)
+	dx, dy = radius, 0
+	for i in range(iterations+1):
+		vertices.append((round(dx,4), round(dy,4)))
+		dx, dy = (dx*cos + dy*sin), (dy*cos - dx*sin)
+	return vertices

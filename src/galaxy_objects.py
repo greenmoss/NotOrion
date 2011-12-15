@@ -469,6 +469,10 @@ class ForegroundStar(ScaledForegroundObject):
 		)
 
 		self.marker_visible = False
+	
+	def reset_marker(self):
+		"The marker color might have been changed; reset it to its default state."
+		self.marker.color = (255,255,255)
 
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."

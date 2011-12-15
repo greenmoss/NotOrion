@@ -3,6 +3,10 @@ from __future__ import division
 from pyglet.gl import *
 import pyglet
 import galaxy_objects
+import utilities
+import itertools
+import math
+import logging
 
 class RangeException(Exception): pass
 class MissingDataException(Exception): pass
@@ -32,6 +36,45 @@ class Window(pyglet.window.Window):
 	# which objects are being highlighted?
 	highlight_objects = []
 
+	# range marker attributes
+	showing_ranges = False
+	initiated_range_state = False
+	concentric_range_markers = None
+	range_circles_vertex_lists = []
+	range_origin_star = None
+	range_origin_coordinate = None
+	range_marker_color = (25,128,25)
+	range_cursor_label_batch = pyglet.graphics.Batch()
+	# not sure if adding our own local attribute is a good idea?
+	range_cursor_label_batch.visible = False
+	range_cursor_label = pyglet.text.Label(
+		"",
+		x=0,
+		y=0,
+		anchor_x='center',
+		anchor_y='bottom',
+		color=(range_marker_color[0], range_marker_color[1], range_marker_color[2], 255),
+		font_size=10,
+		batch=range_cursor_label_batch
+	)
+	# shaded box behind cursor label, to make it easier to read
+	range_cursor_label_box = pyglet.graphics.vertex_list( 4,
+		('v2f', ( 0, 0,   0, 0,   0, 0,   0, 0,)),
+		('c4B/static', (
+			0, 0, 0, 200,
+			0, 0, 0, 200,
+			0, 0, 0, 200,
+			0, 0, 0, 200,
+			)
+		)
+	)
+	range_line_vertex_list = pyglet.graphics.vertex_list( 2,
+		('v2f', ( 0, 0,  0, 0 ) ),
+		('c3B/static', range_marker_color*2)
+	)
+	# while we were marking ranges, which end stars were marked?
+	range_marked_end_stars = {}
+
 	def __init__(self, data, width=1024, height=768):
 		self.data = data
 		if not hasattr(self.data, 'galaxy_window_state'):
@@ -60,10 +103,9 @@ class Window(pyglet.window.Window):
 
 		self.clock_display = pyglet.clock.ClockDisplay()
 
-		self.key_handlers = {
-			pyglet.window.key.ESCAPE: lambda: self.close(),
-			pyglet.window.key.Q: lambda: self.close(),
-		}
+		# which keys are pressed currently?
+		self.keys = pyglet.window.key.KeyStateHandler()
+		self.push_handlers(self.keys)
 
 		self.derive_from_window_dimensions(self.width, self.height)
 		if self.data.galaxy_window_state.foreground_scale:
@@ -279,19 +321,18 @@ class Window(pyglet.window.Window):
 			colors.append( color )
 
 		if debug:
-			print "pixel colors"
+			logging.debug( "pixel colors" )
 			for row in range(length-1, -1, -1):
 				begin = row*length
 				end = begin + length
-				print colors[begin:end]
+				logging.debug( colors[begin:end] )
 
 			# maximally-seen object is first
 			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
 				if type(object) == galaxy_objects.ForegroundStar:
-					print "star: %s"%object.name
+					logging.debug( "star: %s; x,y: %s"%(object.name, object.coordinates) )
 				elif type(object) == galaxy_objects.WormHole:
-					print "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name)
-				# maybe some day we'll also allow black holes to be picked
+					logging.debug( "worm hole: %s to %s"%(object.endpoints[0].name, object.endpoints[1].name) )
 
 		glPopMatrix()
 
@@ -315,6 +356,92 @@ class Window(pyglet.window.Window):
 
 		# every time we update the center, the mini-map will change
 		self.derive_mini_map()
+
+	def set_over_objects(self, x, y):
+		"Set objects that are under the cursor, and show/hide relevant markers"
+		over_objects = []
+		detected_objects = self.detect_mouseover_objects(x,y)
+		if len(detected_objects) > 0:
+			# maximally-seen object is first
+			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
+				if type(object) == galaxy_objects.ForegroundStar:
+					over_objects.append(object)
+				elif type(object) == galaxy_objects.WormHole:
+					over_objects.append(object)
+				else: # black hole
+					detected_objects.pop(object)
+
+		if not(over_objects == self.over_objects):
+			for object in self.over_objects:
+				if not detected_objects.has_key(object):
+					object.hide_marker()
+			for object in over_objects:
+				object.reveal_marker()
+			self.over_objects = over_objects
+
+	def reset_range_circles(self):
+		"remove range circle vertices"
+		self.concentric_range_markers = None
+		# must manually delete old vertex lists, or we get (video?) memory leak
+		for vertex_list in self.range_circles_vertex_lists:
+			vertex_list.delete()
+		self.range_circles_vertex_lists = []
+
+	def set_range_circles(self, x, y):
+		"calculate vertices for successive range circle markers"
+
+		# Set logarithmically-scaled concentric circles showing range in parsecs from given x, y
+		if not self.concentric_range_markers:
+			self.concentric_range_markers = []
+
+			# how many parsecs from corner to corner?
+			right_top = self.window_to_absolute((self.width, self.height))
+			left_bottom = self.window_to_absolute((0, 0))
+			height_parsecs = (right_top[1]-left_bottom[1])/100
+			width_parsecs = (right_top[0]-left_bottom[0])/100
+			parsecs = math.sqrt(height_parsecs**2 + width_parsecs**2)
+
+			# length of each parsec in window coordinates?
+			coords_per_parsec = parsecs/100*self.foreground_scale
+
+			# range marker steps, in parsecs, of appropriate size for screen size and scale
+			marker_steps = filter( 
+				lambda length: 
+					length <= parsecs, 
+					[1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128, 160, 192, 256, 320, 384, 512]
+			)
+
+			logging.debug( "in set_range_circles, parsecs: %s, steps: %s"%(parsecs, marker_steps) )
+			previous_radius = 0
+			previous_difference = 0
+			for step in marker_steps:
+				absolute_radius = step*100
+				length = absolute_radius / self.foreground_scale
+				difference = length - previous_radius
+				# exclude radii of circles that would be too close to the previous radius
+				if difference < 30:
+					continue
+				# ensure difference to previous circle always increases or remains the same
+				if difference < previous_difference:
+					continue
+				previous_radius = length
+				previous_difference = difference
+				logging.debug( "step: %s, absolute_radius: %s, length: %s"%(step, absolute_radius, length) )
+
+				self.concentric_range_markers.append( utilities.circle_vertices(length) )
+
+		self.range_circles_vertex_lists = []
+		for circle_vertices in self.concentric_range_markers:
+			positioned_circle_vertices = []
+			for vertex in circle_vertices:
+				positioned_circle_vertices.append( (vertex[0]+x, vertex[1]+y) )
+			self.range_circles_vertex_lists.append( 
+				pyglet.graphics.vertex_list( 
+					len(circle_vertices),
+					( 'v2f',        tuple(itertools.chain(*positioned_circle_vertices)) ),
+					( 'c3B/static', self.range_marker_color*len(circle_vertices) )
+				)
+			)
 	
 	def set_scale(self, foreground_scale):
 		"Set attributes that are based on zoom/scale."
@@ -358,6 +485,152 @@ class Window(pyglet.window.Window):
 			(self.absolute_center[0]+coordinates[0]-self.half_width)*self.foreground_scale,
 			(self.absolute_center[1]+coordinates[1]-self.half_height)*self.foreground_scale
 			)
+
+	def capture_range_state(self):
+		"capture initial state for context-sensitive range markings"
+		self.range_origin_coordinate = self.window_to_absolute((self._mouse_x, self._mouse_y))
+
+		# do we have an origin star?
+		self.range_origin_star = None
+		for object in self.over_objects:
+			# should be hovering over a star
+			if type(object) is not galaxy_objects.ForegroundStar:
+				continue
+			self.range_origin_star = object
+			self.range_origin_coordinate = self.range_origin_star.coordinates
+			break
+
+		# completed initial state of range iteration
+		self.initiated_range_state = True
+
+	def reset_range_state(self):
+		# reset all end star marker colors
+		for end_star in self.range_marked_end_stars.keys():
+			end_star.reset_marker()
+			end_star.hide_marker()
+		self.range_marked_ends_stars = {}
+
+		# reset origin star marker color
+		if self.range_origin_star:
+			self.range_origin_star.reset_marker()
+			self.range_origin_star.hide_marker()
+			self.range_marked_end_stars[self.range_origin_star] = True
+			self.range_origin_star = None
+
+		# reveal marker again if we are over a re-marked star
+		for object in self.over_objects:
+			if self.range_marked_end_stars.has_key(object):
+				object.reveal_marker()
+
+		self.range_marked_end_stars = {}
+
+		self.range_origin_coordinate = None
+
+		self.reset_range_circles()
+
+		self.range_cursor_label_batch.visible = False
+
+		# set initial state for *next* range iteration
+		self.initiated_range_state = False
+
+	def set_range_info(self, showing_ranges = True, debug = False):
+		self.showing_ranges = showing_ranges
+
+		if showing_ranges is False:
+			self.reset_range_state()
+			return
+
+		# do not attempt to set any range info unless our mouse cursor is within the window
+		if self._mouse_in_window is False:
+			return
+
+		if self.initiated_range_state is False:
+			self.capture_range_state()
+
+		end_coordinate = self.window_to_absolute((self._mouse_x, self._mouse_y))
+		end_star = None
+
+		# snap to star
+		for object in self.over_objects:
+			# it should be a star
+			if type(object) is not galaxy_objects.ForegroundStar:
+				continue
+
+			# it should not be the origin star
+			if object is self.range_origin_star:
+				continue
+
+			end_star = object
+			end_coordinate = object.coordinates
+			break
+
+		# determine distance from origin to end
+		distance = math.sqrt(
+			abs(self.range_origin_coordinate[0]-end_coordinate[0])**2 +
+			abs(self.range_origin_coordinate[1]-end_coordinate[1])**2
+		)
+		screen_distance = distance/self.foreground_scale
+
+		if debug:
+			if self.range_origin_star:
+				logging.debug( "from %s: %s"%(self.range_origin_star.name, self.range_origin_star.coordinates) )
+			if end_star:
+				logging.debug( "to %s: %s"%(end_star.name, end_star.coordinates) )
+			logging.debug( "distance: %0.2f; screen_distance: %0.2f"%(distance, screen_distance) )
+		
+		if screen_distance > 10:
+			label_parsecs_float = round(distance/100, 1)
+			label_distance = label_parsecs_float if label_parsecs_float < 1 else int(label_parsecs_float)
+			label_unit = 'parsec' if label_distance is 1 else 'parsecs'
+			self.range_cursor_label.text = "%s %s"%(label_distance, label_unit)
+
+			end_coordinates = (self._mouse_x, self._mouse_y)
+			if end_star:
+				end_star_window_coordinates = self.absolute_to_window(end_star.coordinates)
+				label_x = end_star_window_coordinates[0]
+				label_y = end_star_window_coordinates[1]+8
+				end_coordinates = end_star_window_coordinates
+				end_star.marker.color = self.range_marker_color
+				self.range_marked_end_stars[end_star] = True
+			else:
+				label_x = self._mouse_x
+				label_y = self._mouse_y+5
+			self.range_cursor_label.x = label_x
+			self.range_cursor_label.y = label_y
+
+			label_box_top = label_y + self.range_cursor_label.content_height
+			label_box_bottom = label_y
+			label_box_right = label_x + (self.range_cursor_label.content_width/2)
+			label_box_left = label_x - (self.range_cursor_label.content_width/2)
+			self.range_cursor_label_box.vertices = [
+				label_box_right, label_box_bottom,
+				label_box_right, label_box_top,
+				label_box_left, label_box_top,
+				label_box_left, label_box_bottom
+			]
+
+			range_origin_window_coordinates = self.absolute_to_window(self.range_origin_coordinate)
+			self.range_line_vertex_list.vertices = [
+				range_origin_window_coordinates[0], range_origin_window_coordinates[1],
+				end_coordinates[0], end_coordinates[1]
+			]
+
+			self.range_cursor_label_batch.visible = True
+		else:
+			self.range_cursor_label_batch.visible = False
+
+		if self.range_origin_star:
+			self.range_origin_star.marker.color = self.range_marker_color
+			self.range_origin_star.reveal_marker()
+
+			window_range_origin = self.absolute_to_window(self.range_origin_star.coordinates)
+			self.set_range_circles(window_range_origin[0], window_range_origin[1])
+
+	def fix_mouse_in_window(self):
+		"""_mouse_in_window is built in, so normally it wouldn't be a good idea to override it
+		but since it reports "False" on startup even though the cursor is in the window, we'll
+		cheat/fix/workaround"""
+		self._mouse_in_window = True
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -407,6 +680,32 @@ class Window(pyglet.window.Window):
 		# reset identity stack
 		glLoadIdentity()
 
+		# if we're showing range circles, draw them
+		if len(self.range_circles_vertex_lists) > 0:
+			glPushAttrib(GL_ENABLE_BIT)
+			glEnable(GL_LINE_STIPPLE)
+			glLineStipple(1, 0x1111)
+			for vertex_list in self.range_circles_vertex_lists:
+				vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+			glPopAttrib()
+
+		# if we're showing cursor range line and label, draw them
+		if self.range_cursor_label_batch.visible:
+
+			glPushAttrib(GL_ENABLE_BIT)
+			glEnable(GL_LINE_STIPPLE)
+			glLineStipple(1, 0x1111)
+			self.range_line_vertex_list.draw(pyglet.gl.GL_LINES)
+			glPopAttrib()
+
+			glPushAttrib(GL_ENABLE_BIT)
+			glEnable(GL_BLEND)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+			self.range_cursor_label_box.draw(pyglet.gl.GL_QUADS)
+			glPopAttrib()
+
+			self.range_cursor_label_batch.draw()
+
 		# if we're showing the mini-map, draw it
 		if self.mini_map_visible:
 			# translucent gray rectangle behind mini-map
@@ -421,32 +720,30 @@ class Window(pyglet.window.Window):
 			self.mini_window_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 
 	def on_key_press(self, symbol, modifiers):
-		handler = self.key_handlers.get(symbol, lambda: None)
+		key_handlers = {
+			pyglet.window.key.ESCAPE: lambda: self.close(),
+			pyglet.window.key.Q: lambda: self.close(),
+		}
+		handler = key_handlers.get(symbol, lambda: None)
 		handler()
+
+		# everything else, not handled by key_handlers
+		if symbol == pyglet.window.key.LSHIFT:
+			self.set_range_info()
+
+	def on_key_release(self, symbol, modifiers):
+		if symbol == pyglet.window.key.LSHIFT:
+			self.set_range_info(False)
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
 
 	def on_mouse_motion(self, x, y, dx, dy):
-		over_objects = []
-		detected_objects = self.detect_mouseover_objects(x,y)
-		if len(detected_objects) > 0:
-			# maximally-seen object is first
-			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
-				if type(object) == galaxy_objects.ForegroundStar:
-					over_objects.append(object)
-				elif type(object) == galaxy_objects.WormHole:
-					over_objects.append(object)
-				else: # black hole
-					detected_objects.pop(object)
+		self.fix_mouse_in_window()
 
-		if not(over_objects == self.over_objects):
-			for object in self.over_objects:
-				if not detected_objects.has_key(object):
-					object.hide_marker()
-			for object in over_objects:
-				object.reveal_marker()
-			self.over_objects = over_objects
+		self.set_over_objects(x,y)
+		if self.showing_ranges is True:
+			self.set_range_info()
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		detected_objects = self.detect_mouseover_objects(x,y,debug=True)
@@ -454,7 +751,12 @@ class Window(pyglet.window.Window):
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		prescale_absolute_mouse = self.window_to_absolute((x,y))
 
+		self.reset_range_state()
+
 		self.set_scale(self.foreground_scale*(self.zoom_speed**scroll_y))
+
+		# range markers must be recalculated
+		self.concentric_range_markers = None
 
 		postscale_absolute_mouse = self.window_to_absolute((x,y))
 
@@ -492,10 +794,15 @@ class Window(pyglet.window.Window):
 		glMatrixMode(gl.GL_MODELVIEW)
 
 		self.derive_from_window_dimensions(width, height)
+
 		# window resize changes min/max scale, so ensure we are still within scale bounds
 		self.set_scale(self.foreground_scale)
+
 		# ensure center is still in a valid position
 		self.set_center((self.absolute_center[0], self.absolute_center[1]))
+
+		# range markers must be recalculated
+		self.concentric_range_markers = None
 
 		self.data.galaxy_window_state.width = width
 		self.data.galaxy_window_state.height = height
