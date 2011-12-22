@@ -343,7 +343,7 @@ Huge: 38 x 27 parsecs, 71 stars"""
 			nebulae,
 			worm_holes
 		)
-		galaxy.Window(self.data)
+		galaxy.WindowContainer(self.data)
 	
 class SetupWindow(pyglet.window.Window):
 

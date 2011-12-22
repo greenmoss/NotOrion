@@ -56,7 +56,7 @@ class Application(object):
 		# if data has been loaded, use it
 		if hasattr(self, 'data'):
 			self.data.paths = paths
-			galaxy_window = galaxy.Window(self.data)
+			galaxy.WindowContainer(self.data)
 
 		# otherwise generate a new galaxy
 		else:

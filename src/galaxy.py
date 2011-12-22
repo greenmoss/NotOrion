@@ -19,8 +19,9 @@ class WindowState(object):
 		self.absolute_center = None
 		self.foreground_scale = None
 
-class Window(pyglet.window.Window):
-	'All methods that are attached to the galaxy window.'
+class WindowContainer(object):
+	"Non-pyglet game logic and additional attributes for the galaxy window."
+
 	max_dimension = 5000
 	min_dimension = 400
 	# .01 more or less than 1.0 should be fast enough zoom speed
@@ -87,7 +88,7 @@ class Window(pyglet.window.Window):
 
 		if not (self.min_dimension <= width <= self.max_dimension) or not (self.min_dimension <= height <= self.max_dimension):
 			raise RangeException, "width and height must be between 400 and 5000"
-		super(Window, self).__init__(resizable=True, caption='Galaxy', width=width, height=height, visible=False)
+		self.window = Window(data, container=self, width=width, height=height)
 
 		# MUST have galaxy_objects
 		if not hasattr(self.data, 'galaxy_objects'):
@@ -101,13 +102,7 @@ class Window(pyglet.window.Window):
 		if -self.data.galaxy_objects.left_bounding_x > self.data.galaxy_objects.right_bounding_x:
 			self.foreground_bounding_x = -self.data.galaxy_objects.left_bounding_x
 
-		self.clock_display = pyglet.clock.ClockDisplay()
-
-		# which keys are pressed currently?
-		self.keys = pyglet.window.key.KeyStateHandler()
-		self.push_handlers(self.keys)
-
-		self.derive_from_window_dimensions(self.width, self.height)
+		self.derive_from_window_dimensions(self.window.width, self.window.height)
 		if self.data.galaxy_window_state.foreground_scale:
 			self.set_scale(self.data.galaxy_window_state.foreground_scale)
 		else:
@@ -120,7 +115,63 @@ class Window(pyglet.window.Window):
 
 		pyglet.clock.schedule_interval(self.animate, 1/60.)
 
-		self.set_visible()
+		self.window.set_visible()
+	
+	def animate(self, dt):
+		'Do any/all animations.'
+		self.data.galaxy_objects.animate(dt)
+
+		# markers for items under mouse
+		if not(self.over_objects == self.highlight_objects):
+			# new set of animations
+			self.highlight_objects = self.over_objects
+
+	def absolute_to_window(self, coordinates):
+		"Translate absolute foreground coordinates into a window coordinate, accounting for window center and scale."
+		return(
+			coordinates[0]/self.foreground_scale+self.half_width-self.absolute_center[0],
+			coordinates[1]/self.foreground_scale+self.half_height-self.absolute_center[1]
+			)
+
+	def window_to_absolute(self, coordinates):
+		"Translate a window coordinate into absolute foreground coordinates, accounting for window center and scale."
+		return(
+			(self.absolute_center[0]+coordinates[0]-self.half_width)*self.foreground_scale,
+			(self.absolute_center[1]+coordinates[1]-self.half_height)*self.foreground_scale
+			)
+
+	def capture_range_state(self):
+		"capture initial state for context-sensitive range markings"
+		self.range_origin_coordinate = self.window_to_absolute((self.window._mouse_x, self.window._mouse_y))
+
+		# do we have an origin star?
+		self.range_origin_star = None
+		for object in self.over_objects:
+			# should be hovering over a star
+			if type(object) is not galaxy_objects.ForegroundStar:
+				continue
+			self.range_origin_star = object
+			self.range_origin_coordinate = self.range_origin_star.coordinates
+			break
+
+		# completed initial state of range iteration
+		self.initiated_range_state = True
+	
+	def derive_from_window_dimensions(self, width, height):
+		"Set attributes that are based on window dimensions."
+		self.half_width = width/2
+		self.half_height = height/2
+
+		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground galaxy objects.
+		self.minimum_dimension = (width < height) and width or height
+			
+		self.minimum_scale = self.data.galaxy_objects.min_distance/self.minimum_dimension*5.0
+		self.maximum_scale = self.data.galaxy_objects.max_distance/self.minimum_dimension
+		# restrict zooming out to the minimum distance between foreground sprites
+		if(self.data.galaxy_objects.min_distance/self.maximum_scale < self.minimum_foreground_separation):
+			self.maximum_scale = self.data.galaxy_objects.min_distance/self.minimum_foreground_separation
+		if self.minimum_scale > self.maximum_scale:
+			self.maximum_scale = self.minimum_scale
 
 	def derive_mini_map(self):
 		# mini-map play area dimensions should only need to be calculated once
@@ -139,7 +190,7 @@ class Window(pyglet.window.Window):
 			self.mini_map_ratio = self.mini_map_width/map_width
 
 		# where is the foreground window on the playing field?
-		right_top = self.window_to_absolute((self.width, self.height))
+		right_top = self.window_to_absolute((self.window.width, self.window.height))
 		left_bottom = self.window_to_absolute((0, 0))
 
 		# hide the mini-map if the entire playing field is visible
@@ -152,14 +203,12 @@ class Window(pyglet.window.Window):
 		):
 			self.mini_map_visible = False
 			return
-		else:
-			self.mini_map_visible = True
 
 		self.mini_map_corners = {
 			'top':self.mini_map_offset+self.mini_map_height,
-			'right':self.width-self.mini_map_offset,
+			'right':self.window.width-self.mini_map_offset,
 			'bottom':self.mini_map_offset,
-			'left':self.width-self.mini_map_offset-self.mini_map_width
+			'left':self.window.width-self.mini_map_offset-self.mini_map_width
 		}
 
 		mini_map_center = (
@@ -250,22 +299,9 @@ class Window(pyglet.window.Window):
 				)
 			)
 		)
-	
-	def derive_from_window_dimensions(self, width, height):
-		"Set attributes that are based on window dimensions."
-		self.half_width = width/2
-		self.half_height = height/2
 
-		# Derive minimum and maximum scale, based on minimum and maximum distances between foreground galaxy objects.
-		self.minimum_dimension = (width < height) and width or height
-			
-		self.minimum_scale = self.data.galaxy_objects.min_distance/self.minimum_dimension*5.0
-		self.maximum_scale = self.data.galaxy_objects.max_distance/self.minimum_dimension
-		# restrict zooming out to the minimum distance between foreground sprites
-		if(self.data.galaxy_objects.min_distance/self.maximum_scale < self.minimum_foreground_separation):
-			self.maximum_scale = self.data.galaxy_objects.min_distance/self.minimum_foreground_separation
-		if self.minimum_scale > self.maximum_scale:
-			self.maximum_scale = self.minimum_scale
+		# after all mini map parameters are calculated, display the mini map
+		self.mini_map_visible = True
 	
 	def detect_mouseover_objects(self, x, y, radius=2, debug=False):
 		'Given a mouse x/y position, detect any objects at/around this position'
@@ -338,6 +374,50 @@ class Window(pyglet.window.Window):
 
 		return detected_objects
 
+	def fix_mouse_in_window(self):
+		"""_mouse_in_window is built in, so normally it wouldn't be a good idea to override it
+		but since it reports "False" on startup even though the cursor is in the window, we'll
+		cheat/fix/workaround"""
+		self.window._mouse_in_window = True
+
+	def reset_range_circles(self):
+		"remove range circle vertices"
+		self.concentric_range_markers = None
+		# must manually delete old vertex lists, or we get (video?) memory leak
+		for vertex_list in self.range_circles_vertex_lists:
+			vertex_list.delete()
+		self.range_circles_vertex_lists = []
+
+	def reset_range_state(self):
+		# reset all end star marker colors
+		for end_star in self.range_marked_end_stars.keys():
+			end_star.reset_marker()
+			end_star.hide_marker()
+		self.range_marked_ends_stars = {}
+
+		# reset origin star marker color
+		if self.range_origin_star:
+			self.range_origin_star.reset_marker()
+			self.range_origin_star.hide_marker()
+			self.range_marked_end_stars[self.range_origin_star] = True
+			self.range_origin_star = None
+
+		# reveal marker again if we are over a re-marked star
+		for object in self.over_objects:
+			if self.range_marked_end_stars.has_key(object):
+				object.reveal_marker()
+
+		self.range_marked_end_stars = {}
+
+		self.range_origin_coordinate = None
+
+		self.reset_range_circles()
+
+		self.range_cursor_label_batch.visible = False
+
+		# set initial state for *next* range iteration
+		self.initiated_range_state = False
+
 	def set_center(self, coordinates):
 		"Set the window center, for rendering foreground objects."
 		coordinates = [coordinates[0], coordinates[1]]
@@ -378,14 +458,35 @@ class Window(pyglet.window.Window):
 			for object in over_objects:
 				object.reveal_marker()
 			self.over_objects = over_objects
+	
+	def set_scale(self, foreground_scale):
+		"Set attributes that are based on zoom/scale."
 
-	def reset_range_circles(self):
-		"remove range circle vertices"
-		self.concentric_range_markers = None
-		# must manually delete old vertex lists, or we get (video?) memory leak
-		for vertex_list in self.range_circles_vertex_lists:
-			vertex_list.delete()
-		self.range_circles_vertex_lists = []
+		# scale must be larger than 0
+		if foreground_scale <= 0:
+			raise RangeException, "scale must be greater than 0"
+
+		if (foreground_scale < self.minimum_scale):
+			foreground_scale = self.minimum_scale
+		elif (foreground_scale > self.maximum_scale):
+			foreground_scale = self.maximum_scale
+
+		# the integer modifiers ensure all stars and labels remain visible at the limits of the pan area
+		self.center_limits = {
+			'top':self.foreground_bounding_y/foreground_scale+110-self.half_height,
+			'right':self.foreground_bounding_x/foreground_scale+140-self.half_width,
+			'bottom':-self.foreground_bounding_y/foreground_scale-120+self.half_height,
+			'left':-self.foreground_bounding_x/foreground_scale-140+self.half_width,
+		}
+		if self.center_limits['top'] < self.center_limits['bottom']:
+			self.center_limits['top'] = 0
+			self.center_limits['bottom'] = 0
+		if self.center_limits['right'] < self.center_limits['left']:
+			self.center_limits['right'] = 0
+			self.center_limits['left'] = 0
+
+		self.foreground_scale = foreground_scale
+		self.data.galaxy_window_state.foreground_scale = self.foreground_scale
 
 	def set_range_circles(self, x, y):
 		"calculate vertices for successive range circle markers"
@@ -395,7 +496,7 @@ class Window(pyglet.window.Window):
 			self.concentric_range_markers = []
 
 			# how many parsecs from corner to corner?
-			right_top = self.window_to_absolute((self.width, self.height))
+			right_top = self.window_to_absolute((self.window.width, self.window.height))
 			left_bottom = self.window_to_absolute((0, 0))
 			height_parsecs = (right_top[1]-left_bottom[1])/100
 			width_parsecs = (right_top[0]-left_bottom[0])/100
@@ -442,96 +543,6 @@ class Window(pyglet.window.Window):
 					( 'c3B/static', self.range_marker_color*len(circle_vertices) )
 				)
 			)
-	
-	def set_scale(self, foreground_scale):
-		"Set attributes that are based on zoom/scale."
-
-		# scale must be larger than 0
-		if foreground_scale <= 0:
-			raise RangeException, "scale must be greater than 0"
-
-		if (foreground_scale < self.minimum_scale):
-			foreground_scale = self.minimum_scale
-		elif (foreground_scale > self.maximum_scale):
-			foreground_scale = self.maximum_scale
-
-		# the integer modifiers ensure all stars and labels remain visible at the limits of the pan area
-		self.center_limits = {
-			'top':self.foreground_bounding_y/foreground_scale+110-self.half_height,
-			'right':self.foreground_bounding_x/foreground_scale+140-self.half_width,
-			'bottom':-self.foreground_bounding_y/foreground_scale-120+self.half_height,
-			'left':-self.foreground_bounding_x/foreground_scale-140+self.half_width,
-		}
-		if self.center_limits['top'] < self.center_limits['bottom']:
-			self.center_limits['top'] = 0
-			self.center_limits['bottom'] = 0
-		if self.center_limits['right'] < self.center_limits['left']:
-			self.center_limits['right'] = 0
-			self.center_limits['left'] = 0
-
-		self.foreground_scale = foreground_scale
-		self.data.galaxy_window_state.foreground_scale = self.foreground_scale
-
-	def absolute_to_window(self, coordinates):
-		"Translate absolute foreground coordinates into a window coordinate, accounting for window center and scale."
-		return(
-			coordinates[0]/self.foreground_scale+self.half_width-self.absolute_center[0],
-			coordinates[1]/self.foreground_scale+self.half_height-self.absolute_center[1]
-			)
-
-	def window_to_absolute(self, coordinates):
-		"Translate a window coordinate into absolute foreground coordinates, accounting for window center and scale."
-		return(
-			(self.absolute_center[0]+coordinates[0]-self.half_width)*self.foreground_scale,
-			(self.absolute_center[1]+coordinates[1]-self.half_height)*self.foreground_scale
-			)
-
-	def capture_range_state(self):
-		"capture initial state for context-sensitive range markings"
-		self.range_origin_coordinate = self.window_to_absolute((self._mouse_x, self._mouse_y))
-
-		# do we have an origin star?
-		self.range_origin_star = None
-		for object in self.over_objects:
-			# should be hovering over a star
-			if type(object) is not galaxy_objects.ForegroundStar:
-				continue
-			self.range_origin_star = object
-			self.range_origin_coordinate = self.range_origin_star.coordinates
-			break
-
-		# completed initial state of range iteration
-		self.initiated_range_state = True
-
-	def reset_range_state(self):
-		# reset all end star marker colors
-		for end_star in self.range_marked_end_stars.keys():
-			end_star.reset_marker()
-			end_star.hide_marker()
-		self.range_marked_ends_stars = {}
-
-		# reset origin star marker color
-		if self.range_origin_star:
-			self.range_origin_star.reset_marker()
-			self.range_origin_star.hide_marker()
-			self.range_marked_end_stars[self.range_origin_star] = True
-			self.range_origin_star = None
-
-		# reveal marker again if we are over a re-marked star
-		for object in self.over_objects:
-			if self.range_marked_end_stars.has_key(object):
-				object.reveal_marker()
-
-		self.range_marked_end_stars = {}
-
-		self.range_origin_coordinate = None
-
-		self.reset_range_circles()
-
-		self.range_cursor_label_batch.visible = False
-
-		# set initial state for *next* range iteration
-		self.initiated_range_state = False
 
 	def set_range_info(self, showing_ranges = True, debug = False):
 		self.showing_ranges = showing_ranges
@@ -541,13 +552,13 @@ class Window(pyglet.window.Window):
 			return
 
 		# do not attempt to set any range info unless our mouse cursor is within the window
-		if self._mouse_in_window is False:
+		if self.window._mouse_in_window is False:
 			return
 
 		if self.initiated_range_state is False:
 			self.capture_range_state()
 
-		end_coordinate = self.window_to_absolute((self._mouse_x, self._mouse_y))
+		end_coordinate = self.window_to_absolute((self.window._mouse_x, self.window._mouse_y))
 		end_star = None
 
 		# snap to star
@@ -584,7 +595,7 @@ class Window(pyglet.window.Window):
 			label_unit = 'parsec' if label_distance is 1 else 'parsecs'
 			self.range_cursor_label.text = "%s %s"%(label_distance, label_unit)
 
-			end_coordinates = (self._mouse_x, self._mouse_y)
+			end_coordinates = (self.window._mouse_x, self.window._mouse_y)
 			if end_star:
 				end_star_window_coordinates = self.absolute_to_window(end_star.coordinates)
 				label_x = end_star_window_coordinates[0]
@@ -593,8 +604,8 @@ class Window(pyglet.window.Window):
 				end_star.marker.color = self.range_marker_color
 				self.range_marked_end_stars[end_star] = True
 			else:
-				label_x = self._mouse_x
-				label_y = self._mouse_y+5
+				label_x = self.window._mouse_x
+				label_y = self.window._mouse_y+5
 			self.range_cursor_label.x = label_x
 			self.range_cursor_label.y = label_y
 
@@ -626,11 +637,24 @@ class Window(pyglet.window.Window):
 			window_range_origin = self.absolute_to_window(self.range_origin_star.coordinates)
 			self.set_range_circles(window_range_origin[0], window_range_origin[1])
 
-	def fix_mouse_in_window(self):
-		"""_mouse_in_window is built in, so normally it wouldn't be a good idea to override it
-		but since it reports "False" on startup even though the cursor is in the window, we'll
-		cheat/fix/workaround"""
-		self._mouse_in_window = True
+class Window(pyglet.window.Window):
+	'Pyglet methods for the galaxy window.'
+
+	def __init__(self, data, container=None, width=1024, height=768):
+		super(Window, self).__init__(
+			resizable=True, caption='Galaxy', width=width, height=height, visible=False
+		)
+		
+		self.data = data
+
+		# non-pyglet window attributes
+		if not isinstance(container, WindowContainer):
+			raise MissingDataException, "parameter container must be an instance of WindowContainer"
+		self.container = container
+
+		# which keys are pressed currently?
+		self.keys = pyglet.window.key.KeyStateHandler()
+		self.push_handlers(self.keys)
 
 	def on_draw(self):
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -639,14 +663,14 @@ class Window(pyglet.window.Window):
 		# origin is center of window
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
+		gluOrtho2D(-self.container.half_width, self.container.half_width, -self.container.half_height, self.container.half_height)
 		glMatrixMode(GL_MODELVIEW)
 
 		# draw the background stars
 		self.data.galaxy_objects.background_vertex_list.draw(pyglet.gl.GL_POINTS)
 
 		# if we're showing the mini-map, black out background stars under mini-map
-		if self.mini_map_visible:
+		if self.container.mini_map_visible:
 			# origin is lower-left of window
 			glMatrixMode(GL_PROJECTION)
 			glLoadIdentity()
@@ -654,22 +678,22 @@ class Window(pyglet.window.Window):
 			glMatrixMode(GL_MODELVIEW)
 
 			# black-filled rectangle behind mini-map
-			self.mini_map_black_bg_vertex_list.draw(pyglet.gl.GL_QUADS)
+			self.container.mini_map_black_bg_vertex_list.draw(pyglet.gl.GL_QUADS)
 
 			# change back to origin at center of window
 			glMatrixMode(GL_PROJECTION)
 			glLoadIdentity()
-			gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
+			gluOrtho2D(-self.container.half_width, self.container.half_width, -self.container.half_height, self.container.half_height)
 			glMatrixMode(GL_MODELVIEW)
 
 		# set the center of the viewing area
 		gluLookAt(
-			self.absolute_center[0], self.absolute_center[1], 0.0,
-			self.absolute_center[0], self.absolute_center[1], -100.0,
+			self.container.absolute_center[0], self.container.absolute_center[1], 0.0,
+			self.container.absolute_center[0], self.container.absolute_center[1], -100.0,
 			0.0, 1.0, 0.0)
 
 		# draw the foreground galaxy objects
-		self.data.galaxy_objects.draw(self.foreground_scale)
+		self.data.galaxy_objects.draw(self.container.foreground_scale)
 
 		# for HUD objects, set 2D view with origin at lower left
 		glMatrixMode(GL_PROJECTION)
@@ -681,43 +705,43 @@ class Window(pyglet.window.Window):
 		glLoadIdentity()
 
 		# if we're showing range circles, draw them
-		if len(self.range_circles_vertex_lists) > 0:
+		if len(self.container.range_circles_vertex_lists) > 0:
 			glPushAttrib(GL_ENABLE_BIT)
 			glEnable(GL_LINE_STIPPLE)
 			glLineStipple(1, 0x1111)
-			for vertex_list in self.range_circles_vertex_lists:
+			for vertex_list in self.container.range_circles_vertex_lists:
 				vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 			glPopAttrib()
 
 		# if we're showing cursor range line and label, draw them
-		if self.range_cursor_label_batch.visible:
+		if self.container.range_cursor_label_batch.visible:
 
 			glPushAttrib(GL_ENABLE_BIT)
 			glEnable(GL_LINE_STIPPLE)
 			glLineStipple(1, 0x1111)
-			self.range_line_vertex_list.draw(pyglet.gl.GL_LINES)
+			self.container.range_line_vertex_list.draw(pyglet.gl.GL_LINES)
 			glPopAttrib()
 
 			glPushAttrib(GL_ENABLE_BIT)
 			glEnable(GL_BLEND)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-			self.range_cursor_label_box.draw(pyglet.gl.GL_QUADS)
+			self.container.range_cursor_label_box.draw(pyglet.gl.GL_QUADS)
 			glPopAttrib()
 
-			self.range_cursor_label_batch.draw()
+			self.container.range_cursor_label_batch.draw()
 
 		# if we're showing the mini-map, draw it
-		if self.mini_map_visible:
+		if self.container.mini_map_visible:
 			# translucent gray rectangle behind mini-map
 			glEnable(GL_BLEND)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-			self.mini_map_transparent_bg_vertex_list.draw(pyglet.gl.GL_QUADS)
+			self.container.mini_map_transparent_bg_vertex_list.draw(pyglet.gl.GL_QUADS)
 
 			# borders of mini-map
-			self.mini_map_borders_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+			self.container.mini_map_borders_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 
 			# borders of mini-window within mini-map
-			self.mini_window_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+			self.container.mini_window_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 
 	def on_key_press(self, symbol, modifiers):
 		key_handlers = {
@@ -729,62 +753,62 @@ class Window(pyglet.window.Window):
 
 		# everything else, not handled by key_handlers
 		if symbol == pyglet.window.key.LSHIFT:
-			self.set_range_info()
+			self.container.set_range_info()
 
 	def on_key_release(self, symbol, modifiers):
 		if symbol == pyglet.window.key.LSHIFT:
-			self.set_range_info(False)
+			self.container.set_range_info(False)
 	
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		self.set_center((self.absolute_center[0] - dx, self.absolute_center[1] - dy))
+		self.container.set_center((self.container.absolute_center[0] - dx, self.container.absolute_center[1] - dy))
 
 	def on_mouse_motion(self, x, y, dx, dy):
-		self.fix_mouse_in_window()
+		self.container.fix_mouse_in_window()
 
-		self.set_over_objects(x,y)
-		if self.showing_ranges is True:
-			self.set_range_info()
+		self.container.set_over_objects(x,y)
+		if self.container.showing_ranges is True:
+			self.container.set_range_info()
 
 	def on_mouse_press(self, x, y, button, modifiers):
-		detected_objects = self.detect_mouseover_objects(x,y,debug=True)
+		detected_objects = self.container.detect_mouseover_objects(x,y,debug=True)
 
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		prescale_absolute_mouse = self.window_to_absolute((x,y))
+		prescale_absolute_mouse = self.container.window_to_absolute((x,y))
 
-		self.reset_range_state()
+		self.container.reset_range_state()
 
-		self.set_scale(self.foreground_scale*(self.zoom_speed**scroll_y))
+		self.container.set_scale(self.container.foreground_scale*(self.container.zoom_speed**scroll_y))
 
 		# range markers must be recalculated
-		self.concentric_range_markers = None
+		self.container.concentric_range_markers = None
 
-		postscale_absolute_mouse = self.window_to_absolute((x,y))
+		postscale_absolute_mouse = self.container.window_to_absolute((x,y))
 
 		# scale the prescale mouse according to the *new* foreground scale
-		prescale_mouse = (prescale_absolute_mouse[0]/self.foreground_scale, prescale_absolute_mouse[1]/self.foreground_scale)
-		postscale_mouse = (postscale_absolute_mouse[0]/self.foreground_scale, postscale_absolute_mouse[1]/self.foreground_scale)
+		prescale_mouse = (prescale_absolute_mouse[0]/self.container.foreground_scale, prescale_absolute_mouse[1]/self.container.foreground_scale)
+		postscale_mouse = (postscale_absolute_mouse[0]/self.container.foreground_scale, postscale_absolute_mouse[1]/self.container.foreground_scale)
 
-		self.set_center(
+		self.container.set_center(
 			(
-				prescale_mouse[0]-postscale_mouse[0]+self.absolute_center[0], 
-				prescale_mouse[1]-postscale_mouse[1]+self.absolute_center[1]
+				prescale_mouse[0]-postscale_mouse[0]+self.container.absolute_center[0], 
+				prescale_mouse[1]-postscale_mouse[1]+self.container.absolute_center[1]
 			)
 		)
 	
 	def on_resize(self, width, height):
 		# ensure resized window size falls within acceptable limits
-		if width < self.min_dimension:
-			self.width = self.min_dimension
-			width = self.min_dimension
-		if height < self.min_dimension:
-			self.height = self.min_dimension
-			height = self.min_dimension
-		if width > self.max_dimension:
-			self.width = self.max_dimension
-			width = self.max_dimension
-		if height > self.max_dimension:
-			self.height = self.max_dimension
-			height = self.max_dimension
+		if width < self.container.min_dimension:
+			self.width = self.container.min_dimension
+			width = self.container.min_dimension
+		if height < self.container.min_dimension:
+			self.height = self.container.min_dimension
+			height = self.container.min_dimension
+		if width > self.container.max_dimension:
+			self.width = self.container.max_dimension
+			width = self.container.max_dimension
+		if height > self.container.max_dimension:
+			self.height = self.container.max_dimension
+			height = self.container.max_dimension
 
 		# reset openGL attributes to match new window dimensions
 		glViewport(0, 0, width, height)
@@ -793,27 +817,18 @@ class Window(pyglet.window.Window):
 		glOrtho(0, width, 0, height, -1, 1)
 		glMatrixMode(gl.GL_MODELVIEW)
 
-		self.derive_from_window_dimensions(width, height)
+		self.container.derive_from_window_dimensions(width, height)
 
 		# window resize changes min/max scale, so ensure we are still within scale bounds
-		self.set_scale(self.foreground_scale)
+		self.container.set_scale(self.container.foreground_scale)
 
 		# ensure center is still in a valid position
-		self.set_center((self.absolute_center[0], self.absolute_center[1]))
+		self.container.set_center((self.container.absolute_center[0], self.container.absolute_center[1]))
 
 		# range markers must be recalculated
-		self.concentric_range_markers = None
+		self.container.concentric_range_markers = None
 
-		self.data.galaxy_window_state.width = width
-		self.data.galaxy_window_state.height = height
-	
-	def animate(self, dt):
-		'Do any/all animations.'
-		self.data.galaxy_objects.animate(dt)
-
-		# markers for items under mouse
-		if not(self.over_objects == self.highlight_objects):
-			# new set of animations
-			self.highlight_objects = self.over_objects
+		self.container.data.galaxy_window_state.width = width
+		self.container.data.galaxy_window_state.height = height
 
 # doesn't make sense to call this standalone, so no __main__
