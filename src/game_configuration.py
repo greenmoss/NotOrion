@@ -8,49 +8,61 @@ import galaxy_objects
 import random
 import utilities
 import sys
+import textwrap
+
+class DataError(Exception): pass
 
 class Choose(object):
-	'Choose parameters for pre-game setup'
+	"""Choose parameters for pre-game configuration."""
 
-	galaxy_age_help_text = """
-Young galaxies have more mineral-rich planets and fewer planets suitable for farming.
+	galaxy_age_help_text = textwrap.dedent("""\
+		Young galaxies have more mineral-rich planets and fewer planets suitable for farming.
 
-Mature galaxies have an even mix of farming planets and mineral-rich planets.
+		Mature galaxies have an even mix of farming planets and mineral-rich planets.
 
-Old galaxies have more planets suitable for farming and fewer mineral-rich planets.
-"""
-	galaxy_size_help_text = """
-Galaxy sizes and number of stars:
+		Old galaxies have more planets suitable for farming and fewer mineral-rich planets.""")
+	galaxy_size_help_text = textwrap.dedent("""\
+		Galaxy sizes and number of stars:
 
-Tiny: 10 x 7 parsecs, 5 stars
+		Tiny: 10 x 7 parsecs, 5 stars
 
-Small: 20 x 14 parsecs, 20 stars
+		Small: 20 x 14 parsecs, 20 stars
 
-Medium: 27 x 19 parsecs, 36 stars
+		Medium: 27 x 19 parsecs, 36 stars
 
-Large: 33 x 24 parsecs, 54 stars
+		Large: 33 x 24 parsecs, 54 stars
 
-Huge: 38 x 27 parsecs, 71 stars"""
+		Huge: 38 x 27 parsecs, 71 stars""")
 
-	def __init__(self, data):
+	def __init__(self, data, difficulty=None):
 		self.data = data
-		self.window = SetupWindow()
+		self.setup_window = None
 
-		# Default theme, blue-colored
-		self.theme = kytten.Theme(
-			os.path.join(self.data.paths['resources_dir'], 'gui'), 
-			override={
-				"gui_color": [64, 128, 255, 255],
-				"font_size": 12
-			}
-		)
-		self.window.batch = pyglet.graphics.Batch()
-		self.group = pyglet.graphics.OrderedGroup(0)
+		if difficulty is None:
+			self.setup_window = SetupWindow()
 
-		self.show_difficulty_dialog()
+			# Default theme, blue-colored
+			self.theme = kytten.Theme(
+				os.path.join(self.data.paths['resources_dir'], 'gui'), 
+				override={
+					"gui_color": [64, 128, 255, 255],
+					"font_size": 12
+				}
+			)
+			self.setup_window.batch = pyglet.graphics.Batch()
+			self.group = pyglet.graphics.OrderedGroup(0)
+
+			self.show_difficulty_dialog()
+
+		else:
+			# if we were passed a difficulty, do *not* show a setup window
+			self.handle_difficulty_selection(difficulty)
 	
-	def on_difficulty_select(self, choice):
-		if choice == 'Beginner':
+	def handle_difficulty_selection(self, chosen_difficulty):
+		"""Set galaxy creation parameters based on a given difficulty.
+		If we are generating the galaxy without a setup window, skip further selection dialogs."""
+
+		if chosen_difficulty == 'Beginner':
 			# simplest: only a few stars, type yellow, no other objects
 			# distribute the stars evenly over a small area
 			foreground_limits = (-250,-250,250,250)
@@ -61,35 +73,47 @@ Huge: 38 x 27 parsecs, 71 stars"""
 				5, # number of stars
 				object_pool=['yellow']
 			)
-			self.window.close()
 
-		else:
+			if self.setup_window is not None:
+				self.setup_window.close()
+
+			return
+
+		if self.setup_window is not None:
 			self.difficulty_dialog.teardown()
 
-			if choice == "Easy":
-				self.galaxy_size = "Small"
-			elif choice == "Normal":
-				self.galaxy_size = "Medium"
-			else: # choice == "Challenging"
-				self.galaxy_size = "Large"
+		if chosen_difficulty == "Easy":
+			self.galaxy_size = "Small"
+		elif chosen_difficulty == "Normal":
+			self.galaxy_size = "Medium"
+		elif chosen_difficulty == "Challenging":
+			self.galaxy_size = "Large"
+		else:
+			raise DataError, "invalid difficulty selection: %s"%chosen_difficulty
 
-			self.galaxy_age = "Mature"
+		self.galaxy_age = "Mature"
 
+		if self.setup_window is None:
+			self.handle_galaxy_parameters()
+		else:
 			self.show_options_dialog()
 
-	def on_galaxy_age_help(self):
+	def handle_galaxy_age_help(self):
 		self.show_help_dialog(self.galaxy_age_help_text)
 
-	def on_galaxy_age_select(self, choice):
-		self.galaxy_age = choice
+	def handle_galaxy_age_selection(self, chosen_age):
+		self.galaxy_age = chosen_age
 
-	def on_galaxy_size_help(self):
+	def handle_galaxy_size_help(self):
 		self.show_help_dialog(self.galaxy_size_help_text)
 
-	def on_galaxy_size_select(self, choice):
-		self.galaxy_size = choice
+	def handle_galaxy_size_selection(self, chosen_size):
+		self.galaxy_size = chosen_size
 	
-	def on_options_continue(self):
+	def handle_galaxy_parameters(self):
+		"""Given galaxy parameters, generate the galaxy.
+		If these parameters were set via a setup window, close the setup window."""
+
 		# copying estimated proportions from
 		# http://masteroforion2.blogspot.com/2006/01/moo2-map-generator.html
 		if self.galaxy_size == 'Tiny':
@@ -155,7 +179,9 @@ Huge: 38 x 27 parsecs, 71 stars"""
 			nebulae_count,
 			object_pool
 		)
-		self.window.close()
+
+		if self.setup_window is not None:
+			self.setup_window.close()
 	
 	def show_difficulty_dialog(self):
 		self.difficulty_dialog = kytten.Dialog(
@@ -164,11 +190,11 @@ Huge: 38 x 27 parsecs, 71 stars"""
 				kytten.VerticalLayout([
 					kytten.Menu(
 						options=["Beginner", "Easy", "Normal", "Challenging"],
-						on_select=self.on_difficulty_select
+						on_select=self.handle_difficulty_selection
 					)
 				]),
 			),
-			window=self.window, batch=self.window.batch, group=self.group,
+			window=self.setup_window, batch=self.setup_window.batch, group=self.group,
 			anchor=kytten.ANCHOR_CENTER,
 			theme=self.theme
 		)
@@ -187,7 +213,7 @@ Huge: 38 x 27 parsecs, 71 stars"""
 					kytten.Button("Done", on_click=teardown),
 				]),
 			),
-			window=self.window, batch=self.window.batch, group=self.group,
+			window=self.setup_window, batch=self.setup_window.batch, group=self.group,
 			anchor=kytten.ANCHOR_CENTER,
 			theme=self.theme
 		)
@@ -203,9 +229,9 @@ Huge: 38 x 27 parsecs, 71 stars"""
 						kytten.Dropdown(
 							["Tiny", "Small", "Medium", "Large", "Huge"],
 							selected=self.galaxy_size,
-							on_select=self.on_galaxy_size_select,
+							on_select=self.handle_galaxy_size_selection,
 						),
-						kytten.Button("?", on_click=self.on_galaxy_size_help),
+						kytten.Button("?", on_click=self.handle_galaxy_size_help),
 					]),
 					kytten.HorizontalLayout([
 						kytten.Label("Galaxy Age"),
@@ -213,14 +239,14 @@ Huge: 38 x 27 parsecs, 71 stars"""
 						kytten.Dropdown(
 							["Young", "Mature", "Old"],
 							selected=self.galaxy_age,
-							on_select=self.on_galaxy_age_select,
+							on_select=self.handle_galaxy_age_selection,
 						),
-						kytten.Button("?", on_click=self.on_galaxy_age_help),
+						kytten.Button("?", on_click=self.handle_galaxy_age_help),
 					]),
-					kytten.Button("Continue", on_click=self.on_options_continue),
+					kytten.Button("Continue", on_click=self.handle_galaxy_parameters),
 				]),
 			),
-			window=self.window, batch=self.window.batch, group=self.group,
+			window=self.setup_window, batch=self.setup_window.batch, group=self.group,
 			anchor=kytten.ANCHOR_CENTER,
 			theme=self.theme
 		)

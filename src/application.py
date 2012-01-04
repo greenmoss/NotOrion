@@ -6,7 +6,7 @@ import pickle
 import argparse
 import imp
 import sys
-import setup
+import game_configuration
 import os
 import logging
 
@@ -62,7 +62,9 @@ class Application(object):
 		else:
 			self.data = DataContainer()
 			self.data.paths = paths
-			setup_window = setup.Choose(self.data)
+
+			# if difficulty was not set, self.args.difficulty will be None
+			game_configuration.Choose(self.data, difficulty=self.args.difficulty)
 
 		pyglet.app.run()
 
@@ -75,6 +77,7 @@ class Application(object):
 		parser.add_argument('--save-game-file')
 		parser.add_argument('--data-init-file')
 		parser.add_argument('--continue', action='store_true')
+		parser.add_argument('--difficulty', choices=['Beginner', 'Easy', 'Normal', 'Challenging'])
 		self.args = parser.parse_args()
 
 	def try_data_import(self, data):
