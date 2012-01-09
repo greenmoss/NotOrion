@@ -369,7 +369,6 @@ class Choose(object):
 			nebulae,
 			worm_holes
 		)
-		galaxy.WindowContainer(self.data)
 	
 class SetupWindow(pyglet.window.Window):
 

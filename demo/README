@@ -1,0 +1,1 @@
+This directory contains tests which are meant to be run by a human. It is named "demo" so that Nose ignores it.

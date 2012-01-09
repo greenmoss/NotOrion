@@ -30,6 +30,7 @@ class DataContainer(object):
 	"A simple object to store all application data."
 
 	def __init__(self):
+		self.paths = set_paths()
 		self.galaxy_objects = None
 		self.galaxy_window_state = galaxy.WindowState()
 
@@ -53,21 +54,17 @@ class Application(object):
 
 		self.try_data_import(data)
 
-		# if data has been loaded, use it
-		if hasattr(self, 'data'):
-			self.data.paths = paths
-			galaxy.WindowContainer(self.data)
-
-		# otherwise generate a new galaxy
-		else:
+		# if no data has been loaded, generate new
+		if not hasattr(self, 'data'):
 			self.data = DataContainer()
-			self.data.paths = paths
 
 			# if difficulty was not set, self.args.difficulty will be None
 			game_configuration.Choose(self.data, difficulty=self.args.difficulty)
 
-		pyglet.app.run()
+		self.data.galaxy_window = galaxy.WindowContainer(self.data)
 
+	def cleanup(self):
+		"""Clean up the application. Ideally this would be automatic, via the opposite of __init__"""
 		if hasattr(self, 'data'):
 			self.save()
 
@@ -123,4 +120,6 @@ class Application(object):
 			pickle.dump(self.data, save_game_file)
 
 if __name__ == "__main__":
-	Application()
+	app = Application()
+	pyglet.app.run()
+	app.cleanup()
