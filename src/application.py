@@ -61,6 +61,10 @@ class Application(object):
 			# if difficulty was not set, self.args.difficulty will be None
 			game_configuration.Choose(self.data, difficulty=self.args.difficulty)
 
+			if not self.args.difficulty:
+				# must start application/Choose now, since its data is required for the rest of the game
+				pyglet.app.run()
+
 		self.data.galaxy_window = galaxy.WindowContainer(self.data)
 
 	def cleanup(self):
@@ -115,6 +119,9 @@ class Application(object):
 		if not self.data.galaxy_objects:
 			logging.warning( "no data; not saving" )
 			return None
+
+		# delete all window references so they are not pickled
+		del self.data.galaxy_window
 
 		with open(self.game_file_path, 'w') as save_game_file:
 			pickle.dump(self.data, save_game_file)

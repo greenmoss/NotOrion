@@ -36,7 +36,6 @@ class Choose(object):
 
 	def __init__(self, data, difficulty=None):
 		self.data = data
-		self.setup_window = None
 
 		if difficulty is None:
 			self.setup_window = SetupWindow()
@@ -55,6 +54,7 @@ class Choose(object):
 			self.show_difficulty_dialog()
 
 		else:
+			self.setup_window = None
 			# if we were passed a difficulty, do *not* show a setup window
 			self.handle_difficulty_selection(difficulty)
 	
