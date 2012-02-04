@@ -153,9 +153,6 @@ class WindowContainer(object):
 			self.range_origin_star = object
 			self.range_origin_coordinate = self.range_origin_star.coordinates
 			break
-
-		# completed initial state of range iteration
-		self.initiated_range_state = True
 	
 	def derive_from_window_dimensions(self, width, height):
 		"Set attributes that are based on window dimensions."
@@ -491,6 +488,10 @@ class WindowContainer(object):
 	def set_range_circles(self, x, y):
 		"calculate vertices for successive range circle markers"
 
+		# always reset in case we have old range circle markers
+		# otherwise we will get a memory leak
+		self.reset_range_circles()
+
 		# Set logarithmically-scaled concentric circles showing range in parsecs from given x, y
 		if not self.concentric_range_markers:
 			self.concentric_range_markers = []
@@ -531,7 +532,6 @@ class WindowContainer(object):
 
 				self.concentric_range_markers.append( utilities.circle_vertices(length) )
 
-		self.range_circles_vertex_lists = []
 		for circle_vertices in self.concentric_range_markers:
 			positioned_circle_vertices = []
 			for vertex in circle_vertices:
@@ -634,8 +634,12 @@ class WindowContainer(object):
 			self.range_origin_star.marker.color = self.range_marker_color
 			self.range_origin_star.reveal_marker()
 
-			window_range_origin = self.absolute_to_window(self.range_origin_star.coordinates)
-			self.set_range_circles(window_range_origin[0], window_range_origin[1])
+			if self.initiated_range_state is False:
+				window_range_origin = self.absolute_to_window(self.range_origin_star.coordinates)
+				self.set_range_circles(window_range_origin[0], window_range_origin[1])
+
+		# completed initial state of range iteration
+		self.initiated_range_state = True
 
 class Window(pyglet.window.Window):
 	'Pyglet methods for the galaxy window.'
