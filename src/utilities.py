@@ -1,5 +1,5 @@
 #! python -O
-# a set of utilities, which should be useful without any associated objects
+# a set of utilities that should be useful without any associated objects
 from __future__ import division
 import random
 import sys
@@ -10,8 +10,8 @@ class RangeException(Exception): pass
 # lookup table for current or next-highest/lowest power of two
 # for example, 2 is a power of 2, and thus matches
 # 3 is *not* a power of 2, so the next highest is a 4, and the next lowest is 2
-global powers_of_2 
-powers_of_2 = [ 
+global POWERS_OF_2 
+POWERS_OF_2 = [ 
 	1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072
 ]
 
@@ -23,9 +23,9 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 	if right <= left:
 		raise RangeException, 'right coordinate must be greater than left coordinate'
 	
-	global powers_of_2
-	if amount > powers_of_2[-1]:
-		raise RangeException, 'amount may not exceed %d'%powers_of_2[-1]
+	global POWERS_OF_2
+	if amount > POWERS_OF_2[-1]:
+		raise RangeException, 'amount may not exceed %d'%POWERS_OF_2[-1]
 
 	# passing in a seed is useful for testing, but likely nothing else
 	random.seed(seed)
@@ -87,7 +87,7 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 
 	coordinate_count2 = coordinate_count - coordinate_count1 
 
-	global powers_of_2
+	global POWERS_OF_2
 
 	x_span = right-left+1
 	x_chunks = int(x_span/minimum_length)
@@ -100,19 +100,19 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 	# split vertically
 	if x_span > y_span:
 		y_chunks_power_of_2 = 1
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power > y_chunks:
 				break
 			y_chunks_power_of_2 = power
 
 		minimum_left_x_chunks = int(math.ceil(coordinate_count1/y_chunks_power_of_2))
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power >= minimum_left_x_chunks:
 				minimum_left_x_chunks = power
 				break
 
 		minimum_right_x_chunks = int(math.ceil(coordinate_count2/y_chunks_power_of_2))
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power >= minimum_right_x_chunks:
 				minimum_right_x_chunks = power
 				break
@@ -144,19 +144,19 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 	# split horizontally
 	else:
 		x_chunks_power_of_2 = 1
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power > x_chunks:
 				break
 			x_chunks_power_of_2 = power
 
 		minimum_bottom_y_chunks = int(math.ceil(coordinate_count1/x_chunks_power_of_2))
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power >= minimum_bottom_y_chunks:
 				minimum_bottom_y_chunks = power
 				break
 
 		minimum_top_y_chunks = int(math.ceil(coordinate_count2/x_chunks_power_of_2))
-		for power in powers_of_2:
+		for power in POWERS_OF_2:
 			if power >= minimum_top_y_chunks:
 				minimum_top_y_chunks = power
 				break
