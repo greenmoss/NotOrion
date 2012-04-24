@@ -16,8 +16,6 @@ class Setup(panes.Panes):
 
 		self.state = state
 
-		super(Setup, self).__init__()
-
 		self.theme = kytten.Theme(
 			os.path.join(g.application.paths['resources_dir'], 'gui'), 
 			override={
@@ -27,11 +25,6 @@ class Setup(panes.Panes):
 		)
 		self.batch = pyglet.graphics.Batch()
 		self.group = pyglet.graphics.OrderedGroup(0)
-
-	def on_draw(self):
-		glClearColor(0.0, 0.0, 0.0, 0)
-		g.window.clear()
-		self.batch.draw()
 	
 	def initialize_difficulty_dialog(self):
 		self.difficulty_dialog = kytten.Dialog(
@@ -39,7 +32,7 @@ class Setup(panes.Panes):
 				"Choose Game Difficulty",
 				kytten.VerticalLayout([
 					kytten.Menu(
-						options=self.state.difficulty_options,
+						options=g.setup.difficulty_options,
 						on_select=self.state.handle_difficulty_selection
 					)
 				]),
@@ -58,8 +51,8 @@ class Setup(panes.Panes):
 						kytten.Label("Galaxy Size"),
 						None,
 						kytten.Dropdown(
-							options=self.state.size_options,
-							selected=self.state.galaxy_size,
+							options=g.setup.size_options,
+							selected=g.setup.galaxy_settings['size'],
 							on_select=self.state.handle_galaxy_size_selection,
 						),
 						kytten.Button("?", on_click=self.state.handle_galaxy_size_help),
@@ -68,13 +61,13 @@ class Setup(panes.Panes):
 						kytten.Label("Galaxy Age"),
 						None,
 						kytten.Dropdown(
-							options=self.state.age_options,
-							selected=self.state.galaxy_age,
+							options=g.setup.age_options,
+							selected=g.setup.galaxy_settings['age'],
 							on_select=self.state.handle_galaxy_age_selection,
 						),
 						kytten.Button("?", on_click=self.state.handle_galaxy_age_help),
 					]),
-					kytten.Button("Continue", on_click=self.state.handle_galaxy_parameters),
+					kytten.Button("Continue", on_click=self.state.handle_game_options_continue),
 				]),
 			),
 			window=g.window, batch=self.batch, group=self.group,
@@ -100,3 +93,9 @@ class Setup(panes.Panes):
 			anchor=kytten.ANCHOR_CENTER,
 			theme=self.theme
 		)
+
+	# pyglet window handlers go here
+	def on_draw(self):
+		glClearColor(0.0, 0.0, 0.0, 0)
+		g.window.clear()
+		self.batch.draw()

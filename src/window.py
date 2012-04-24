@@ -24,9 +24,6 @@ class Window(pyglet.window.Window):
 
 		self.set_visible()
 
-	def on_draw(self):
-		g.application.state.pane.on_draw()
-
 	# this activates kytten in state.setup; it should move into panes.setup
 	def update(self, dt):
 		self.dispatch_event('on_update', dt)

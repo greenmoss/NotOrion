@@ -9,4 +9,5 @@ g.logging.basicConfig(level=g.logging.DEBUG)
 
 import application
 g.application = application.Application()
+g.application.configure()
 g.application.run()

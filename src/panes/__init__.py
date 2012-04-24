@@ -5,8 +5,6 @@ import pyglet
 
 from globals import g
 
-class Panes(object):
+class Panes(pyglet.event.EventDispatcher):
 	""" Each viewing pane within the single pyglet window.  """
-
-	def __init__(self):
-		pass
+	pass

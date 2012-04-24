@@ -15,23 +15,8 @@ class Galaxy(panes.Panes):
 
 		self.state = state
 
-		super(Galaxy, self).__init__()
-
 		self.derive_from_window_dimensions()
 		self.generate_background_vertex_list()
-
-	def on_draw(self):
-		glClearColor(0.0, 0.0, 0.0, 0)
-		g.window.clear()
-
-		# origin is center of window
-		glMatrixMode(GL_PROJECTION)
-		glLoadIdentity()
-		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
-		glMatrixMode(GL_MODELVIEW)
-
-		# draw the background stars
-		self.background_vertex_list.draw(pyglet.gl.GL_POINTS)
 	
 	def generate_background_vertex_list(self):
 		"""Generate a reusable vertex/color list of all background stars.  It
@@ -63,3 +48,41 @@ class Galaxy(panes.Panes):
 			self.maximum_scale = self.data.galaxy_objects.min_distance/self.minimum_foreground_separation
 		if self.minimum_scale > self.maximum_scale:
 			self.maximum_scale = self.minimum_scale
+
+	# all pyglet.window handlers
+	def on_draw(self):
+		glClearColor(0.0, 0.0, 0.0, 0)
+		g.window.clear()
+
+		# origin is center of window
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
+		glMatrixMode(GL_MODELVIEW)
+
+		# draw the background stars
+		self.background_vertex_list.draw(pyglet.gl.GL_POINTS)
+	
+	def on_resize(self, width, height):
+		# reset openGL attributes to match new window dimensions
+		glViewport(0, 0, width, height)
+		glMatrixMode(gl.GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, width, 0, height, -1, 1)
+		glMatrixMode(gl.GL_MODELVIEW)
+
+		self.derive_from_window_dimensions()
+
+		"""
+		# window resize changes min/max scale, so ensure we are still within scale bounds
+		self.container.set_scale(self.container.foreground_scale)
+
+		# ensure center is still in a valid position
+		self.container.set_center((self.container.absolute_center[0], self.container.absolute_center[1]))
+
+		# range markers must be recalculated
+		self.container.concentric_range_markers = None
+
+		self.container.data.galaxy_window_state.width = width
+		self.container.data.galaxy_window_state.height = height
+		"""

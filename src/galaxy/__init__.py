@@ -47,10 +47,17 @@ class Galaxy(object):
 
 		# randomly generate foreground stars
 		if object_pool == None:
-			object_pool = galaxy_objects.ForegroundStar.colors.keys()
+			object_pool = {}
+			# better to convert list to dict some other, more elegant way?
+			for color in galaxy_objects.ForegroundStar.colors.keys():
+				object_pool[color] = 1
+		# mash all the objects together for randomization purposes
+		object_list = []
+		for name, freq in object_pool.iteritems():
+			object_list += [name]*freq
 
 		for coordinate in object_coordinates:
-			object = object_pool[random.randint(0, len(object_pool)-1)]
+			object = object_list[random.randint(0, len(object_list)-1)]
 
 			if object == 'black hole':
 				black_holes.append(
