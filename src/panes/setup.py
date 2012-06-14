@@ -17,7 +17,7 @@ class Setup(panes.Panes):
 		self.state = state
 
 		self.theme = kytten.Theme(
-			os.path.join(g.application.paths['resources_dir'], 'gui'), 
+			os.path.join(g.paths['resources_dir'], 'gui'), 
 			override={
 				"gui_color": [64, 128, 255, 255],
 				"font_size": 12

@@ -1,0 +1,3 @@
+# what ought to be refactored/changed?
+
+move object-specific galaxy-generation code out of galaxy.generate() and into object classes
