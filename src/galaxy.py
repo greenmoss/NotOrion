@@ -13,6 +13,7 @@ import masses.nebula as nebula
 
 class Galaxy(object):
 
+	# black holes and stars must be at least this many parsecs apart
 	min_separation_parsecs = 10
 	
 	def __init__(self):
@@ -165,7 +166,7 @@ class Galaxy(object):
 				if distance > self.max_distance:
 					self.max_coords = coords
 					self.max_distance = distance
-		if self.min_distance < self.min_separation_parsecs:
+		if self.min_distance < Galaxy.min_separation_parsecs:
 			raise DataError, "at least two stars and/or black holes are not far enough apart"
 
 	def normalize(self):

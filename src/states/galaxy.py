@@ -11,5 +11,3 @@ class Galaxy(states.States):
 	def __init__(self):
 		g.logging.debug('instantiating state.Galaxy')
 		self.pane = panes.galaxy.Galaxy(self)
-		g.window.push_handlers(self.pane)
-
