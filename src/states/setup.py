@@ -4,6 +4,7 @@ from __future__ import division
 from globals import g
 import states
 import panes.setup
+import models.setup
 
 class Setup(states.States):
 	def __init__(self):
@@ -28,39 +29,39 @@ class Setup(states.States):
 		self.pane.initialize_options_dialog()
 
 	def handle_galaxy_age_help(self):
-		self.pane.initialize_help_dialog(g.setup.galaxy_age_help_text)
+		self.pane.initialize_help_dialog(models.setup.Setup.galaxy_age_help_text)
 
 	def handle_galaxy_age_selection(self, chosen_age):
 		self.galaxy_age = chosen_age
 
-		if not g.setup.age_defaults.has_key(chosen_age):
+		if not models.setup.Setup.age_defaults.has_key(chosen_age):
 			raise Exception, "invalid age: %s"%chosen_age
 
 		g.logging.debug(
 			'in handle_galaxy_age_selection, for age %s, setting keys %s',
 			chosen_age,
-			g.setup.age_defaults[chosen_age].keys()
+			models.setup.Setup.age_defaults[chosen_age].keys()
 		)
 		# is there a better way to merge dicts?
-		for key, value in g.setup.age_defaults[chosen_age].iteritems():
+		for key, value in models.setup.Setup.age_defaults[chosen_age].iteritems():
 			g.setup.galaxy_settings[key] = value
 
 	def handle_galaxy_size_help(self):
-		self.pane.initialize_help_dialog(g.setup.galaxy_size_help_text)
+		self.pane.initialize_help_dialog(models.setup.Setup.galaxy_size_help_text)
 
 	def handle_galaxy_size_selection(self, chosen_size):
 		g.setup.galaxy_settings['size'] = chosen_size
 
-		if not g.setup.size_defaults.has_key(chosen_size):
+		if not models.setup.Setup.size_defaults.has_key(chosen_size):
 			raise Exception, "invalid size: %s"%chosen_size
 
 		g.logging.debug(
 			'in handle_galaxy_size_selection, for size %s, setting keys %s',
 			chosen_size,
-			g.setup.size_defaults[chosen_size].keys()
+			models.setup.Setup.size_defaults[chosen_size].keys()
 		)
 		# is there a better way to merge dicts?
-		for key, value in g.setup.size_defaults[chosen_size].iteritems():
+		for key, value in models.setup.Setup.size_defaults[chosen_size].iteritems():
 			g.setup.galaxy_settings[key] = value
 	
 	def handle_game_options_continue(self):

@@ -7,10 +7,10 @@ import pyglet
 
 from globals import g
 import window
-import galaxy
-import setup
-import states.setup
+import models.galaxy
+import models.setup
 import states.galaxy
+import states.setup
 
 class Application(object):
 	"""All application-level functionality, for instance game setup/teardown,
@@ -19,8 +19,8 @@ class Application(object):
 	def configure(self):
 		self.parse_args()
 		g.window = window.Window()
-		g.galaxy = galaxy.Galaxy()
-		g.setup = setup.Setup()
+		g.galaxy = models.galaxy.Galaxy()
+		g.setup = models.setup.Setup()
 
 	def run(self):
 		if self.args.difficulty:

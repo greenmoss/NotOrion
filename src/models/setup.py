@@ -118,23 +118,22 @@ class Setup(object):
 		}
 	}
 
-	galaxy_settings = {}
-	
 	def __init__(self):
 		g.logging.debug("instantiated Setup")
+		self.galaxy_settings = {}
 
 	def set_galaxy_from_difficulty(self, chosen_difficulty="Normal"):
 		self.galaxy_settings['age'] = 'Mature'
 
 		settings_to_merge = None
 
-		if self.difficulty_custom_settings.has_key(chosen_difficulty):
-			settings_to_merge = self.difficulty_custom_settings[chosen_difficulty]
+		if Setup.difficulty_custom_settings.has_key(chosen_difficulty):
+			settings_to_merge = Setup.difficulty_custom_settings[chosen_difficulty]
 
-		if self.difficulty_preset_sizes.has_key(chosen_difficulty):
-			size = self.difficulty_preset_sizes[chosen_difficulty]
+		if Setup.difficulty_preset_sizes.has_key(chosen_difficulty):
+			size = Setup.difficulty_preset_sizes[chosen_difficulty]
 			self.galaxy_settings['size'] = size
-			settings_to_merge = self.size_defaults[self.difficulty_preset_sizes[chosen_difficulty]]
+			settings_to_merge = Setup.size_defaults[Setup.difficulty_preset_sizes[chosen_difficulty]]
 
 			if self.galaxy_settings.has_key('worm_hole_count'):
 				self.galaxy_settings['worm_hole_count'] = random.randint( 
@@ -166,7 +165,7 @@ class Setup(object):
 				raise Exception, "missing galaxy setting: %s"%setting
 
 		if not self.galaxy_settings.has_key('object_pool'):
-			self.galaxy_settings['object_pool'] = self.age_defaults[self.galaxy_settings['age']]['object_pool']
+			self.galaxy_settings['object_pool'] = Setup.age_defaults[self.galaxy_settings['age']]['object_pool']
 
 		if not self.galaxy_settings.has_key('foreground_dispersion'):
 			# currently this is always set to 100

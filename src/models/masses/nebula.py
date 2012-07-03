@@ -1,9 +1,9 @@
 #! python -O
 from globals import g
 
-import masses
+import models.masses
 
-class Nebula(masses.Mass):
+class Nebula(models.masses.Mass):
 	"""A nebula. These interact with other objects, eg ships by slowing movement. They also look pretty on the screen."""
 
 	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:

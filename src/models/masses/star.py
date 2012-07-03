@@ -3,9 +3,9 @@ import os
 
 from globals import g
 
-import masses
+import models.masses
 
-class Star(masses.Mass):
+class Star(models.masses.Mass):
 	"""A star that may have orbiting planets, gas giants, etc."""
 
 	max_name_length = 18
