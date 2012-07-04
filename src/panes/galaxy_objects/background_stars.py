@@ -4,13 +4,11 @@ import pyglet
 from pyglet.gl import *
 
 import utilities
-from globals import g
 
 class BackgroundStars(object):
 
 	def __init__(self):
 		self.generate_background_vertex_list()
-		#g.window.push_handlers(self)
 
 	def generate_background_vertex_list(self):
 		"""Generate a reusable vertex/color list of all background stars.  It

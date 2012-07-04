@@ -10,6 +10,7 @@ from globals import g
 import panes
 import panes.galaxy_objects.background_stars
 import panes.galaxy_objects.stars
+import panes.galaxy_objects.black_holes
 import utilities
 
 class Galaxy(panes.Panes):
@@ -21,8 +22,9 @@ class Galaxy(panes.Panes):
 	def __init__(self, state):
 		g.logging.debug('instantiating panes.Galaxy')
 
-		self.stars = panes.galaxy_objects.stars.Stars()
 		self.background_stars = panes.galaxy_objects.background_stars.BackgroundStars()
+		self.stars = panes.galaxy_objects.stars.Stars()
+		self.black_holes = panes.galaxy_objects.black_holes.BlackHoles()
 
 		# black background
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -111,6 +113,7 @@ class Galaxy(panes.Panes):
 
 		# recalculate all object attributes that rely on scale
 		self.stars.set_scale(scale)
+		self.black_holes.set_scale(scale)
 
 	def pane_to_window(self, coordinates):
 		"Translate pane coordinate into window coordinate, accounting for window center and scale."
@@ -146,6 +149,7 @@ class Galaxy(panes.Panes):
 		self.background_stars.draw()
 		self.drawing_to_center_of_viewing_area()
 		self.stars.draw()
+		self.black_holes.draw()
 		glLoadIdentity()
 
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):

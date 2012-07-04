@@ -61,6 +61,9 @@ class Galaxy(object):
 					),
 				)
 
+		g.logging.debug("star count: %s", len(self.stars))
+		g.logging.debug("black hole count: %s", len(self.black_holes))
+
 		# generate nebulae
 		self.nebulae = []
 		nebula_colors = nebula.Nebula.lobe_colors.keys()
@@ -111,6 +114,7 @@ class Galaxy(object):
 						)
 					)
 				self.nebulae.append( nebula.Nebula(coordinate, color, lobes) )
+		g.logging.debug("nebulae count: %s", len(self.nebulae))
 
 		# ensure nebulae don't overlap
 		min_nebula_distance = nebula.Nebula.max_offset * 2
@@ -135,6 +139,7 @@ class Galaxy(object):
 			if (endpoint1 < 0) or (endpoint1 > len(self.stars)-1) or (endpoint2 < 0) or (endpoint2 > len(self.stars)-1):
 				raise RangeException, "both ends of wormhole must be within list of existing stars"
 			self.worm_holes.append(WormHole(self.stars[endpoint1], self.stars[endpoint2]))
+		g.logging.debug("worm hole count: %s", len(self.worm_holes))
 
 		self.derive_bounding_lines()
 		self.normalize()

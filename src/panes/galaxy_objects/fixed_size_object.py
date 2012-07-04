@@ -1,5 +1,6 @@
+import random
+
 import pyglet
-import panes.galaxy
 
 class FixedSizeObject(object):
 	'Within the galaxy view, objects that maintain a constant size whenever scale changes.'
@@ -7,33 +8,20 @@ class FixedSizeObject(object):
 	# default is a very low-layer group
 	pyglet_ordered_group = pyglet.graphics.OrderedGroup(100)
 
-	def __init__(self, absolute_coordinates):
-		self.absolute_coordinates = absolute_coordinates
-		self.sprite_coordinates = self.absolute_coordinates
-		self.sprite = self.generate_centered_sprite()
+	def __init__(self, pane_coordinates):
+		self.pane_coordinates = pane_coordinates
+		self.sprite_coordinates = pane_coordinates
 
-		self.scaled_sprite_origin = (
-			int(self.sprite.image.anchor_x*self.sprite.scale), 
-			int(self.sprite.image.anchor_y*self.sprite.scale)
-		)
-	
-		return
-		# eventually we *will* want an image mask for animations as well
-		self.generate_sprite_image_mask()
-
-		self.sprite.batch = self.sprites_batch2
-		self.sprite.group = self.group
-
-	def generate_centered_animated_sprite(self, coordinates=None, image_file=None, frame_count=None, duration=None, offset=None):
+	def generate_centered_animated_sprite(self, coordinates=None, image_file_name=None, frame_count=None, duration=None, offset=None):
 		"""Generate an animated sprite with its anchor in the center of the first image. 
 		If coordinates or image are not specified, it is assumed these should be retrieved 
 		from self."""
 		if coordinates is None:
 			coordinates = self.sprite_coordinates
 
-		if image_file is None:
-			image_file = self.image_file
-		animation_image = pyglet.resource.image(image_file)
+		if image_file_name is None:
+			image_file_name = self.image_file_name
+		animation_image = pyglet.resource.image(image_file_name)
 
 		if frame_count is None:
 			# derive number of frames from width divided by height
@@ -80,9 +68,9 @@ class FixedSizeObject(object):
 		)
 
 	def generate_sprite_image_mask(self):
-		if self.mask_bitmaps.has_key(self.image_file):
+		if self.mask_bitmaps.has_key(self.image_file_name):
 			# reuse existing bitmap
-			mask = self.mask_bitmaps[image_file]
+			mask = self.mask_bitmaps[image_file_name]
 
 		else:
 			# generate new bitmap
@@ -119,3 +107,30 @@ class FixedSizeObject(object):
 			self.image_mask.x = self.sprite_coordinates[0]
 			self.image_mask.y = self.sprite_coordinates[1]
 
+class StaticImageObject(FixedSizeObject):
+	'All foreground objects with a static sprite image that maintain a constant size across rescales, eg stars.'
+
+	def __init__(self, coordinates, image_file_name=None):
+		super(StaticImageObject, self).__init__(coordinates)
+
+		self.sprite = self.generate_centered_sprite()
+
+		self.scaled_sprite_origin = (
+			int(self.sprite.image.anchor_x*self.sprite.scale), 
+			int(self.sprite.image.anchor_y*self.sprite.scale)
+		)
+	
+		# eventually we *will* want an image mask for animations as well
+		#self.generate_sprite_image_mask()
+
+class AnimatedObject(FixedSizeObject):
+	'All animated foreground objects that maintain a constant size across rescales, eg black holes.'
+
+	def __init__(self, coordinates, image_file_name=None, frame_count=None):
+		self.frame_count = frame_count
+
+		super(AnimatedObject, self).__init__(coordinates)
+
+		self.sprite = self.generate_centered_animated_sprite()
+		#self.sprite.batch = self.sprites_batch2
+		#self.sprite.group = self.group
