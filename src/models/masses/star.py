@@ -36,3 +36,5 @@ class Star(models.masses.Mass):
 		self.type = type
 
 		super(Star, self).__init__(coordinates)
+
+		self.worm_hole = None

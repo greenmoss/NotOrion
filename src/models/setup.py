@@ -74,28 +74,28 @@ class Setup(object):
 	# defaults based on galaxy size
 	size_defaults={
 		"Tiny":{
-			"foreground_limits":(-350,-500,350,500),
-			"foreground_star_count":5,
+			"limits":(-350,-500,350,500),
+			"star_count":5,
 			"nebulae_count":random.randint(0,1)
 		},
 		"Small":{
-			"foreground_limits":(-700,-1000,700,1000),
-			"foreground_star_count":20,
+			"limits":(-700,-1000,700,1000),
+			"star_count":20,
 			"nebulae_count":random.randint(1,2)
 		},
 		"Medium":{
-			"foreground_limits":(-950,-1350,950,1350),
-			"foreground_star_count":36,
+			"limits":(-950,-1350,950,1350),
+			"star_count":36,
 			"nebulae_count":random.randint(2,4)
 		},
 		"Large":{
-			"foreground_limits":(-1200,-1650,1200,1650),
-			"foreground_star_count":54,
+			"limits":(-1200,-1650,1200,1650),
+			"star_count":54,
 			"nebulae_count":random.randint(3,6)
 		},
 		"Huge":{
-			"foreground_limits":(-1350,-1900,1350,1900),
-			"foreground_star_count":71,
+			"limits":(-1350,-1900,1350,1900),
+			"star_count":71,
 			"nebulae_count":random.randint(4,7)
 		}
 	}
@@ -110,8 +110,8 @@ class Setup(object):
 		# Beginner doesn't use any of the size defaults
 		# Instead, we only have a few yellow stars and no other objects
 		"Beginner":{
-			"foreground_limits":(-250,-250,250,250),
-			"foreground_star_count":5,
+			"limits":(-250,-250,250,250),
+			"star_count":5,
 			"nebulae_count":0,
 			"object_pool":{"yellow":1},
 			"worm_hole_count":0
@@ -135,14 +135,6 @@ class Setup(object):
 			self.galaxy_settings['size'] = size
 			settings_to_merge = Setup.size_defaults[Setup.difficulty_preset_sizes[chosen_difficulty]]
 
-			if self.galaxy_settings.has_key('worm_hole_count'):
-				self.galaxy_settings['worm_hole_count'] = random.randint( 
-					int(self.galaxy_settings['foreground_star_count']/10), 
-					int(self.galaxy_settings['foreground_star_count']/5) 
-				)
-			else:
-				self.galaxy_settings['worm_hole_count'] = 0
-
 		if settings_to_merge is None:
 			raise Exception, "no settings found for difficulty %s"%chosen_difficulty
 
@@ -150,16 +142,22 @@ class Setup(object):
 		for key, value in settings_to_merge.iteritems():
 			self.galaxy_settings[key] = value
 
+		if not self.galaxy_settings.has_key('worm_hole_count'):
+			self.galaxy_settings['worm_hole_count'] = random.randint( 
+				int(self.galaxy_settings['star_count']/10), 
+				int(self.galaxy_settings['star_count']/5) 
+			)
+
 		g.logging.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)
 
 	def generate_galaxy(self):
 		# ensure all necessary galaxy_settings have been set
 		for setting in [
-			'foreground_limits',
-			'foreground_star_count',
+			'limits',
+			'star_count',
 			'worm_hole_count',
 			'nebulae_count'
-			# object_pool and foreground_dispersion are currently optional
+			# object_pool and dispersion are currently optional
 		]:
 			if not self.galaxy_settings.has_key(setting):
 				raise Exception, "missing galaxy setting: %s"%setting
@@ -167,16 +165,16 @@ class Setup(object):
 		if not self.galaxy_settings.has_key('object_pool'):
 			self.galaxy_settings['object_pool'] = Setup.age_defaults[self.galaxy_settings['age']]['object_pool']
 
-		if not self.galaxy_settings.has_key('foreground_dispersion'):
+		if not self.galaxy_settings.has_key('dispersion'):
 			# currently this is always set to 100
-			self.galaxy_settings['foreground_dispersion'] = 100
+			self.galaxy_settings['dispersion'] = 100
 
 		g.logging.debug('in generate_galaxy, galaxy_settings is %s',self.galaxy_settings)
 
 		g.galaxy.generate(
-			self.galaxy_settings['foreground_limits'],
-			self.galaxy_settings['foreground_dispersion'],
-			self.galaxy_settings['foreground_star_count'],
+			self.galaxy_settings['limits'],
+			self.galaxy_settings['dispersion'],
+			self.galaxy_settings['star_count'],
 			self.galaxy_settings['worm_hole_count'],
 			self.galaxy_settings['nebulae_count'],
 			self.galaxy_settings['object_pool'],

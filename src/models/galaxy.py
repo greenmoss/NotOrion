@@ -134,11 +134,7 @@ class Galaxy(object):
 			index1 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
 			index2 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
 
-			endpoint1 = endpoint_stars[index1]
-			endpoint2 = endpoint_stars[index2]
-			if (endpoint1 < 0) or (endpoint1 > len(self.stars)-1) or (endpoint2 < 0) or (endpoint2 > len(self.stars)-1):
-				raise RangeException, "both ends of wormhole must be within list of existing stars"
-			self.worm_holes.append(WormHole(self.stars[endpoint1], self.stars[endpoint2]))
+			self.worm_holes.append(WormHole(self.stars[index1], self.stars[index2]))
 		g.logging.debug("worm hole count: %s", len(self.worm_holes))
 
 		self.derive_bounding_lines()
