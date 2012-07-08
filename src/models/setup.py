@@ -76,27 +76,32 @@ class Setup(object):
 		"Tiny":{
 			"limits":(-350,-500,350,500),
 			"star_count":5,
-			"nebulae_count":random.randint(0,1)
+			"nebulae_count_min":0,
+			"nebulae_count_max":1
 		},
 		"Small":{
 			"limits":(-700,-1000,700,1000),
 			"star_count":20,
-			"nebulae_count":random.randint(1,2)
+			"nebulae_count_min":1,
+			"nebulae_count_max":2
 		},
 		"Medium":{
 			"limits":(-950,-1350,950,1350),
 			"star_count":36,
-			"nebulae_count":random.randint(2,4)
+			"nebulae_count_min":2,
+			"nebulae_count_max":4
 		},
 		"Large":{
 			"limits":(-1200,-1650,1200,1650),
 			"star_count":54,
-			"nebulae_count":random.randint(3,6)
+			"nebulae_count_min":3,
+			"nebulae_count_max":6
 		},
 		"Huge":{
 			"limits":(-1350,-1900,1350,1900),
 			"star_count":71,
-			"nebulae_count":random.randint(4,7)
+			"nebulae_count_min":4,
+			"nebulae_count_max":7
 		}
 	}
 	# difficulty levels that use standard sizes
@@ -148,6 +153,12 @@ class Setup(object):
 				int(self.galaxy_settings['star_count']/5) 
 			)
 
+		if self.galaxy_settings.has_key('nebulae_count_min') and self.galaxy_settings.has_key('nebulae_count_max'):
+			self.galaxy_settings['nebulae_count'] = random.randint(
+				self.galaxy_settings['nebulae_count_min'],
+				self.galaxy_settings['nebulae_count_max'],
+			)
+
 		g.logging.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)
 
 	def generate_galaxy(self):
@@ -175,7 +186,7 @@ class Setup(object):
 			self.galaxy_settings['limits'],
 			self.galaxy_settings['dispersion'],
 			self.galaxy_settings['star_count'],
+			self.galaxy_settings['object_pool'],
 			self.galaxy_settings['worm_hole_count'],
 			self.galaxy_settings['nebulae_count'],
-			self.galaxy_settings['object_pool'],
 		)

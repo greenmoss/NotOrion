@@ -1,5 +1,3 @@
-#! python -O
-
 class Mass(object):
 	"""All physical masses within a galaxy that we can interact with."""
 

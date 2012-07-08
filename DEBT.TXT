@@ -1,3 +1,5 @@
 # what ought to be refactored/changed?
 
-move object-specific galaxy-generation code out of galaxy.generate() and into object classes
+move setup size and age default information into galaxy model
+use non-pyglet image loader within nebula lobes model
+use observer pattern on galaxy pane, eg stars should be attaching to "set_scale"

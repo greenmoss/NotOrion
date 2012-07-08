@@ -8,9 +8,7 @@ from pyglet.gl import *
 
 from globals import g
 import panes
-import panes.galaxy_objects.background_stars
-import panes.galaxy_objects.stars
-import panes.galaxy_objects.black_holes
+import panes.galaxy_objects as go
 import utilities
 
 class Galaxy(panes.Panes):
@@ -22,9 +20,10 @@ class Galaxy(panes.Panes):
 	def __init__(self, state):
 		g.logging.debug('instantiating panes.Galaxy')
 
-		self.background_stars = panes.galaxy_objects.background_stars.BackgroundStars()
-		self.stars = panes.galaxy_objects.stars.Stars()
-		self.black_holes = panes.galaxy_objects.black_holes.BlackHoles()
+		self.background_stars = go.background_stars.BackgroundStars()
+		self.stars = go.stars.Stars()
+		self.black_holes = go.black_holes.BlackHoles()
+		self.nebulae = go.nebulae.Nebulae()
 
 		# black background
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -44,8 +43,7 @@ class Galaxy(panes.Panes):
 
 		g.window.push_handlers(self)
 
-		return
-		pyglet.clock.schedule_interval(self.animate, 1/60.)
+		#pyglet.clock.schedule_interval(self.animate, 1/60.)
 	
 	def derive_from_window_dimensions(self):
 		"Set attributes that are based on window dimensions."
@@ -114,16 +112,17 @@ class Galaxy(panes.Panes):
 		# recalculate all object attributes that rely on scale
 		self.stars.set_scale(scale)
 		self.black_holes.set_scale(scale)
+		self.nebulae.set_scale(scale)
 
 	def pane_to_window(self, coordinates):
-		"Translate pane coordinate into window coordinate, accounting for window center and scale."
+		"Translate pane coordinate into window coordinate, accounting for pane center and scale."
 		return(
 			coordinates[0]/self.scale+self.half_width-self.pane_center[0],
 			coordinates[1]/self.scale+self.half_height-self.pane_center[1]
 		)
 
 	def window_to_pane(self, coordinates):
-		"Translate window coordinate into pane coordinate, accounting for window center and scale."
+		"Translate window coordinate into pane coordinate, accounting for pane center and scale."
 		return(
 			(self.pane_center[0]+coordinates[0]-self.half_width)*self.scale,
 			(self.pane_center[1]+coordinates[1]-self.half_height)*self.scale
@@ -148,6 +147,7 @@ class Galaxy(panes.Panes):
 		self.drawing_origin_to_center()
 		self.background_stars.draw()
 		self.drawing_to_center_of_viewing_area()
+		self.nebulae.draw()
 		self.stars.draw()
 		self.black_holes.draw()
 		glLoadIdentity()
