@@ -24,6 +24,7 @@ class Galaxy(panes.Panes):
 		self.stars = go.stars.Stars()
 		self.black_holes = go.black_holes.BlackHoles()
 		self.nebulae = go.nebulae.Nebulae()
+		self.worm_holes = go.worm_holes.WormHoles(self.stars)
 
 		# black background
 		glClearColor(0.0, 0.0, 0.0, 0)
@@ -113,6 +114,7 @@ class Galaxy(panes.Panes):
 		self.stars.set_scale(scale)
 		self.black_holes.set_scale(scale)
 		self.nebulae.set_scale(scale)
+		self.worm_holes.set_scale(scale) # *must* be set *after* stars
 
 	def pane_to_window(self, coordinates):
 		"Translate pane coordinate into window coordinate, accounting for pane center and scale."
@@ -146,10 +148,13 @@ class Galaxy(panes.Panes):
 
 		self.drawing_origin_to_center()
 		self.background_stars.draw()
+
 		self.drawing_to_center_of_viewing_area()
 		self.nebulae.draw()
+		self.worm_holes.draw()
 		self.stars.draw()
 		self.black_holes.draw()
+
 		glLoadIdentity()
 
 	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
