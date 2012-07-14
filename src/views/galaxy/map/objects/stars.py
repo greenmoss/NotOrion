@@ -2,7 +2,6 @@ import pyglet
 
 from globals import g
 import fixed_size_object
-import panes.galaxy
 
 class Stars(object):
 	pyglet_ordered_group = pyglet.graphics.OrderedGroup(2)

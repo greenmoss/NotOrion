@@ -7,12 +7,12 @@ from pyglet.gl import *
 import kytten
 
 from globals import g
-import panes
+import views
 
-class Setup(panes.Panes):
+class Setup(views.View):
 
 	def __init__(self, state):
-		g.logging.debug('instantiating panes.Setup')
+		g.logging.debug('instantiating views.Setup')
 
 		self.state = state
 

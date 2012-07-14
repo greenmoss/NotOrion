@@ -3,16 +3,16 @@ from __future__ import division
 
 from globals import g
 import states
-import panes.setup
+import views.setup
 import models.setup
 
 class Setup(states.States):
 	def __init__(self):
 		g.logging.debug('instantiating state.Setup')
-		self.pane = panes.setup.Setup(self)
-		g.window.push_handlers(self.pane)
+		self.view = views.setup.Setup(self)
+		g.window.push_handlers(self.view)
 
-		self.pane.initialize_difficulty_dialog()
+		self.view.initialize_difficulty_dialog()
 	
 	def handle_difficulty_selection(self, chosen_difficulty):
 		g.logging.debug('in handle_difficulty_selection, chosen_difficulty is %s',chosen_difficulty)
@@ -21,15 +21,15 @@ class Setup(states.States):
 
 		if chosen_difficulty == 'Beginner':
 			g.setup.generate_galaxy()
-			self.pane.difficulty_dialog.teardown()
+			self.view.difficulty_dialog.teardown()
 			g.application.set_state('galaxy')
 			return
 
-		self.pane.difficulty_dialog.teardown()
-		self.pane.initialize_options_dialog()
+		self.view.difficulty_dialog.teardown()
+		self.view.initialize_options_dialog()
 
 	def handle_galaxy_age_help(self):
-		self.pane.initialize_help_dialog(models.setup.Setup.galaxy_age_help_text)
+		self.view.initialize_help_dialog(models.setup.Setup.galaxy_age_help_text)
 
 	def handle_galaxy_age_selection(self, chosen_age):
 		self.galaxy_age = chosen_age
@@ -47,7 +47,7 @@ class Setup(states.States):
 			g.setup.galaxy_settings[key] = value
 
 	def handle_galaxy_size_help(self):
-		self.pane.initialize_help_dialog(models.setup.Setup.galaxy_size_help_text)
+		self.view.initialize_help_dialog(models.setup.Setup.galaxy_size_help_text)
 
 	def handle_galaxy_size_selection(self, chosen_size):
 		g.setup.galaxy_settings['size'] = chosen_size
@@ -67,5 +67,5 @@ class Setup(states.States):
 	def handle_game_options_continue(self):
 		"""Should have all necessary galaxy_settings, so generate the galaxy and enter galaxy state."""
 		g.setup.generate_galaxy()
-		self.pane.options_dialog.teardown()
+		self.view.options_dialog.teardown()
 		g.application.set_state('galaxy')

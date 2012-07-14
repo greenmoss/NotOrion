@@ -8,9 +8,9 @@ class FixedSizeObject(object):
 	# default is a very low-layer group
 	pyglet_ordered_group = pyglet.graphics.OrderedGroup(100)
 
-	def __init__(self, pane_coordinates):
-		self.pane_coordinates = pane_coordinates
-		self.sprite_coordinates = pane_coordinates
+	def __init__(self, view_coordinates):
+		self.view_coordinates = view_coordinates
+		self.sprite_coordinates = view_coordinates
 
 	def generate_centered_animated_sprite(self, coordinates=None, image_file_name=None, frame_count=None, duration=None, offset=None):
 		"""Generate an animated sprite with its anchor in the center of the first image. 
@@ -117,8 +117,7 @@ class StaticImageObject(FixedSizeObject):
 
 		self.scaled_sprite_origin = (
 			int(self.sprite.image.anchor_x*self.sprite.scale), 
-			int(self.sprite.image.anchor_y*self.sprite.scale)
-		)
+			int(self.sprite.image.anchor_y*self.sprite.scale))
 	
 		# eventually we *will* want an image mask for animations as well
 		#self.generate_sprite_image_mask()

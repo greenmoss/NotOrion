@@ -24,6 +24,6 @@ class Window(pyglet.window.Window):
 
 		self.set_visible()
 
-	# this activates kytten in state.setup; it should move into panes.setup
+	# this activates kytten in state.setup; it should move into views.setup
 	def update(self, dt):
 		self.dispatch_event('on_update', dt)

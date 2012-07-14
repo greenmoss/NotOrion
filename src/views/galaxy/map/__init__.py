@@ -7,29 +7,29 @@ import pyglet
 from pyglet.gl import *
 
 from globals import g
-import panes
-import panes.galaxy_objects as go
+import views
+import objects
 import utilities
 
-class Galaxy(panes.Panes):
+class Galaxy(views.View):
 	# when scaling/rescaling, minimum distance between stars/black holes
 	min_scaled_separation = 10
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
 
 	def __init__(self, state):
-		g.logging.debug('instantiating panes.Galaxy')
+		g.logging.debug('instantiating views.Galaxy')
 
-		self.background_stars = go.background_stars.BackgroundStars()
-		self.stars = go.stars.Stars()
-		self.black_holes = go.black_holes.BlackHoles()
-		self.nebulae = go.nebulae.Nebulae()
-		self.worm_holes = go.worm_holes.WormHoles(self.stars)
+		self.state = state
+
+		self.background_stars = objects.background_stars.BackgroundStars()
+		self.stars = objects.stars.Stars()
+		self.black_holes = objects.black_holes.BlackHoles()
+		self.nebulae = objects.nebulae.Nebulae()
+		self.worm_holes = objects.worm_holes.WormHoles(self.stars)
 
 		# black background
 		glClearColor(0.0, 0.0, 0.0, 0)
-
-		self.state = state
 
 		self.bounding_y = g.galaxy.top_bounding_y
 		if -g.galaxy.bottom_bounding_y > g.galaxy.top_bounding_y:
@@ -42,7 +42,7 @@ class Galaxy(panes.Panes):
 		self.set_scale(self.maximum_scale)
 		self.set_center((0, 0))
 
-		g.window.push_handlers(self)
+		#g.window.push_handlers(self)
 
 		#pyglet.clock.schedule_interval(self.animate, 1/60.)
 	
@@ -76,7 +76,7 @@ class Galaxy(panes.Panes):
 		elif coordinates[0] < self.center_limits['left']:
 			coordinates[0] = self.center_limits['left']
 
-		self.pane_center = (coordinates[0], coordinates[1])
+		self.view_center = (coordinates[0], coordinates[1])
 
 		# every time we update the center, the mini-map will change
 		#self.derive_mini_map()
@@ -116,18 +116,18 @@ class Galaxy(panes.Panes):
 		self.nebulae.set_scale(scale)
 		self.worm_holes.set_scale(scale) # *must* be set *after* stars
 
-	def pane_to_window(self, coordinates):
-		"Translate pane coordinate into window coordinate, accounting for pane center and scale."
+	def view_to_window(self, coordinates):
+		"Translate view coordinate into window coordinate, accounting for view center and scale."
 		return(
-			coordinates[0]/self.scale+self.half_width-self.pane_center[0],
-			coordinates[1]/self.scale+self.half_height-self.pane_center[1]
+			coordinates[0]/self.scale+self.half_width-self.view_center[0],
+			coordinates[1]/self.scale+self.half_height-self.view_center[1]
 		)
 
-	def window_to_pane(self, coordinates):
-		"Translate window coordinate into pane coordinate, accounting for pane center and scale."
+	def window_to_view(self, coordinates):
+		"Translate window coordinate into view coordinate, accounting for view center and scale."
 		return(
-			(self.pane_center[0]+coordinates[0]-self.half_width)*self.scale,
-			(self.pane_center[1]+coordinates[1]-self.half_height)*self.scale
+			(self.view_center[0]+coordinates[0]-self.half_width)*self.scale,
+			(self.view_center[1]+coordinates[1]-self.half_height)*self.scale
 		)
 	
 	def drawing_origin_to_center(self):
@@ -138,12 +138,11 @@ class Galaxy(panes.Panes):
 
 	def drawing_to_center_of_viewing_area(self):
 		gluLookAt(
-			self.pane_center[0], self.pane_center[1], 0.0,
-			self.pane_center[0], self.pane_center[1], -100.0,
+			self.view_center[0], self.view_center[1], 0.0,
+			self.view_center[0], self.view_center[1], -100.0,
 			0.0, 1.0, 0.0)
 
-	# all pyglet.window handlers
-	def on_draw(self):
+	def handle_draw(self):
 		g.window.clear()
 
 		self.drawing_origin_to_center()
@@ -157,11 +156,11 @@ class Galaxy(panes.Panes):
 
 		glLoadIdentity()
 
-	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		self.set_center((self.pane_center[0] - dx, self.pane_center[1] - dy))
+	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
 	
-	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		prescale_pane_mouse = self.window_to_pane((x,y))
+	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
+		prescale_view_mouse = self.window_to_view((x,y))
 
 		#self.reset_range_state()
 
@@ -170,20 +169,20 @@ class Galaxy(panes.Panes):
 		# range markers must be recalculated
 		#self.concentric_range_markers = None
 
-		postscale_pane_mouse = self.window_to_pane((x,y))
+		postscale_view_mouse = self.window_to_view((x,y))
 
 		# scale the prescale mouse according to the *new* scale
-		prescale_mouse = (prescale_pane_mouse[0]/self.scale, prescale_pane_mouse[1]/self.scale)
-		postscale_mouse = (postscale_pane_mouse[0]/self.scale, postscale_pane_mouse[1]/self.scale)
+		prescale_mouse = (prescale_view_mouse[0]/self.scale, prescale_view_mouse[1]/self.scale)
+		postscale_mouse = (postscale_view_mouse[0]/self.scale, postscale_view_mouse[1]/self.scale)
 
 		self.set_center(
 			(
-				prescale_mouse[0]-postscale_mouse[0]+self.pane_center[0], 
-				prescale_mouse[1]-postscale_mouse[1]+self.pane_center[1]
+				prescale_mouse[0]-postscale_mouse[0]+self.view_center[0], 
+				prescale_mouse[1]-postscale_mouse[1]+self.view_center[1]
 			)
 		)
 	
-	def on_resize(self, width, height):
+	def handle_resize(self, width, height):
 		# reset openGL attributes to match new window dimensions
 		glViewport(0, 0, width, height)
 		glMatrixMode(gl.GL_PROJECTION)
@@ -197,7 +196,7 @@ class Galaxy(panes.Panes):
 		self.set_scale(self.scale)
 
 		# ensure center is still in a valid position
-		self.set_center((self.pane_center[0], self.pane_center[1]))
+		self.set_center((self.view_center[0], self.view_center[1]))
 
 		# range markers must be recalculated
 		#self.concentric_range_markers = None
