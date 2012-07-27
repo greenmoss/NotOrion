@@ -67,37 +67,6 @@ class FixedSizeObject(object):
 			)
 		)
 
-	def generate_sprite_image_mask(self):
-		if self.mask_bitmaps.has_key(self.image_file_name):
-			# reuse existing bitmap
-			mask = self.mask_bitmaps[image_file_name]
-
-		else:
-			# generate new bitmap
-			mask = pyglet.image.create(self.sprite.image.width, self.sprite.image.height)
-			image_data = self.sprite.image.get_image_data()
-			pixel_bytes = image_data.get_data('RGBA', image_data.width * 4)
-			mask_bytes = ''
-			for position in range(int(len(pixel_bytes)/4)):
-				bytes = struct.unpack_from('4c', pixel_bytes, 4*position)
-
-				# alpha channel is partially opaque, set alpha to 255
-				if ord(bytes[3]) > 0:
-					mask_bytes += '\xff\xff\xff\xff'
-
-				# alpha channel is fully transparent, set alpha to 0
-				else:
-					mask_bytes += '\xff\xff\xff\x00'
-			mask.image_data.set_data('RGBA', image_data.width * 4, mask_bytes)
-
-		self.image_mask = pyglet.sprite.Sprite(mask.texture,
-			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
-		)
-		self.image_mask.image.anchor_x = self.sprite.image.anchor_x
-		self.image_mask.image.anchor_y = self.sprite.image.anchor_y
-		self.image_mask.batch = self.sprite_masks_batch
-		self.image_mask.group = self.sprite_masks_group
-
 	def scale_coordinates(self, scaling_factor):
 		"Set object's sprite coordinates based on a scaling factor."
 		self.sprite_coordinates = (int(self.coordinates[0]/scaling_factor), int(self.coordinates[1]/scaling_factor))
@@ -118,9 +87,6 @@ class StaticImageObject(FixedSizeObject):
 		self.scaled_sprite_origin = (
 			int(self.sprite.image.anchor_x*self.sprite.scale), 
 			int(self.sprite.image.anchor_y*self.sprite.scale))
-	
-		# eventually we *will* want an image mask for animations as well
-		#self.generate_sprite_image_mask()
 
 class AnimatedObject(FixedSizeObject):
 	'All animated foreground objects that maintain a constant size across rescales, eg black holes.'

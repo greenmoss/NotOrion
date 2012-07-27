@@ -59,22 +59,6 @@ class Star(fixed_size_object.StaticImageObject):
 			batch=sprites_batch, 
 			group=self.pyglet_labels_ordered_group)
 
-		marker_image = pyglet.resource.image('star_marker_animation.png')
-		marker_image_seq = pyglet.image.ImageGrid(marker_image, 1, 24)
-		for image in marker_image_seq:
-			image.anchor_x = image.width // 2
-			image.anchor_y = image.height // 2
-		marker_animation = pyglet.image.Animation.from_image_sequence(marker_image_seq, 0.04)
-		self.marker = pyglet.sprite.Sprite(marker_animation,
-			x=self.sprite_coordinates[0], y=self.sprite_coordinates[1]
-		)
-
-		self.marker_visible = False
-	
-	def reset_marker(self):
-		"The marker color might have been changed; reset it to its default state."
-		self.marker.color = (255,255,255)
-
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."
 		super(Star, self).scale_coordinates(scaling_factor)
@@ -82,13 +66,3 @@ class Star(fixed_size_object.StaticImageObject):
 		# center label under sprite
 		self.label.x = self.sprite.x-self.scaled_sprite_origin[0]+int(self.sprite.width/2)
 		self.label.y = self.sprite.y-self.scaled_sprite_origin[1]-1
-
-		# recalculate marker
-		self.marker.x = self.sprite.x
-		self.marker.y = self.sprite.y
-	
-	def hide_marker(self):
-		self.marker_visible = False
-	
-	def reveal_marker(self):
-		self.marker_visible = True

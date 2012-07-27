@@ -1,9 +1,5 @@
-#! /usr/bin/env python -O
 from __future__ import division
-import os
-import random
 
-import pyglet
 from pyglet.gl import *
 
 from globals import g
@@ -130,23 +126,30 @@ class Galaxy(views.View):
 			(self.view_center[1]+coordinates[1]-self.half_height)*self.scale
 		)
 	
-	def drawing_origin_to_center(self):
+	def start_draw(self):
+		g.window.clear()
+
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
 		glMatrixMode(GL_MODELVIEW)
 
 	def drawing_to_center_of_viewing_area(self):
-		gluLookAt(
-			self.view_center[0], self.view_center[1], 0.0,
-			self.view_center[0], self.view_center[1], -100.0,
-			0.0, 1.0, 0.0)
+		self.translate_x = int(-self.view_center[0])
+		self.translate_y = int(-self.view_center[1])
+		glTranslated(self.translate_x,self.translate_y,0)
+		#gluLookAt(
+		#	self.view_center[0], self.view_center[1], 0.0,
+		#	self.view_center[0], self.view_center[1], -100.0,
+		#	0.0, 1.0, 0.0)
+	
+	def finish_draw(self):
+		glLoadIdentity()
 
 	def handle_draw(self):
-		g.window.clear()
+		self.start_draw()
 
-		self.drawing_origin_to_center()
-		self.background_stars.draw()
+		#self.background_stars.draw()
 
 		self.drawing_to_center_of_viewing_area()
 		self.nebulae.draw()
@@ -154,7 +157,7 @@ class Galaxy(views.View):
 		self.stars.draw()
 		self.black_holes.draw()
 
-		glLoadIdentity()
+		self.finish_draw()
 
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
@@ -162,12 +165,7 @@ class Galaxy(views.View):
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		prescale_view_mouse = self.window_to_view((x,y))
 
-		#self.reset_range_state()
-
 		self.set_scale(self.scale*(Galaxy.zoom_speed**scroll_y))
-
-		# range markers must be recalculated
-		#self.concentric_range_markers = None
 
 		postscale_view_mouse = self.window_to_view((x,y))
 
@@ -197,6 +195,3 @@ class Galaxy(views.View):
 
 		# ensure center is still in a valid position
 		self.set_center((self.view_center[0], self.view_center[1]))
-
-		# range markers must be recalculated
-		#self.concentric_range_markers = None
