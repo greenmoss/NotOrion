@@ -50,25 +50,26 @@ class Stars(object):
 			mask.set_coordinates()
 
 class Mask(object):
-	def __init__(self, map_star_object, mask_image, sprites_batch):
-		self.map_star_object = map_star_object
+	def __init__(self, map_object, mask_image, sprites_batch):
+		self.map_object = map_object
+		self.type = 'map'
 
 		self.sprite = pyglet.sprite.Sprite(
 			mask_image.texture,
-			self.map_star_object.coordinates[0],
-			self.map_star_object.coordinates[1],
+			self.map_object.coordinates[0],
+			self.map_object.coordinates[1],
 			batch = sprites_batch
 		)
-		self.sprite.image.anchor_x = self.map_star_object.sprite.image.anchor_x
-		self.sprite.image.anchor_y = self.map_star_object.sprite.image.anchor_y
+		self.sprite.image.anchor_x = self.map_object.sprite.image.anchor_x
+		self.sprite.image.anchor_y = self.map_object.sprite.image.anchor_y
 	
 	def __repr__(self):
-		return self.map_star_object.physical_star.name
+		return self.map_object.physical_star.name
 	
 	def set_color(self, color):
 		self.color = color
 		self.sprite.color = color
 	
 	def set_coordinates(self):
-		self.sprite.x = self.map_star_object.sprite.x
-		self.sprite.y = self.map_star_object.sprite.y
+		self.sprite.x = self.map_object.sprite.x
+		self.sprite.y = self.map_object.sprite.y

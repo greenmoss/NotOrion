@@ -13,7 +13,7 @@ class Galaxy(states.States):
 
 		self.masks = views.galaxy.masks.Masks(self)
 
-		self.range_marker = views.galaxy.range.Marker(self)
+		self.markers = views.galaxy.markers.Markers(self)
 
 		g.window.push_handlers(self)
 
@@ -27,22 +27,33 @@ class Galaxy(states.States):
 
 	def on_draw(self, *args):
 		self.map.handle_draw(*args)
+		self.markers.handle_draw(*args)
 		self.mini_map.handle_draw(*args)
+
+	def on_key_press(self, *args):
+		self.markers.handle_key_press(*args)
+
+	def on_key_release(self, *args):
+		self.markers.handle_key_release(*args)
 
 	def on_mouse_drag(self, *args):
 		self.map.handle_mouse_drag(*args)
 		self.mini_map.handle_mouse_drag(*args)
 		self.masks.handle_mouse_drag(*args)
+		self.markers.handle_mouse_drag(*args)
 
 	def on_mouse_motion(self, *args):
 		self.masks.handle_mouse_motion(*args)
+		self.markers.handle_mouse_motion(*args)
 
 	def on_mouse_scroll(self, *args):
 		self.map.handle_mouse_scroll(*args)
 		self.mini_map.handle_mouse_scroll(*args)
 		self.masks.handle_mouse_scroll(*args)
+		self.markers.handle_mouse_scroll(*args)
 
 	def on_resize(self, *args):
 		self.map.handle_resize(*args)
 		self.mini_map.handle_resize(*args)
 		self.masks.handle_resize(*args)
+		self.markers.handle_resize(*args)

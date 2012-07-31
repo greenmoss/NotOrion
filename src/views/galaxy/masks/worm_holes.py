@@ -26,14 +26,15 @@ class WormHoles(object):
 			mask.set_vertices()
 
 class Mask(object):
-	def __init__(self, map_worm_hole):
-		self.map_worm_hole = map_worm_hole
+	def __init__(self, map_object):
+		self.map_object = map_object
+		self.type = 'map'
 		self.vertex_list = pyglet.graphics.vertex_list( 2, 'v2f', 'c3B' )
 	
 	def __repr__(self):
 		return "%s <-> %s"%(
-			self.map_worm_hole.star1_view.physical_star.name,
-			self.map_worm_hole.star2_view.physical_star.name
+			self.map_object.star1_view.physical_star.name,
+			self.map_object.star2_view.physical_star.name
 		)
 
 	def set_color(self, color):
@@ -41,6 +42,6 @@ class Mask(object):
 		self.vertex_list.colors = color * 2
 	
 	def set_vertices(self):
-		endpoint1_vertices = list(self.map_worm_hole.endpoint1_vertices_list)
-		endpoint2_vertices = list(self.map_worm_hole.endpoint2_vertices_list)
+		endpoint1_vertices = list(self.map_object.endpoint1_vertices_list)
+		endpoint2_vertices = list(self.map_object.endpoint2_vertices_list)
 		self.vertex_list.vertices = endpoint1_vertices + endpoint2_vertices

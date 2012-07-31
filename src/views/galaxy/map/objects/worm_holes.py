@@ -40,6 +40,9 @@ class WormHole(object):
 		self.endpoint1_vertices_list = []
 		self.endpoint2_vertices_list = []
 	
+	def __repr__(self):
+		return "map view: %s <-> %s"%(self.star1_view.physical_star.name,self.star2_view.physical_star.name)
+	
 	def set_endpoints(self):
 		self.endpoint1_vertices_list = [
 			self.star1_view.sprite.x,

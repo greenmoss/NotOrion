@@ -16,6 +16,7 @@ class Masks(views.View):
 
 		# store backreferences (eg color to object) here
 		self.color_picks = {}
+		self.detected_object_frequency = {}
 
 		# red, green, blue byte values for masks
 		self.current_color = (255,255,255)
@@ -58,19 +59,20 @@ class Masks(views.View):
 	
 	def start_draw(self):
 		glPushMatrix()
-		self.state.map.start_draw()
+		g.window.clear()
 
-		self.state.map.drawing_to_center_of_viewing_area()
+		self.state.map.set_drawing_matrices()
+		self.state.map.set_drawing_to_foreground()
 
 		# draw the foreground object masks
 		self.stars.handle_draw()
 		self.worm_holes.handle_draw()
 
 	def finish_draw(self):
-		self.state.map.finish_draw()
+		glLoadIdentity()
 		glPopMatrix()
 	
-	def detect_mouseover_objects(self, x, y, radius=2, debug=True):
+	def detect_mouseover_objects(self, x, y, radius=2):
 		'Given a mouse x/y position, detect any objects at/around this position'
 		self.start_draw()
 
@@ -84,7 +86,7 @@ class Masks(views.View):
 		# find object(s) under the cursor
 		colors = []
 		bytes = []
-		detected_objects = {}
+		self.detected_object_frequency = {}
 		for byte_position in range(area):
 			ctypes_position = byte_position*4
 
@@ -99,23 +101,24 @@ class Masks(views.View):
 				ctypes_buffer[ctypes_position+2], #blue
 			)
 			detected_object = self.color_picks[color]
-			if not detected_objects.has_key(detected_object):
-				detected_objects[detected_object] = 0
-			detected_objects[detected_object] += 1
+			if not self.detected_object_frequency.has_key(detected_object):
+				self.detected_object_frequency[detected_object] = 0
+			self.detected_object_frequency[detected_object] += 1
 			colors.append( color )
 
-		if debug:
-			for row in range(length-1, -1, -1):
-				begin = row*length
-				end = begin + length
-
-			# maximally-seen object is first
-			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
-				g.logging.debug( "object type: %s; ref: %s", type(object), object )
-
 		self.finish_draw()
-
-		return detected_objects
+	
+	def detected_objects(self, type=None):
+		"""Return map objects that were detected under the mouse, if any. Optionally, request only masks of a certain type."""
+		map_objects = []
+		# first objects were "the most" under the mouse
+		for mask_object in sorted(
+			self.detected_object_frequency, key=self.detected_object_frequency.get, reverse=True
+		):
+			if (type is not None) and not ((mask_object.type) == type):
+				continue
+			map_objects.append(mask_object.map_object)
+		return map_objects
 
 	def set_center(self):
 		self.stars.set_center()

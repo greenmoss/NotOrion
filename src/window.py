@@ -19,6 +19,11 @@ class Window(pyglet.window.Window):
 
 		self.set_minimum_size(800, 600)
 
+		self.key_handlers = {
+			pyglet.window.key.ESCAPE: lambda: self.close(),
+			pyglet.window.key.Q: lambda: self.close(),
+		}
+
 		self.register_event_type('on_update')
 		pyglet.clock.schedule(self.update)
 
@@ -27,3 +32,7 @@ class Window(pyglet.window.Window):
 	# this activates kytten in state.setup; it should move into views.setup
 	def update(self, dt):
 		self.dispatch_event('on_update', dt)
+
+	def on_key_press(self, symbol, modifiers):
+		handler = self.key_handlers.get(symbol, lambda: None)
+		handler()

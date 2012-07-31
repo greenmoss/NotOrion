@@ -58,6 +58,9 @@ class Star(fixed_size_object.StaticImageObject):
 			anchor_x='center', anchor_y='top', 
 			batch=sprites_batch, 
 			group=self.pyglet_labels_ordered_group)
+	
+	def __repr__(self):
+		return "map view: %s"%self.physical_star.name
 
 	def scale_coordinates(self, scaling_factor):
 		"Set star's sprite and label coordinates based on a scaling factor."

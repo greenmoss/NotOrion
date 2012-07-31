@@ -72,9 +72,6 @@ class FixedSizeObject(object):
 		self.sprite_coordinates = (int(self.coordinates[0]/scaling_factor), int(self.coordinates[1]/scaling_factor))
 		self.sprite.x = self.sprite_coordinates[0]
 		self.sprite.y = self.sprite_coordinates[1]
-		if hasattr(self, 'image_mask'):
-			self.image_mask.x = self.sprite_coordinates[0]
-			self.image_mask.y = self.sprite_coordinates[1]
 
 class StaticImageObject(FixedSizeObject):
 	'All foreground objects with a static sprite image that maintain a constant size across rescales, eg stars.'

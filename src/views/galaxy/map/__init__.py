@@ -126,38 +126,32 @@ class Galaxy(views.View):
 			(self.view_center[1]+coordinates[1]-self.half_height)*self.scale
 		)
 	
-	def start_draw(self):
-		g.window.clear()
-
+	def set_drawing_matrices(self):
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
 		glMatrixMode(GL_MODELVIEW)
 
-	def drawing_to_center_of_viewing_area(self):
+	def set_drawing_to_foreground(self):
 		self.translate_x = int(-self.view_center[0])
 		self.translate_y = int(-self.view_center[1])
 		glTranslated(self.translate_x,self.translate_y,0)
-		#gluLookAt(
-		#	self.view_center[0], self.view_center[1], 0.0,
-		#	self.view_center[0], self.view_center[1], -100.0,
-		#	0.0, 1.0, 0.0)
-	
-	def finish_draw(self):
-		glLoadIdentity()
 
 	def handle_draw(self):
-		self.start_draw()
+		g.window.clear()
 
-		#self.background_stars.draw()
+		self.set_drawing_matrices()
 
-		self.drawing_to_center_of_viewing_area()
+		self.background_stars.draw()
+
+		self.set_drawing_to_foreground()
+
 		self.nebulae.draw()
 		self.worm_holes.draw()
 		self.stars.draw()
 		self.black_holes.draw()
 
-		self.finish_draw()
+		glLoadIdentity()
 
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
