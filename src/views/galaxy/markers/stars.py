@@ -12,7 +12,7 @@ class Stars(hover_objects.HoverGroup):
 
 	def __init__(self, map_view):
 		self.map_view = map_view
-		self.map_view_type = views.galaxy.map.objects.stars.Star
+		self.map_view_type = views.galaxy.map.stars.Star
 		super(Stars, self).__init__()
 
 		# configure marker image animation

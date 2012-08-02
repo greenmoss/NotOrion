@@ -4,8 +4,13 @@ from pyglet.gl import *
 
 from globals import g
 import views
-import objects
 import utilities
+
+import background_stars
+import black_holes
+import nebulae
+import stars
+import worm_holes
 
 class Galaxy(views.View):
 	# when scaling/rescaling, minimum distance between stars/black holes
@@ -18,11 +23,11 @@ class Galaxy(views.View):
 
 		self.state = state
 
-		self.background_stars = objects.background_stars.BackgroundStars()
-		self.stars = objects.stars.Stars()
-		self.black_holes = objects.black_holes.BlackHoles()
-		self.nebulae = objects.nebulae.Nebulae()
-		self.worm_holes = objects.worm_holes.WormHoles(self.stars)
+		self.background_stars = background_stars.BackgroundStars()
+		self.stars = stars.Stars()
+		self.black_holes = black_holes.BlackHoles()
+		self.nebulae = nebulae.Nebulae()
+		self.worm_holes = worm_holes.WormHoles(self.stars)
 
 		# black background
 		glClearColor(0.0, 0.0, 0.0, 0)

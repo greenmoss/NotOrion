@@ -7,7 +7,7 @@ class WormHoles(hover_objects.HoverGroup):
 
 	def __init__(self, map_view, marker_stars):
 		self.map_view = map_view
-		self.map_view_type = views.galaxy.map.objects.worm_holes.WormHole
+		self.map_view_type = views.galaxy.map.worm_holes.WormHole
 		super(WormHoles, self).__init__()
 
 		for map_worm_hole in self.map_view.worm_holes:

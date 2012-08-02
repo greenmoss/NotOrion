@@ -7,7 +7,12 @@ import os
 
 from globals import g
 import utilities
-import galaxy_objects
+
+import black_holes
+import masses
+import nebulae
+import stars
+import worm_holes
 
 class Galaxy(object):
 
@@ -26,11 +31,11 @@ class Galaxy(object):
 		g.logging.debug("black hole count: %s", len(self.black_holes))
 
 		# generate nebulae
-		self.nebulae = galaxy_objects.nebulae.generate(nebulae_amount, edges)
+		self.nebulae = nebulae.generate(nebulae_amount, edges)
 		g.logging.debug("nebulae count: %s", len(self.nebulae))
 
 		# generate worm holes
-		self.worm_holes = galaxy_objects.worm_holes.generate(worm_hole_amount, self.stars)
+		self.worm_holes = worm_holes.generate(worm_hole_amount, self.stars)
 		g.logging.debug("worm hole count: %s", len(self.worm_holes))
 
 		self.derive_bounding_lines()
@@ -58,15 +63,15 @@ class Galaxy(object):
 
 			if object_type == 'black hole':
 				self.black_holes.append(
-					galaxy_objects.black_holes.BlackHole(coordinate)
+					black_holes.BlackHole(coordinate)
 				)
 
 			else:
 				self.stars.append(
-					galaxy_objects.stars.Star(
+					stars.Star(
 						coordinate, 
-						galaxy_objects.stars.Star.available_names.pop(
-							random.randint(0, len(galaxy_objects.stars.Star.available_names)-1)
+						stars.Star.available_names.pop(
+							random.randint(0, len(stars.Star.available_names)-1)
 						), 
 						object_type
 					),
