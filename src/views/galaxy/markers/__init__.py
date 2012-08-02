@@ -13,7 +13,7 @@ class Markers(object):
 		self.state = state
 		self.objects_under_cursor = []
 		self.stars = stars.Stars(self.state.map.stars)
-		self.worm_holes = worm_holes.WormHoles()
+		self.worm_holes = worm_holes.WormHoles(self.state.map.worm_holes, self.stars)
 	
 	def animate(self, dt):
 		'Do any/all animations.'
@@ -55,8 +55,6 @@ class Markers(object):
 	def handle_draw(self):
 		# the draw for color-picking and mask detection requires that we reset the drawing area
 		self.state.map.set_drawing_matrices()
-		#glLoadIdentity()
-		#glMatrixMode(GL_MODELVIEW)
 		self.state.map.set_drawing_to_foreground()
 
 		self.stars.draw()
@@ -73,22 +71,25 @@ class Markers(object):
 			return
 			#self.set_info(False)
 
-	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-		self.stars.set_coordinates()
+	def handle_mouse_drag(self, *args):
+		self.stars.handle_mouse_drag(*args)
+		self.worm_holes.handle_mouse_drag(*args)
 
-	def handle_mouse_motion(self, x, y, dx, dy):
+	def handle_mouse_motion(self, *args):
 		#self.fix_mouse_in_window()
 
 		self.objects_under_cursor = self.state.masks.detected_objects('map')
 		self.stars.set_over_objects(self.objects_under_cursor)
 		self.worm_holes.set_over_objects(self.objects_under_cursor)
 
-	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		self.stars.set_coordinates()
+	def handle_mouse_scroll(self, *args):
+		self.stars.handle_mouse_scroll(*args)
+		self.worm_holes.handle_mouse_scroll(*args)
 		# range markers must be recalculated
 		#self.concentric_markers = None
 	
-	def handle_resize(self, width, height):
-		self.stars.set_coordinates()
+	def handle_resize(self, *args):
+		self.stars.handle_resize(*args)
+		self.worm_holes.handle_resize(*args)
 		# range markers must be recalculated
 		#self.concentric_markers = None

@@ -6,3 +6,5 @@ use observer pattern on galaxy view, eg stars should be attaching to "set_scale"
 in utilities random_dispersed_coordinates, ensure top/right are as densely populated as bottom/left
 move window.update into appropriate state/view
 set up logging on modules as described in http://docs.python.org/howto/logging.html
+better separation/indirection between marker worm holes and wrapped objects?
+	specifically, pulling worm hole color seems "wrong"

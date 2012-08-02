@@ -3,6 +3,7 @@ import pyglet
 from globals import g
 
 class WormHoles(object):
+
 	def __init__(self, star_views):
 		self.star_views = star_views
 		self.worm_holes = []
@@ -24,18 +25,14 @@ class WormHoles(object):
 			worm_hole.set_endpoints()
 
 class WormHole(object):
+	color = (0,0,250)
 
 	def __init__(self, star1_view, star2_view):
 		self.star1_view = star1_view
 		self.star2_view = star2_view
 		self.vertex_list = pyglet.graphics.vertex_list(
 			2, 'v2f', 
-			('c3B/static', 
-				(
-					0,0,96,
-					0,0,96
-				)
-			)
+			('c3B/static', WormHole.color*2)
 		)
 		self.endpoint1_vertices_list = []
 		self.endpoint2_vertices_list = []

@@ -4,13 +4,16 @@ import pyglet
 
 from globals import g
 import views.galaxy
+import hover_objects
 
-class Stars(object):
+class Stars(hover_objects.HoverGroup):
+	visible_batch = pyglet.graphics.Batch()
+	invisible_batch = pyglet.graphics.Batch()
+
 	def __init__(self, map_view):
 		self.map_view = map_view
-		self.markers = {}
-		self.visible_batch = pyglet.graphics.Batch()
-		self.invisible_batch = pyglet.graphics.Batch()
+		self.map_view_type = views.galaxy.map.objects.stars.Star
+		super(Stars, self).__init__()
 
 		# configure marker image animation
 		image = pyglet.resource.image('star_marker_animation.png')
@@ -20,42 +23,19 @@ class Stars(object):
 			image.anchor_y = image.height // 2
 		animation = pyglet.image.Animation.from_image_sequence(image_seq, 0.04)
 
-		for map_star_name, map_star_object in self.map_view.stars.iteritems():
-			self.markers[map_star_name] = Marker(
-				map_star_object, animation, self.visible_batch, self.invisible_batch
+		for map_star in self.map_view.stars.values():
+			self.markers[map_star] = Marker(
+				map_star, animation
 			)
-
-		self.under_cursor = {}
-
-	def set_coordinates(self):
-		for star_name, map_object in self.under_cursor.iteritems():
-			self.markers[star_name].hide()
-
-	def set_over_objects(self, objects_under_cursor):
-		under_cursor = {}
-
-		for map_object in objects_under_cursor:
-			if not type(map_object) == views.galaxy.map.objects.stars.Star:
-				continue
-			star_name = map_object.physical_star.name
-			under_cursor[star_name] = map_object
-			self.markers[star_name].show()
-
-		for star_name, map_object in self.under_cursor.iteritems():
-			if under_cursor.has_key(star_name):
-				continue
-			self.markers[star_name].hide()
-
-		self.under_cursor = under_cursor
 	
 	def draw(self):
-		self.visible_batch.draw()
+		Stars.visible_batch.draw()
 
 class Marker(object):
-	def __init__(self, map_object, animation, visible_batch, invisible_batch):
+	def __init__(self, map_object, animation):
 		self.map_object = map_object
-		self.invisible_batch = invisible_batch
-		self.visible_batch = visible_batch
+		self.color_stack = []
+		self.color = (255,255,255)
 
 		self.sprite = pyglet.sprite.Sprite(
 			animation,
@@ -65,17 +45,35 @@ class Marker(object):
 
 		self.hide()
 	
-	def show(self):
-		self.visible = True
+	def show(self, requestor=None):
+		if requestor is None:
+			requestor = self
+		if self.color_stack.count(requestor) > 0:
+			return
+		self.color_stack.append(requestor)
 		self.set_coordinates()
-		self.sprite.batch = self.visible_batch
+
+		# prefer my own native color
+		if self.color_stack.count(self) > 0:
+			self.sprite.color = self.color
+		else:
+			self.sprite.color = self.color_stack[-1].color
+
+		self.visible = True
+		self.sprite.batch = Stars.visible_batch
 	
-	def hide(self):
-		self.visible = False
-		self.sprite.batch = self.invisible_batch
+	def hide(self, requestor=None):
+		if requestor is None:
+			requestor = self
+		if self.color_stack.count(requestor) == 0:
+			return
+		self.color_stack.remove(requestor)
+		if len(self.color_stack) == 0:
+			self.visible = False
+			self.sprite.batch = Stars.invisible_batch
+			return
+		self.sprite.color = self.color_stack[-1].color
 	
 	def set_coordinates(self):
-		if not self.visible:
-			return
 		self.sprite.x = self.map_object.sprite.x
 		self.sprite.y = self.map_object.sprite.y
