@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import pyglet
 
 from globals import g
@@ -45,7 +48,7 @@ class WormHole(object):
 			self.star1_view.sprite.x,
 			self.star1_view.sprite.y
 		]
-		#g.logging.debug("map endpoint1 vertices: %s", self.endpoint1_vertices_list)
+		#logger.debug("map endpoint1 vertices: %s", self.endpoint1_vertices_list)
 		self.endpoint2_vertices_list = [
 			self.star2_view.sprite.x,
 			self.star2_view.sprite.y

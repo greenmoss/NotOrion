@@ -3,6 +3,8 @@
 from __future__ import division
 import random
 import textwrap
+import logging
+logger = logging.getLogger(__name__)
 
 from globals import g
 
@@ -124,7 +126,7 @@ class Setup(object):
 	}
 
 	def __init__(self):
-		g.logging.debug("instantiated Setup")
+		logger.debug("instantiated Setup")
 		self.galaxy_settings = {}
 
 	def set_galaxy_from_difficulty(self, chosen_difficulty="Normal"):
@@ -159,7 +161,7 @@ class Setup(object):
 				self.galaxy_settings['nebulae_count_max'],
 			)
 
-		g.logging.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)
+		logger.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)
 
 	def generate_galaxy(self):
 		# ensure all necessary galaxy_settings have been set
@@ -180,7 +182,7 @@ class Setup(object):
 			# currently this is always set to 100
 			self.galaxy_settings['dispersion'] = 100
 
-		g.logging.debug('in generate_galaxy, galaxy_settings is %s',self.galaxy_settings)
+		logger.debug('in generate_galaxy, galaxy_settings is %s',self.galaxy_settings)
 
 		g.galaxy.generate(
 			self.galaxy_settings['limits'],

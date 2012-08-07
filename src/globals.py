@@ -6,6 +6,8 @@ With the exception of external modules such as logging that will be shared and
 imported once, object properties are initialized but *not* assigned here.  """
 
 import logging
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s  %(name)s  %(message)s')
+
 import os
 
 import pyglet
@@ -13,12 +15,11 @@ import pyglet
 class Globals(object):
 	
 	def __init__(self):
-		self.logging = logging
-		# paths must be set very early, so do it here instead of in application
 		self.paths = self.get_paths()
 		self.application = None
 		self.window = None
 		self.galaxy = None
+		self.glDraw = None
 
 	def get_paths(self):
 		"""Determine paths to all game resources."""

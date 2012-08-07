@@ -1,4 +1,6 @@
 from __future__ import division
+import logging
+logger = logging.getLogger(__name__)
 
 from pyglet.gl import *
 
@@ -19,7 +21,7 @@ class Galaxy(views.View):
 	zoom_speed = 1.01
 
 	def __init__(self, state):
-		g.logging.debug('instantiating views.Galaxy')
+		logger.debug('instantiating views.Galaxy')
 
 		self.state = state
 
@@ -135,7 +137,9 @@ class Galaxy(views.View):
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		gluOrtho2D(-self.half_width, self.half_width, -self.half_height, self.half_height)
+
 		glMatrixMode(GL_MODELVIEW)
+		glLoadIdentity()
 
 	def set_drawing_to_foreground(self):
 		self.translate_x = int(-self.view_center[0])

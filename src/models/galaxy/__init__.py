@@ -4,6 +4,8 @@ from __future__ import division
 import math
 import random
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 from globals import g
 import utilities
@@ -20,23 +22,23 @@ class Galaxy(object):
 	min_separation_parsecs = 10
 	
 	def __init__(self):
-		g.logging.debug("instantiated Galaxy")
+		logger.debug("instantiated Galaxy")
 
 	def generate(self, edges, dispersion, object_amount, object_pool, worm_hole_amount, nebulae_amount):
 		'Generate objects in the galaxy'
-		g.logging.debug("generating galaxy")
+		logger.debug("generating galaxy")
 
 		self.generate_stars_and_black_holes(edges, dispersion, object_amount, object_pool)
-		g.logging.debug("star count: %s", len(self.stars))
-		g.logging.debug("black hole count: %s", len(self.black_holes))
+		logger.debug("star count: %s", len(self.stars))
+		logger.debug("black hole count: %s", len(self.black_holes))
 
 		# generate nebulae
 		self.nebulae = nebulae.generate(nebulae_amount, edges)
-		g.logging.debug("nebulae count: %s", len(self.nebulae))
+		logger.debug("nebulae count: %s", len(self.nebulae))
 
 		# generate worm holes
 		self.worm_holes = worm_holes.generate(worm_hole_amount, self.stars)
-		g.logging.debug("worm hole count: %s", len(self.worm_holes))
+		logger.debug("worm hole count: %s", len(self.worm_holes))
 
 		self.derive_bounding_lines()
 		self.normalize()

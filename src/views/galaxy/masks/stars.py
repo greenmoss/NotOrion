@@ -1,4 +1,6 @@
 import struct
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 
@@ -8,7 +10,7 @@ class Stars(object):
 	"""Masks for all map star objects."""
 
 	def __init__(self, map_view):
-		g.logging.debug('binding mask stars to map_view')
+		logger.debug('binding mask stars to map_view')
 		self.map_view = map_view
 		self.masks = []
 		self.sprites_batch = pyglet.graphics.Batch()

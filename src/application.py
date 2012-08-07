@@ -2,6 +2,8 @@
 from __future__ import division
 import os
 import argparse
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 
@@ -24,7 +26,7 @@ class Application(object):
 
 	def run(self):
 		if self.args.difficulty:
-			g.logging.debug("received --difficulty: %s",self.args.difficulty)
+			logger.debug("received --difficulty: %s",self.args.difficulty)
 			g.setup.set_galaxy_from_difficulty(self.args.difficulty)
 			g.setup.generate_galaxy()
 			self.set_state('galaxy')
@@ -41,7 +43,7 @@ class Application(object):
 		self.args = parser.parse_args()
 	
 	def set_state(self, new_state):
-		g.logging.debug("setting state to %s"%new_state)
+		logger.debug("setting state to %s"%new_state)
 		# if a state was already set, remove its handlers
 		if len(g.window._event_stack) > 0:
 			g.window.pop_handlers()

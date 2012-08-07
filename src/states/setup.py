@@ -1,5 +1,7 @@
 #! /usr/bin/env python -O
 from __future__ import division
+import logging
+logger = logging.getLogger(__name__)
 
 from globals import g
 import states
@@ -8,14 +10,14 @@ import models.setup
 
 class Setup(states.States):
 	def __init__(self):
-		g.logging.debug('instantiating state.Setup')
+		logger.debug('instantiating state.Setup')
 		self.view = views.setup.Setup(self)
 		g.window.push_handlers(self.view)
 
 		self.view.initialize_difficulty_dialog()
 	
 	def handle_difficulty_selection(self, chosen_difficulty):
-		g.logging.debug('in handle_difficulty_selection, chosen_difficulty is %s',chosen_difficulty)
+		logger.debug('in handle_difficulty_selection, chosen_difficulty is %s',chosen_difficulty)
 
 		g.setup.set_galaxy_from_difficulty(chosen_difficulty)
 
@@ -37,7 +39,7 @@ class Setup(states.States):
 		if not models.setup.Setup.age_defaults.has_key(chosen_age):
 			raise Exception, "invalid age: %s"%chosen_age
 
-		g.logging.debug(
+		logger.debug(
 			'in handle_galaxy_age_selection, for age %s, setting keys %s',
 			chosen_age,
 			models.setup.Setup.age_defaults[chosen_age].keys()
@@ -55,7 +57,7 @@ class Setup(states.States):
 		if not models.setup.Setup.size_defaults.has_key(chosen_size):
 			raise Exception, "invalid size: %s"%chosen_size
 
-		g.logging.debug(
+		logger.debug(
 			'in handle_galaxy_size_selection, for size %s, setting keys %s',
 			chosen_size,
 			models.setup.Setup.size_defaults[chosen_size].keys()

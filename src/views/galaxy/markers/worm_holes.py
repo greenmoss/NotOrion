@@ -1,5 +1,5 @@
 from globals import g
-import views.galaxy
+import views
 import hover_objects
 
 class WormHoles(hover_objects.HoverGroup):
@@ -20,6 +20,7 @@ class Marker(object):
 		# each worm hole needs to inform marker Stars about marker view state
 		self.map_object = map_object
 		self.color = self.map_object.color
+		self.star_marker_color_priority = 1
 		self.marker_stars = marker_stars
 
 		self.marker_star1 = marker_stars.markers[map_object.star1_view]

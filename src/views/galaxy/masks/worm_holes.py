@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import pyglet
 
 from globals import g
@@ -6,7 +9,7 @@ class WormHoles(object):
 	"""Masks for all map worm hole objects."""
 
 	def __init__(self, map_worm_holes):
-		g.logging.debug('binding mask worm_holes to map_worm_holes')
+		logger.debug('binding mask worm_holes to map_worm_holes')
 		self.map_worm_holes = map_worm_holes
 		self.masks = []
 

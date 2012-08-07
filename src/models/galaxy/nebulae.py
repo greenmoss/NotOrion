@@ -1,6 +1,8 @@
 #! python -O
 import random
 import math
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 
@@ -77,7 +79,7 @@ class Nebula(masses.Mass):
 
 			self.lobes.append( Lobe(lobe_coordinate, self.primary_color_name, permutation_index) )
 
-		g.logging.debug("lobe count: %s", len(self.lobes))
+		logger.debug("lobe count: %s", len(self.lobes))
 
 class Lobe(object):
 	# all lobe colors in one nebula center on either red, green, or blue in the color wheel:

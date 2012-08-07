@@ -3,7 +3,7 @@ from __future__ import division
 import pyglet
 
 from globals import g
-import views.galaxy
+import views
 import hover_objects
 
 class Stars(hover_objects.HoverGroup):
@@ -34,8 +34,9 @@ class Stars(hover_objects.HoverGroup):
 class Marker(object):
 	def __init__(self, map_object, animation):
 		self.map_object = map_object
-		self.color_stack = []
+		self.color_stack = {}
 		self.color = (255,255,255)
+		self.star_marker_color_priority = 2
 
 		self.sprite = pyglet.sprite.Sprite(
 			animation,
@@ -48,16 +49,12 @@ class Marker(object):
 	def show(self, requestor=None):
 		if requestor is None:
 			requestor = self
-		if self.color_stack.count(requestor) > 0:
+		if self.color_stack.has_key(requestor.star_marker_color_priority):
 			return
-		self.color_stack.append(requestor)
+		self.color_stack[requestor.star_marker_color_priority] = requestor
 		self.set_coordinates()
 
-		# prefer my own native color
-		if self.color_stack.count(self) > 0:
-			self.sprite.color = self.color
-		else:
-			self.sprite.color = self.color_stack[-1].color
+		self.show_top_color()
 
 		self.visible = True
 		self.sprite.batch = Stars.visible_batch
@@ -65,14 +62,24 @@ class Marker(object):
 	def hide(self, requestor=None):
 		if requestor is None:
 			requestor = self
-		if self.color_stack.count(requestor) == 0:
+		if not self.color_stack.has_key(requestor.star_marker_color_priority):
 			return
-		self.color_stack.remove(requestor)
+		self.color_stack.pop(requestor.star_marker_color_priority)
+
 		if len(self.color_stack) == 0:
 			self.visible = False
 			self.sprite.batch = Stars.invisible_batch
 			return
-		self.sprite.color = self.color_stack[-1].color
+
+		self.show_top_color()
+	
+	def show_top_color(self):
+		# prefer my own native color
+		top = 0
+		for number, requestor in self.color_stack.iteritems():
+			if number > top:
+				top = number
+		self.sprite.color = self.color_stack[top].color
 	
 	def set_coordinates(self):
 		self.sprite.x = self.map_object.sprite.x

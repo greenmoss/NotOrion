@@ -14,6 +14,7 @@ class Markers(object):
 		self.objects_under_cursor = []
 		self.stars = stars.Stars(self.state.map.stars)
 		self.worm_holes = worm_holes.WormHoles(self.state.map.worm_holes, self.stars)
+		self.ranges = ranges.Ranges(self.state, self.stars)
 	
 	def animate(self, dt):
 		'Do any/all animations.'
@@ -23,73 +24,38 @@ class Markers(object):
 			# new set of animations
 			self.highlight_objects = self.objects_under_cursor
 
-	def fix_mouse_in_window(self):
-		"""_mouse_in_window is built in, so normally it wouldn't be a good idea to override it
-		but since it reports "False" on startup even though the cursor is in the window, we'll
-		cheat/fix/workaround"""
-		g.window._mouse_in_window = True
-
-	def set_over_objects(self, x, y):
-		"Set objects that are under the cursor, and show/hide relevant markers"
-		objects_under_cursor = []
-		return
-		detected_objects = self.state.detect_map_mouseover_objects(x,y)
-		if len(detected_objects) > 0:
-			# maximally-seen object is first
-			for object in sorted(detected_objects, key=detected_objects.get, reverse=True):
-				if type(object) == galaxy_objects.ForegroundStar:
-					objects_under_cursor.append(object)
-				elif type(object) == galaxy_objects.WormHole:
-					objects_under_cursor.append(object)
-				else: # black hole
-					detected_objects.pop(object)
-
-		if not(objects_under_cursor == self.objects_under_cursor):
-			for object in self.objects_under_cursor:
-				if not detected_objects.has_key(object):
-					object.hide_marker()
-			for object in objects_under_cursor:
-				object.reveal_marker()
-			self.objects_under_cursor = objects_under_cursor
-
 	def handle_draw(self):
-		# the draw for color-picking and mask detection requires that we reset the drawing area
+		# drawing during color-picking and mask detection requires a drawing area reset
 		self.state.map.set_drawing_matrices()
 		self.state.map.set_drawing_to_foreground()
 
 		self.stars.draw()
+		self.ranges.draw()
 
-		glLoadIdentity()
+	def handle_key_press(self, *args):
+		self.ranges.handle_key_press(*args)
 
-	def handle_key_press(self, symbol, modifiers):
-		if not symbol == pyglet.window.key.LSHIFT:
-			return
-			#self.set_info(True)
-
-	def handle_key_release(self, symbol, modifiers):
-		if not symbol == pyglet.window.key.LSHIFT:
-			return
-			#self.set_info(False)
+	def handle_key_release(self, *args):
+		self.ranges.handle_key_release(*args)
 
 	def handle_mouse_drag(self, *args):
 		self.stars.handle_mouse_drag(*args)
 		self.worm_holes.handle_mouse_drag(*args)
+		self.ranges.handle_mouse_drag(*args)
 
 	def handle_mouse_motion(self, *args):
-		#self.fix_mouse_in_window()
-
 		self.objects_under_cursor = self.state.masks.detected_objects('map')
 		self.stars.set_over_objects(self.objects_under_cursor)
 		self.worm_holes.set_over_objects(self.objects_under_cursor)
 
+		self.ranges.handle_mouse_motion(*args)
+
 	def handle_mouse_scroll(self, *args):
 		self.stars.handle_mouse_scroll(*args)
 		self.worm_holes.handle_mouse_scroll(*args)
-		# range markers must be recalculated
-		#self.concentric_markers = None
+		self.ranges.handle_mouse_scroll(*args)
 	
 	def handle_resize(self, *args):
 		self.stars.handle_resize(*args)
 		self.worm_holes.handle_resize(*args)
-		# range markers must be recalculated
-		#self.concentric_markers = None
+		self.ranges.handle_resize(*args)

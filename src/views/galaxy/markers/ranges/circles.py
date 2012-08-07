@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import pyglet
 
 class Circles(object):
@@ -41,7 +44,7 @@ class Circles(object):
 					[1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128, 160, 192, 256, 320, 384, 512]
 			)
 
-			logging.debug( "in set_range_circles, parsecs: %s, steps: %s"%(parsecs, marker_steps) )
+			logger.debug( "in set_range_circles, parsecs: %s, steps: %s"%(parsecs, marker_steps) )
 			previous_radius = 0
 			previous_difference = 0
 			for step in marker_steps:
@@ -56,7 +59,7 @@ class Circles(object):
 					continue
 				previous_radius = length
 				previous_difference = difference
-				logging.debug( "step: %s, absolute_radius: %s, length: %s"%(step, absolute_radius, length) )
+				logger.debug( "step: %s, absolute_radius: %s, length: %s"%(step, absolute_radius, length) )
 
 				self.concentric_markers.append( utilities.circle_vertices(length) )
 

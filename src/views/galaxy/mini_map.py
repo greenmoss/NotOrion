@@ -134,7 +134,9 @@ class MiniMap(object):
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		gluOrtho2D(0, g.window.width, 0, g.window.height)
+
 		glMatrixMode(GL_MODELVIEW)
+		glLoadIdentity()
 	
 	def handle_draw(self):
 		if not self.visible:

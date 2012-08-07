@@ -1,6 +1,7 @@
-#! /usr/bin/env python -O
 from __future__ import division
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 from pyglet.gl import *
@@ -12,7 +13,7 @@ import views
 class Setup(views.View):
 
 	def __init__(self, state):
-		g.logging.debug('instantiating views.Setup')
+		logger.debug('instantiating views.Setup')
 
 		self.state = state
 

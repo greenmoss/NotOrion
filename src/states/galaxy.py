@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from globals import g
 import states
 import views.galaxy
@@ -6,7 +9,7 @@ class Galaxy(states.States):
 	"""Interactions with the galaxy."""
 
 	def __init__(self):
-		g.logging.debug('instantiating state.Galaxy')
+		logger.debug('instantiating state.Galaxy')
 
 		self.map = views.galaxy.map.Galaxy(self)
 		self.mini_map = views.galaxy.mini_map.MiniMap(self)

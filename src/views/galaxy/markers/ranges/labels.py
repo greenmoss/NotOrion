@@ -3,7 +3,7 @@ import pyglet
 class CursorLabel(object):
 	batch = pyglet.graphics.Batch()
 
-	def __init__(self, marker_color):
+	def __init__(self, color):
 		self.visible = False
 		self.pyglet_label= pyglet.text.Label(
 			"",
@@ -11,7 +11,7 @@ class CursorLabel(object):
 			y=0,
 			anchor_x='center',
 			anchor_y='bottom',
-			color=(marker_color[0], marker_color[1], marker_color[2], 255),
+			color=(color[0], color[1], color[2], 255),
 			font_size=10,
 			batch=CursorLabel.batch
 		)
