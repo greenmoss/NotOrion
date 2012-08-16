@@ -7,7 +7,7 @@ class Nebulae(object):
 
 	def __init__(self):
 		self.nebulae = []
-		for nebula in g.galaxy.nebulae:
+		for nebula in g.galaxy.nebulae.list:
 			self.nebulae.append( Nebula(nebula, Nebulae.pyglet_sprites_batch) )
 	
 	def draw(self):

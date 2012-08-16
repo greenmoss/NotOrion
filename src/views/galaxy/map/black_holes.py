@@ -9,7 +9,7 @@ class BlackHoles(object):
 
 	def __init__(self):
 		self.black_holes = {}
-		for black_hole in g.galaxy.black_holes:
+		for black_hole in g.galaxy.black_holes.list:
 			self.black_holes[black_hole] = BlackHole(black_hole, BlackHoles.sprites_batch)
 	
 	def draw(self):

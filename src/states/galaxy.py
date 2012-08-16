@@ -20,6 +20,16 @@ class Galaxy(states.States):
 
 		g.window.push_handlers(self)
 
+	def load(self, attribs):
+		"Load attributes that have been saved to disk."
+		self.map.load(attribs['map'])
+
+	def save(self):
+		"Return attributes that should be saved to disk."
+		attribs = {}
+		attribs['map'] = self.map.save()
+		return attribs
+
 	def map_view_to_window(self, coordinates):
 		"Translate map view coordinate into window coordinate, accounting for view center and scale."
 		return self.map.view_to_window(coordinates)

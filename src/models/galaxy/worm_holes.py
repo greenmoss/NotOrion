@@ -2,15 +2,20 @@ import random
 
 import stars
 
-def generate(amount, stars):
-	star_indexes = range(len(stars))
-	worm_holes = []
-	for repeat in range(amount):
-		index1 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
-		index2 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
+class WormHoles(object):
+	def __init__(self, amount, stars):
+		self.stars = stars
+		self.list = []
+		self.generate(amount)
 
-		worm_holes.append(WormHole(stars[index1], stars[index2]))
-	return worm_holes
+	def generate(self, amount):
+		star_indexes = range(len(self.stars.list))
+		worm_holes = []
+		for repeat in range(amount):
+			index1 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
+			index2 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
+
+			self.list.append(WormHole(self.stars.list[index1], self.stars.list[index2]))
 
 class WormHole(object):
 	"""Wormholes are a special class of object; they have no mass and can not exist independently of their endpoint stars."""

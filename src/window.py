@@ -20,8 +20,8 @@ class Window(pyglet.window.Window):
 		self.set_minimum_size(800, 600)
 
 		self.key_handlers = {
-			pyglet.window.key.ESCAPE: lambda: self.close(),
-			pyglet.window.key.Q: lambda: self.close(),
+			pyglet.window.key.ESCAPE: lambda: g.application.exit(),
+			pyglet.window.key.Q: lambda: g.application.exit(),
 		}
 
 		self.register_event_type('on_update')

@@ -9,7 +9,7 @@ class Stars(object):
 
 	def __init__(self):
 		self.stars = {}
-		for physical_star in g.galaxy.stars:
+		for physical_star in g.galaxy.stars.list:
 			self.stars[physical_star.name] = Star(physical_star, Stars.sprites_batch)
 	
 	def draw(self):

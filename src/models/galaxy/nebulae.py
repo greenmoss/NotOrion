@@ -10,44 +10,44 @@ from globals import g
 import masses
 import utilities
 
-def generate(count, edges):
-	if count == 0:
-		return []
-	
-	nebulae = []
+class Nebulae(object):
+	def __init__(self, amount, edges):
+		self.list = []
+		if amount == 0:
+			return []
+		self.generate(amount, edges)
 
-	# minimize repetition of nebula colors
-	lobe_primary_color_names = Lobe.color_names.keys()
-	lobe_primary_color_index = random.randint(0, 1000)
+	def generate(self, amount, edges):
+		# minimize repetition of nebula colors
+		lobe_primary_color_names = Lobe.color_names.keys()
+		lobe_primary_color_index = random.randint(0, 1000)
 
-	for coordinate in utilities.random_dispersed_coordinates(
-		edges[0], edges[1], edges[2], edges[3],
-		amount=count,
-		dispersion=Nebula.max_offset*2
-	):
-		lobe_primary_color_index = lobe_primary_color_index % len(lobe_primary_color_names )
-		primary_color_name = lobe_primary_color_names[lobe_primary_color_index]
+		for coordinate in utilities.random_dispersed_coordinates(
+			edges[0], edges[1], edges[2], edges[3],
+			amount=amount,
+			dispersion=Nebula.max_offset*2
+		):
+			lobe_primary_color_index = lobe_primary_color_index % len(lobe_primary_color_names )
+			primary_color_name = lobe_primary_color_names[lobe_primary_color_index]
 
-		nebulae.append( Nebula(coordinate, primary_color_name) )
-		
-		# cycle to next lobe primary color
-		lobe_primary_color_index += 1
+			self.list.append( Nebula(coordinate, primary_color_name) )
+			
+			# cycle to next lobe primary color
+			lobe_primary_color_index += 1
 
-	# ensure nebulae don't overlap
-	min_nebula_distance = Nebula.max_offset * 2
-	for nebula1 in nebulae:
-		for nebula2 in nebulae:
-			if nebula1 == nebula2:
-				continue
-			offset_from_zero = (
-				abs(nebula1.coordinates[0] - nebula2.coordinates[0]), 
-				abs(nebula1.coordinates[1] - nebula2.coordinates[1])
-			)
-			distance = math.sqrt(offset_from_zero[0]**2 + offset_from_zero[1]**2)
-			if distance < min_nebula_distance:
-				raise DataError, "at least two nebulae are not far enough apart"
-	
-	return nebulae
+		# ensure nebulae don't overlap
+		min_nebula_distance = Nebula.max_offset * 2
+		for nebula1 in self.list:
+			for nebula2 in self.list:
+				if nebula1 == nebula2:
+					continue
+				offset_from_zero = (
+					abs(nebula1.coordinates[0] - nebula2.coordinates[0]), 
+					abs(nebula1.coordinates[1] - nebula2.coordinates[1])
+				)
+				distance = math.sqrt(offset_from_zero[0]**2 + offset_from_zero[1]**2)
+				if distance < min_nebula_distance:
+					raise DataError, "at least two nebulae are not far enough apart"
 
 class Nebula(masses.Mass):
 	"""A nebula. These interact with other objects, eg ships by slowing movement."""
@@ -129,4 +129,19 @@ class Lobe(object):
 		self.scale = 10**random.uniform(-0.3, 0.3)
 
 		image_id = '%s_%s_%d'%(self.primary_color_name, self.secondary_color_name, self.image_selector)
-		self.pyglet_image_resource = pyglet.resource.image( Lobe.image_file_names[image_id] )
+		self.pyglet_image_resource_file_name = Lobe.image_file_names[image_id]
+		self.set_pyglet_images()
+
+	def set_pyglet_images(self):
+		self.pyglet_image_resource = pyglet.resource.image( self.pyglet_image_resource_file_name )
+	
+	def __getstate__(self):
+		"""Pyglet attributes can not be pickled, so exclude them."""
+		out_dict = self.__dict__.copy()
+		del out_dict['pyglet_image_resource']
+		return(out_dict)
+	
+	def __setstate__(self, dict):
+		"""Restore pyglet attributes which were excluded from pickling."""
+		self.__dict__.update(dict)
+		self.set_pyglet_images()

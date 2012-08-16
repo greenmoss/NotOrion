@@ -4,6 +4,7 @@ from __future__ import division
 import math
 import random
 import os
+import jsonpickle
 import logging
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,6 @@ from globals import g
 import utilities
 
 import black_holes
-import masses
 import nebulae
 import stars
 import worm_holes
@@ -29,16 +29,16 @@ class Galaxy(object):
 		logger.debug("generating galaxy")
 
 		self.generate_stars_and_black_holes(edges, dispersion, object_amount, object_pool)
-		logger.debug("star count: %s", len(self.stars))
-		logger.debug("black hole count: %s", len(self.black_holes))
+		logger.debug("star count: %s", len(self.stars.list))
+		logger.debug("black hole count: %s", len(self.black_holes.list))
 
 		# generate nebulae
-		self.nebulae = nebulae.generate(nebulae_amount, edges)
-		logger.debug("nebulae count: %s", len(self.nebulae))
+		self.nebulae = nebulae.Nebulae(nebulae_amount, edges)
+		logger.debug("nebulae count: %s", len(self.nebulae.list))
 
 		# generate worm holes
-		self.worm_holes = worm_holes.generate(worm_hole_amount, self.stars)
-		logger.debug("worm hole count: %s", len(self.worm_holes))
+		self.worm_holes = worm_holes.WormHoles(worm_hole_amount, self.stars)
+		logger.debug("worm hole count: %s", len(self.worm_holes.list))
 
 		self.derive_bounding_lines()
 		self.normalize()
@@ -52,8 +52,8 @@ class Galaxy(object):
 			amount=object_amount, dispersion=dispersion
 		)
 
-		self.stars = []
-		self.black_holes = []
+		self.stars = stars.Stars()
+		self.black_holes = black_holes.BlackHoles()
 
 		# mash all the objects together for randomization purposes
 		object_types = []
@@ -64,20 +64,11 @@ class Galaxy(object):
 			object_type = object_types[random.randint(0, len(object_types)-1)]
 
 			if object_type == 'black hole':
-				self.black_holes.append(
-					black_holes.BlackHole(coordinate)
-				)
+				self.black_holes.add(coordinate)
 
 			else:
-				self.stars.append(
-					stars.Star(
-						coordinate, 
-						stars.Star.available_names.pop(
-							random.randint(0, len(stars.Star.available_names)-1)
-						), 
-						object_type
-					),
-				)
+				# object_type is color
+				self.stars.add(coordinate, object_type)
 
 	def derive_min_max_distances(self):
 		# derive max/min distances between all stars/black holes
@@ -85,8 +76,8 @@ class Galaxy(object):
 		self.max_distance = 0
 		self.min_coords = ((self.right_bounding_x - self.left_bounding_x), (self.top_bounding_y - self.bottom_bounding_y))
 		self.min_distance = math.sqrt(self.min_coords[0]**2 + self.min_coords[1]**2)
-		for object1 in self.stars+self.black_holes:
-			for object2 in self.stars+self.black_holes:
+		for object1 in self.stars.list+self.black_holes.list:
+			for object2 in self.stars.list+self.black_holes.list:
 				if object1 == object2:
 					continue
 				max_x = object1.coordinates[0]
@@ -116,7 +107,7 @@ class Galaxy(object):
 		y_offset = (abs(self.top_bounding_y)-abs(self.bottom_bounding_y))/2
 
 		# recalculate all object coordinates
-		for mass in self.stars + self.black_holes + self.nebulae:
+		for mass in self.stars.list + self.black_holes.list + self.nebulae.list:
 			mass.coordinates = (mass.coordinates[0]-x_offset, mass.coordinates[1]-y_offset)
 
 		# previously-calculated bounding lines are now incorrect, so recalculate
@@ -125,7 +116,7 @@ class Galaxy(object):
 	def derive_bounding_lines(self):
 		'Find bounding lines that contain all stars and black holes.'
 		self.left_bounding_x, self.right_bounding_x, self.top_bounding_y, self.bottom_bounding_y = 0, 0, 0, 0
-		for mass in self.stars + self.black_holes:
+		for mass in self.stars.list + self.black_holes.list:
 			if mass.coordinates[0] < self.left_bounding_x:
 				self.left_bounding_x = mass.coordinates[0]
 			elif mass.coordinates[0] > self.right_bounding_x:
@@ -134,3 +125,7 @@ class Galaxy(object):
 				self.bottom_bounding_y = mass.coordinates[1]
 			elif mass.coordinates[1] > self.top_bounding_y:
 				self.top_bounding_y = mass.coordinates[1]
+	
+	def save(self):
+		"""Return all model data."""
+		return self

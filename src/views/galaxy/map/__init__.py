@@ -64,6 +64,16 @@ class Galaxy(views.View):
 			self.maximum_scale = g.galaxy.min_distance/Galaxy.min_scaled_separation
 		if self.minimum_scale > self.maximum_scale:
 			self.maximum_scale = self.minimum_scale
+	
+	def load(self, attribs):
+		self.set_scale(attribs['scale'])
+		self.set_center(attribs['view_center'])
+
+	def save(self):
+		return {
+			'scale': self.scale, 
+			'view_center': self.view_center
+		}
 
 	def set_center(self, coordinates):
 		"Set the window center, for rendering objects."

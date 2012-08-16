@@ -11,7 +11,7 @@ class WormHoles(object):
 		self.star_views = star_views
 		self.worm_holes = []
 
-		for worm_hole_model in g.galaxy.worm_holes:
+		for worm_hole_model in g.galaxy.worm_holes.list:
 			self.worm_holes.append( 
 				WormHole(
 					self.star_views.stars[worm_hole_model.star1.name],
