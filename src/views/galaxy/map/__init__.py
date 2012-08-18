@@ -137,20 +137,6 @@ class Galaxy(views.View):
 		self.black_holes.set_scale(scale)
 		self.nebulae.set_scale(scale)
 		self.worm_holes.set_scale(scale) # *must* be set *after* stars
-
-	def view_to_window(self, coordinates):
-		"Translate view coordinate into window coordinate, accounting for view center and scale."
-		return(
-			coordinates[0]/self.scale+self.half_width-self.view_center[0],
-			coordinates[1]/self.scale+self.half_height-self.view_center[1]
-		)
-
-	def window_to_view(self, coordinates):
-		"Translate window coordinate into view coordinate, accounting for view center and scale."
-		return(
-			(self.view_center[0]+coordinates[0]-self.half_width)*self.scale,
-			(self.view_center[1]+coordinates[1]-self.half_height)*self.scale
-		)
 	
 	def set_drawing_matrices(self):
 		glMatrixMode(GL_PROJECTION)
@@ -185,15 +171,15 @@ class Galaxy(views.View):
 		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
 	
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		prescale_view_mouse = self.window_to_view((x,y))
+		prescale_model_coordinate = self.state.map_coordinate((x, y), 'default_window').as_model()
 
 		self.set_scale(self.scale*(Galaxy.zoom_speed**scroll_y))
 
-		postscale_view_mouse = self.window_to_view((x,y))
+		postscale_model_coordinate = self.state.map_coordinate((x, y), 'default_window').as_model()
 
 		# scale the prescale mouse according to the *new* scale
-		prescale_mouse = (prescale_view_mouse[0]/self.scale, prescale_view_mouse[1]/self.scale)
-		postscale_mouse = (postscale_view_mouse[0]/self.scale, postscale_view_mouse[1]/self.scale)
+		prescale_mouse = (prescale_model_coordinate.x/self.scale, prescale_model_coordinate.y/self.scale)
+		postscale_mouse = (postscale_model_coordinate.x/self.scale, postscale_model_coordinate.y/self.scale)
 
 		self.set_center(
 			(

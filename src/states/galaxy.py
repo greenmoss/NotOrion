@@ -33,14 +33,6 @@ class Galaxy(states.States):
 	def map_coordinate(self, coordinates, type):
 		return self.map.coordinate(coordinates, type)
 
-	def map_view_to_window(self, coordinates):
-		"Translate map view coordinate into window coordinate, accounting for view center and scale."
-		return self.map.view_to_window(coordinates)
-
-	def window_to_map_view(self, coordinates):
-		"Translate window coordinate into map view coordinate, accounting for view center and scale."
-		return self.map.window_to_view(coordinates)
-
 	def on_draw(self, *args):
 		self.map.handle_draw(*args)
 		self.markers.handle_draw(*args)

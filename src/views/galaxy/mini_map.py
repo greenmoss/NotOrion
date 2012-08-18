@@ -1,4 +1,6 @@
 from __future__ import division
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 from pyglet.gl import *
@@ -10,6 +12,10 @@ class MiniMap(object):
 	offset = 20
 	# either width or height, whichever is larger
 	size = 75
+
+	background_color = (0, 0, 0, 220) # transparent black
+	borders_color = (32, 32, 32) # dark grey
+	active_area_color = (48, 48, 48) # light grey
 
 	def __init__(self, state):
 		self.state = state
@@ -29,33 +35,15 @@ class MiniMap(object):
 		# what we will be drawing
 		self.bg_vertex_list = pyglet.graphics.vertex_list( 
 			4, 'v2f',
-			('c4B/static', ( # transparent black
-				0, 0, 0, 220,
-				0, 0, 0, 220,
-				0, 0, 0, 220,
-				0, 0, 0, 220,
-				)
-			)
+			('c4B/static', MiniMap.background_color*4)
 		)
 		self.borders_vertex_list = pyglet.graphics.vertex_list( 
 			4, 'v2f',
-			('c3B/static', ( # dark grey
-				32, 32, 32,
-				32, 32, 32,
-				32, 32, 32,
-				32, 32, 32,
-				)
-			)
+			('c3B/static', MiniMap.borders_color*4)
 		)
 		self.active_area_vertex_list = pyglet.graphics.vertex_list( 
 			4, 'v2f',
-			('c3B/static', ( # light grey
-				48, 48, 48,
-				48, 48, 48,
-				48, 48, 48,
-				48, 48, 48,
-				)
-			)
+			('c3B/static', MiniMap.active_area_color*4)
 		)
 
 		self.derive_dimensions()
@@ -63,16 +51,18 @@ class MiniMap(object):
 	# dimensions of mini map vary with scale and window size
 	def derive_dimensions(self):
 		# where are the map view coordinates on the playing field?
-		main_map_view_right_top = self.state.window_to_map_view((g.window.width, g.window.height))
-		main_map_view_left_bottom = self.state.window_to_map_view((0, 0))
+		main_map_view_right_top = self.state.map_coordinate(
+			(g.window.width, g.window.height), 'default_window').as_model()
+		main_map_view_left_bottom = self.state.map_coordinate(
+			(0, 0), 'default_window').as_model()
 
 		# hide the mini-map if the entire playing field is visible
 		# the integer modifiers create a minimum margin around stars before showing the mini-map
 		if (
-			(main_map_view_right_top[0] >= g.galaxy.right_bounding_x+60) and
-			(main_map_view_right_top[1] >= g.galaxy.top_bounding_y+20) and
-			(main_map_view_left_bottom[0] <= g.galaxy.left_bounding_x-60) and
-			(main_map_view_left_bottom[1] <= g.galaxy.bottom_bounding_y-40)
+			(main_map_view_right_top.x >= g.galaxy.right_bounding_x+60) and
+			(main_map_view_right_top.y >= g.galaxy.top_bounding_y+20) and
+			(main_map_view_left_bottom.x <= g.galaxy.left_bounding_x-60) and
+			(main_map_view_left_bottom.y <= g.galaxy.bottom_bounding_y-40)
 		):
 			self.visible = False
 			return
@@ -91,10 +81,10 @@ class MiniMap(object):
 
 		# position of viewing area within playing field
 		self.window_corners = {
-			'top':center[1]+int(main_map_view_right_top[1]*self.ratio),
-			'right':center[0]+int(main_map_view_right_top[0]*self.ratio),
-			'bottom':center[1]+int(main_map_view_left_bottom[1]*self.ratio),
-			'left':center[0]+int(main_map_view_left_bottom[0]*self.ratio),
+			'top':center[1]+int(main_map_view_right_top.y*self.ratio),
+			'right':center[0]+int(main_map_view_right_top.x*self.ratio),
+			'bottom':center[1]+int(main_map_view_left_bottom.y*self.ratio),
+			'left':center[0]+int(main_map_view_left_bottom.x*self.ratio),
 		}
 
 		# ensure window_corners do not fall outside corners
