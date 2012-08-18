@@ -29,6 +29,9 @@ class Galaxy(states.States):
 		attribs = {}
 		attribs['map'] = self.map.save()
 		return attribs
+	
+	def map_coordinate(self, coordinates, type):
+		return self.map.coordinate(coordinates, type)
 
 	def map_view_to_window(self, coordinates):
 		"Translate map view coordinate into window coordinate, accounting for view center and scale."

@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import math
 
 import pyglet
 from pyglet.gl import *
@@ -48,19 +49,20 @@ class Line(object):
 		if self.ranges.origin_coordinates is None:
 			return
 
-		# set target coordinates
-		self.ranges.target_coordinates = target_coordinates
-		# but they might get overridden here:
-		self.snap_to_target_star()
+		snap_coordinates = self.snap_to_target_star(target_coordinates)
+		if snap_coordinates:
+			target_coordinates = snap_coordinates
 
 		self.vertex_list.vertices = [
 			self.ranges.origin_coordinates[0],
 			self.ranges.origin_coordinates[1],
-			self.ranges.target_coordinates[0],
-			self.ranges.target_coordinates[1]
+			target_coordinates[0],
+			target_coordinates[1]
 		]
+
+		return target_coordinates
 	
-	def snap_to_target_star(self):
+	def snap_to_target_star(self, target_coordinates):
 		target_star = self.detect_star()
 
 		if target_star is None:
@@ -71,20 +73,23 @@ class Line(object):
 			return
 
 		self.to_star.show(target_star)
-		self.ranges.target_coordinates = (
+		snap_coordinates = (
 			self.to_star.marker_star.sprite.x,
 			self.to_star.marker_star.sprite.y
 		)
+		return snap_coordinates
 	
 	def show(self, origin_coordinates):
 		origin_star = self.detect_star()
+		snap_coordinates = origin_coordinates
+
 		if origin_star is not None:
 			self.from_star.show(origin_star)
 			# snap origin to sprite
-			origin_coordinates = (origin_star.sprite.x,origin_star.sprite.y)
+			snap_coordinates = (origin_star.sprite.x,origin_star.sprite.y)
 
-		self.vertex_list.vertices = origin_coordinates*2
-		self.ranges.origin_coordinates = origin_coordinates
+		self.vertex_list.vertices = snap_coordinates*2
+		return snap_coordinates
 
 class EndPointStar(object):
 	def __init__(self):

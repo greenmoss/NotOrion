@@ -20,6 +20,12 @@ class Galaxy(views.View):
 	# .01 more or less than 1.0 should be fast enough zoom speed
 	zoom_speed = 1.01
 
+	coordinate_handlers = {
+		'foreground': lambda *args: ForegroundCoordinate(*args),
+		'default_window': lambda *args: DefaultWindowCoordinate(*args),
+		'centered_window': lambda *args: CenteredWindowCoordinate(*args),
+	}
+
 	def __init__(self, state):
 		logger.debug('instantiating views.Galaxy')
 
@@ -48,6 +54,9 @@ class Galaxy(views.View):
 		#g.window.push_handlers(self)
 
 		#pyglet.clock.schedule_interval(self.animate, 1/60.)
+	
+	def coordinate(self, coordinates, type="foreground"):
+		return Galaxy.coordinate_handlers[type](coordinates, self)
 	
 	def derive_from_window_dimensions(self):
 		"Set attributes that are based on window dimensions."
@@ -208,3 +217,96 @@ class Galaxy(views.View):
 
 		# ensure center is still in a valid position
 		self.set_center((self.view_center[0], self.view_center[1]))
+
+class Coordinate(object):
+	def __init__(self, coordinates, view):
+		self.view = view
+		self.type = self.__class__.__name__
+		self.x = coordinates[0]
+		self.y = coordinates[1]
+
+		self.centered_window = None
+		self.default_window = None
+		self.foreground = None
+		self.model = None
+	
+	def __repr__(self):
+		return "type %s: %s, %s"%(self.type, self.x, self.y)
+	
+	def as_tuple(self):
+		return( (self.x, self.y) )
+
+class CenteredWindowCoordinate(Coordinate):
+	def as_default_window(self):
+		if self.default_window:
+			return self.default_window
+		converted_x = self.x + self.view.half_width
+		converted_y = self.y + self.view.half_height
+		self.default_window = DefaultWindowCoordinate((converted_x, converted_y), self.view)
+		return self.default_window
+	
+	def as_foreground(self):
+		if self.foreground:
+			return self.foreground
+		converted_x = self.x + self.view.view_center[0]
+		converted_y = self.y + self.view.view_center[1]
+		self.foreground = ForegroundCoordinate((converted_x, converted_y), self.view)
+		return self.foreground
+
+class DefaultWindowCoordinate(Coordinate):
+	"""A coordinate using default pyglet window coordinates.
+
+	Lower left is 0/0, upper right is width/height."""
+	def as_centered_window(self):
+		if self.centered_window:
+			return self.centered_window
+		converted_x = self.x - self.view.half_width
+		converted_y = self.y - self.view.half_height
+		self.centered_window = CenteredWindowCoordinate((converted_x, converted_y), self.view)
+		return self.centered_window
+	
+	def as_foreground(self):
+		if self.foreground:
+			return self.foreground
+		self.foreground = self.as_centered_window().as_foreground()
+		return self.foreground
+	
+	def as_model(self):
+		if self.model:
+			return self.model
+		self.model = self.as_foreground().as_model()
+		return self.model
+
+class ForegroundCoordinate(Coordinate):
+	"""A coordinate scaled by the view's scaling factor.
+	
+	The x/y coordinate will update if the scale changes, but *not* if we pan.
+	"""
+	def as_centered_window(self):
+		if self.centered_window:
+			return self.centered_window
+		converted_x = self.x - self.view.view_center[0]
+		converted_y = self.y - self.view.view_center[1]
+		self.centered_window = CenteredWindowCoordinate((converted_x, converted_y), self.view)
+		return self.centered_window
+	
+	def as_default_window(self):
+		if self.default_window:
+			return self.default_window
+		self.default_window = self.as_centered_window().as_default_window()
+		return self.default_window
+	
+	def as_model(self):
+		if self.model:
+			return self.model
+		converted_x = self.x * self.view.scale
+		converted_y = self.y * self.view.scale
+		self.model = ModelCoordinate((converted_x, converted_y), self.view)
+		return self.model
+
+class ModelCoordinate(Coordinate):
+	"""A coordinate defined within the galaxy model.
+
+	Regardless of zooming or panning, the x/y coordinate should not update.
+	Note that conversion from/to model/foreground is approximate."""
+	pass
