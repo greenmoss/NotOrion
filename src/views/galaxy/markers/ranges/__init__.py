@@ -1,6 +1,5 @@
 from __future__ import division
 import math
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,6 +20,7 @@ class Ranges(object):
 
 		self.line = lines.Line(self)
 		self.label = labels.Label(self)
+		self.circles = circles.Circles(self)
 
 		self.origin_coordinates = None
 		self.target_coordinates = None
@@ -28,6 +28,7 @@ class Ranges(object):
 	def draw(self):
 		if self.origin_coordinates is None:
 			return
+		self.circles.draw()
 		self.line.draw()
 		self.label.draw()
 
@@ -36,6 +37,7 @@ class Ranges(object):
 		self.target_coordinates = None
 		self.label.hide()
 		self.line.hide()
+		self.circles.hide()
 	
 	def model_distance(self):
 		if (self.origin_coordinates is None) or (self.target_coordinates is None):
@@ -71,6 +73,8 @@ class Ranges(object):
 		if snap_coordinates:
 			self.origin_coordinates = snap_coordinates
 
+		self.circles.generate(self.origin_coordinates[0], self.origin_coordinates[1])
+
 	def handle_key_release(self, symbol, modifiers):
 		if not symbol == pyglet.window.key.LSHIFT:
 			return
@@ -87,7 +91,7 @@ class Ranges(object):
 		if snap_coordinates:
 			self.target_coordinates = snap_coordinates
 
-		self.label.move(self.target_coordinates[0],self.target_coordinates[1])
+		self.label.move(self.target_coordinates[0], self.target_coordinates[1])
 	
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		self.hide()

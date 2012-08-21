@@ -21,9 +21,10 @@ class Galaxy(views.View):
 	zoom_speed = 1.01
 
 	coordinate_handlers = {
-		'foreground': lambda *args: ForegroundCoordinate(*args),
-		'default_window': lambda *args: DefaultWindowCoordinate(*args),
 		'centered_window': lambda *args: CenteredWindowCoordinate(*args),
+		'default_window': lambda *args: DefaultWindowCoordinate(*args),
+		'foreground': lambda *args: ForegroundCoordinate(*args),
+		'model': lambda *args: ModelCoordinate(*args),
 	}
 
 	def __init__(self, state):
@@ -295,4 +296,23 @@ class ModelCoordinate(Coordinate):
 
 	Regardless of zooming or panning, the x/y coordinate should not update.
 	Note that conversion from/to model/foreground is approximate."""
-	pass
+
+	def as_centered_window(self):
+		if self.centered_window:
+			return self.centered_window
+		self.centered_window = self.as_foreground().as_centered_window()
+		return self.centered_window
+
+	def as_default_window(self):
+		if self.default_window:
+			return self.default_window
+		self.default_window = self.as_centered_window().as_default_window()
+		return self.default_window
+	
+	def as_foreground(self):
+		if self.foreground:
+			return self.foreground
+		converted_x = self.x / self.view.scale
+		converted_y = self.y / self.view.scale
+		self.foreground = ForegroundCoordinate((converted_x, converted_y), self.view)
+		return self.foreground

@@ -1,5 +1,3 @@
 *.swp
 *.pyc
 *.pyo
-# temporary; remove once src/orig has been merged:
-src/orig

@@ -54,7 +54,13 @@ class Label(object):
 	def set_label(self, x, y):
 		distance = self.ranges.model_distance()
 		parsecs_float = round(distance/100, 1)
-		distance = parsecs_float if parsecs_float < 1 else int(parsecs_float)
+		if parsecs_float < 10:
+			if (parsecs_float < 1) or (self.ranges.line.to_star.active):
+				distance = parsecs_float 
+			else:
+				distance = int(parsecs_float)
+		else:
+			distance = int(parsecs_float)
 		unit = 'parsec' if distance is 1 else 'parsecs'
 
 		self.pyglet_label.x = x
