@@ -18,6 +18,8 @@ class Galaxy(states.States):
 
 		self.markers = views.galaxy.markers.Markers(self)
 
+		self.star_system = views.galaxy.star_system.StarSystem(self)
+
 		g.window.push_handlers(self)
 
 	def load(self, attribs):
@@ -31,12 +33,16 @@ class Galaxy(states.States):
 		return attribs
 	
 	def map_coordinate(self, coordinates, type):
+		"""A coordinate within the map view.
+
+		This is used to determine coordinate transformation calculations."""
 		return self.map.coordinate(coordinates, type)
 
 	def on_draw(self, *args):
 		self.map.handle_draw(*args)
 		self.markers.handle_draw(*args)
 		self.mini_map.handle_draw(*args)
+		self.star_system.handle_draw(*args)
 
 	def on_key_press(self, *args):
 		self.markers.handle_key_press(*args)
@@ -49,6 +55,10 @@ class Galaxy(states.States):
 		self.mini_map.handle_mouse_drag(*args)
 		self.masks.handle_mouse_drag(*args)
 		self.markers.handle_mouse_drag(*args)
+		self.star_system.handle_mouse_drag(*args)
+
+	def on_mouse_press(self, *args):
+		self.star_system.handle_mouse_press(*args)
 
 	def on_mouse_motion(self, *args):
 		self.masks.handle_mouse_motion(*args)
@@ -59,9 +69,11 @@ class Galaxy(states.States):
 		self.mini_map.handle_mouse_scroll(*args)
 		self.masks.handle_mouse_scroll(*args)
 		self.markers.handle_mouse_scroll(*args)
+		self.star_system.handle_mouse_scroll(*args)
 
 	def on_resize(self, *args):
 		self.map.handle_resize(*args)
 		self.mini_map.handle_resize(*args)
 		self.masks.handle_resize(*args)
 		self.markers.handle_resize(*args)
+		self.star_system.handle_resize(*args)

@@ -6,15 +6,16 @@ import pyglet
 from pyglet.gl import *
 
 from globals import g
+import pane
 
-class MiniMap(object):
+class MiniMap(pane.Pane):
 	# offset from right/bottom of window
 	offset = 20
 	# either width or height, whichever is larger
 	size = 75
 
 	background_color = (0, 0, 0, 220) # transparent black
-	borders_color = (32, 32, 32) # dark grey
+	border_color = (32, 32, 32) # dark grey
 	active_area_color = (48, 48, 48) # light grey
 
 	def __init__(self, state):
@@ -37,9 +38,9 @@ class MiniMap(object):
 			4, 'v2f',
 			('c4B/static', MiniMap.background_color*4)
 		)
-		self.borders_vertex_list = pyglet.graphics.vertex_list( 
+		self.border_vertex_list = pyglet.graphics.vertex_list( 
 			4, 'v2f',
-			('c3B/static', MiniMap.borders_color*4)
+			('c3B/static', MiniMap.border_color*4)
 		)
 		self.active_area_vertex_list = pyglet.graphics.vertex_list( 
 			4, 'v2f',
@@ -52,9 +53,11 @@ class MiniMap(object):
 	def derive_dimensions(self):
 		# where are the map view coordinates on the playing field?
 		main_map_view_right_top = self.state.map_coordinate(
-			(g.window.width, g.window.height), 'default_window').as_model()
+			(g.window.width, g.window.height), 'default_window'
+		).as_model()
 		main_map_view_left_bottom = self.state.map_coordinate(
-			(0, 0), 'default_window').as_model()
+			(0, 0), 'default_window'
+		).as_model()
 
 		# hide the mini-map if the entire playing field is visible
 		# the integer modifiers create a minimum margin around stars before showing the mini-map
@@ -110,7 +113,7 @@ class MiniMap(object):
 			self.corners['left'], self.corners['bottom'],
 			self.corners['left'], self.corners['top'],
 		)
-		self.borders_vertex_list.vertices = (
+		self.border_vertex_list.vertices = (
 			self.corners['right'], self.corners['top'],
 			self.corners['right'], self.corners['bottom'],
 			self.corners['left'], self.corners['bottom'],
@@ -119,22 +122,14 @@ class MiniMap(object):
 
 		# after all mini map parameters are calculated, display the mini map
 		self.visible = True
-
-	def drawing_origin_to_lower_left(self):
-		glMatrixMode(GL_PROJECTION)
-		glLoadIdentity()
-		gluOrtho2D(0, g.window.width, 0, g.window.height)
-
-		glMatrixMode(GL_MODELVIEW)
-		glLoadIdentity()
 	
 	def handle_draw(self):
 		if not self.visible:
 			return
 
-		glPushMatrix()
-
 		self.drawing_origin_to_lower_left()
+
+		glPushMatrix()
 
 		# translucent gray rectangle behind mini-map
 		glEnable(GL_BLEND)
@@ -142,7 +137,7 @@ class MiniMap(object):
 		self.bg_vertex_list.draw(pyglet.gl.GL_QUADS)
 
 		# borders of mini-map
-		self.borders_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+		self.border_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 
 		# borders of mini-window within mini-map
 		self.active_area_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
