@@ -6,11 +6,11 @@ import pyglet
 from pyglet.gl import *
 
 from globals import g
-import pane
+import common
 import views.galaxy.map.stars
 
-class StarSystem(pane.Pane):
-	"""A small window showing a star system."""
+class StarSystem(common.Pane):
+	"""A window pane showing a star system."""
 	height = 325
 	width = 300
 
@@ -32,6 +32,9 @@ class StarSystem(pane.Pane):
 			4, 'v2f',
 			('c3B/static', StarSystem.border_color*4)
 		)
+
+		self.visible = False
+		self.clicked_on_me = False
 
 	def derive_dimensions(self):
 		star_map_coordinate = self.state.map_coordinate(self.star.coordinates, 'model').as_default_window()
@@ -81,6 +84,8 @@ class StarSystem(pane.Pane):
 			left, bottom,
 			left, top,
 		)
+
+		self.corners = {'top':top, 'right':right, 'bottom':bottom, 'left':left}
 	
 	def hide(self):
 		self.star = None
@@ -100,17 +105,30 @@ class StarSystem(pane.Pane):
 		self.border_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
 	
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		if self.clicked_on_me:
+			self.state.vetoed_drag = self
+			return
+			
 		self.hide()
 	
 	def handle_mouse_press(self, x, y, button, modifiers):
+		self.clicked_on_me = False
 		if not pyglet.window.mouse.LEFT:
 			return
 
-		objects_under_cursor = self.state.masks.detected_objects('map')
+		# if we clicked on nothing
+		objects_under_cursor = self.state.masks.detected_objects()
 		if len(objects_under_cursor) == 0:
 			self.hide()
 			return
 
+		# if we clicked within an already-open window
+		for map_object in objects_under_cursor:
+			if type(map_object) is StarSystem:
+				self.clicked_on_me = True
+				return
+
+		# if we clicked on a star in the map view
 		map_star = None
 		for map_object in objects_under_cursor:
 			if type(map_object) is not views.galaxy.map.stars.Star:
@@ -120,6 +138,7 @@ class StarSystem(pane.Pane):
 			self.hide()
 			return
 
+		self.clicked_on_me = True
 		self.show(map_star.physical_star)
 
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):

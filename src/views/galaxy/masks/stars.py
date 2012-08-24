@@ -30,8 +30,8 @@ class Stars(object):
 		for position in range(int(len(pixel_bytes)/4)):
 			bytes = struct.unpack_from('4c', pixel_bytes, 4*position)
 
-			# alpha channel is partially opaque, set alpha to 255
-			if ord(bytes[3]) > 0:
+			# alpha channel is mostly opaque, set alpha to 255
+			if ord(bytes[3]) > 127:
 				mask_bytes += '\xff\xff\xff\xff'
 
 			# alpha channel is fully transparent, set alpha to 0
@@ -53,25 +53,25 @@ class Stars(object):
 
 class Mask(object):
 	def __init__(self, map_object, mask_image, sprites_batch):
-		self.map_object = map_object
+		self.source_object = map_object
 		self.type = 'map'
 
 		self.sprite = pyglet.sprite.Sprite(
 			mask_image.texture,
-			self.map_object.coordinates[0],
-			self.map_object.coordinates[1],
+			self.source_object.coordinates[0],
+			self.source_object.coordinates[1],
 			batch = sprites_batch
 		)
-		self.sprite.image.anchor_x = self.map_object.sprite.image.anchor_x
-		self.sprite.image.anchor_y = self.map_object.sprite.image.anchor_y
+		self.sprite.image.anchor_x = self.source_object.sprite.image.anchor_x
+		self.sprite.image.anchor_y = self.source_object.sprite.image.anchor_y
 	
 	def __repr__(self):
-		return self.map_object.physical_star.name
+		return self.source_object.physical_star.name
 	
 	def set_color(self, color):
 		self.color = color
 		self.sprite.color = color
 	
 	def set_coordinates(self):
-		self.sprite.x = self.map_object.sprite.x
-		self.sprite.y = self.map_object.sprite.y
+		self.sprite.x = self.source_object.sprite.x
+		self.sprite.y = self.source_object.sprite.y

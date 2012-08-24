@@ -39,6 +39,8 @@ class Markers(object):
 		self.ranges.handle_key_release(*args)
 
 	def handle_mouse_drag(self, *args):
+		if self.state.vetoed_drag:
+			return
 		self.stars.handle_mouse_drag(*args)
 		self.worm_holes.handle_mouse_drag(*args)
 		self.ranges.handle_mouse_drag(*args)

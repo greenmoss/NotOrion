@@ -4,6 +4,7 @@ logger = logging.getLogger(__name__)
 from globals import g
 import states
 import views.galaxy
+import views.galaxy.panes
 
 class Galaxy(states.States):
 	"""Interactions with the galaxy."""
@@ -12,13 +13,12 @@ class Galaxy(states.States):
 		logger.debug('instantiating state.Galaxy')
 
 		self.map = views.galaxy.map.Galaxy(self)
-		self.mini_map = views.galaxy.mini_map.MiniMap(self)
+		self.mini_map = views.galaxy.panes.mini_map.MiniMap(self)
+		self.star_system = views.galaxy.panes.star_system.StarSystem(self)
 
 		self.masks = views.galaxy.masks.Masks(self)
 
 		self.markers = views.galaxy.markers.Markers(self)
-
-		self.star_system = views.galaxy.star_system.StarSystem(self)
 
 		g.window.push_handlers(self)
 
@@ -43,6 +43,9 @@ class Galaxy(states.States):
 		self.markers.handle_draw(*args)
 		self.mini_map.handle_draw(*args)
 		self.star_system.handle_draw(*args)
+		# to test/show pick masks instead, uncomment the following two lines:
+		#self.masks.start_draw()
+		#self.masks.finish_draw()
 
 	def on_key_press(self, *args):
 		self.markers.handle_key_press(*args)
@@ -51,11 +54,14 @@ class Galaxy(states.States):
 		self.markers.handle_key_release(*args)
 
 	def on_mouse_drag(self, *args):
+		# allow any object to cancel the drag
+		self.vetoed_drag = None
+
+		self.star_system.handle_mouse_drag(*args)
 		self.map.handle_mouse_drag(*args)
 		self.mini_map.handle_mouse_drag(*args)
 		self.masks.handle_mouse_drag(*args)
 		self.markers.handle_mouse_drag(*args)
-		self.star_system.handle_mouse_drag(*args)
 
 	def on_mouse_press(self, *args):
 		self.star_system.handle_mouse_press(*args)

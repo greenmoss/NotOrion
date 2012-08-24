@@ -1,4 +1,8 @@
+from __future__ import division
+import math
 import sys
+import logging
+logger = logging.getLogger(__name__)
 
 import pyglet
 from pyglet.gl import *
@@ -7,6 +11,7 @@ from globals import g
 import views
 import stars
 import worm_holes
+import panes
 
 class Masks(views.View):
 	"""Generate object image masks for color picking."""
@@ -18,44 +23,63 @@ class Masks(views.View):
 		self.color_picks = {}
 		self.detected_object_frequency = {}
 
-		# red, green, blue byte values for masks
-		self.current_color = (255,255,255)
+		self.current_color_id = 0
 
 		self.stars = stars.Stars(self.state.map.stars)
-		self.set_colors(self.stars)
-
 		self.worm_holes = worm_holes.WormHoles(self.state.map.worm_holes)
-		self.set_colors(self.worm_holes)
-	
-	def set_colors(self, masks_object):
+		self.panes = panes.Panes(self)
 
-		# For color mouse picking, assign a unique color to each mask
-		for mask in masks_object.masks:
-			mask.set_color(self.current_color)
-			self.color_picks[self.current_color] = mask
-			self.get_next_mask_color()
+		self.set_colors()
+	
+	def set_colors(self):
+		"""For color mouse picking, assign a unique color to each mask"""
+		
+		for mask_object in [self.stars, self.worm_holes, self.panes]:
+
+			for mask in mask_object.masks:
+				mask_color = self.get_next_mask_color()
+				mask.set_color(mask_color)
+				self.color_picks[mask_color] = mask
 
 	def get_next_mask_color(self):
-		'Decrement through mask colors, always returning one less than was given'
-		(red,green,blue) = self.current_color
+		'''Returns a color derived from self.current_color_id.
+		
+		The complex derivation method ensures colors are easily distinguishable 
+		when viewing by a human.'''
+		# not sure what S, I, H, and Z are supposed to signify
+		S = 1. / (1 + int((self.current_color_id+1) / 40.))
+		I = 0.5
+	
+		H = self.current_color_id * 39
+		H += 180
+		H = H % 360
 
-		# decrement red, then greeen, then blue
-		red -= 1
-		if red < 0:
-			red = 255
-			green -= 1
+		Z = 1 + int(H/120)
+		if (H >= 120) and (H < 240): 
+			H -= 120
+		elif H >= 240: 
+			H -= 240
+	
+		angle = float( (H * 9. / 6.) - 90.)
+		color1 = int(S * (0.5+I) * 255)
+		color2 = int(S * math.cos(angle * -0.01745) * 255)
+		color3 = int(S * (0.5-I) * 255)
+	
+		if H > 60:
+			temp = color1
+			color1 = color2
+			color2 = temp
+	
+		color = (0,0,0)
+		if Z == 1: 
+			color = (color1,color2,color3)
+		elif Z == 2: 
+			color = (color3,color1,color2)
+		elif Z == 3: 
+			color = (color2,color3,color1)
 
-		if green < 0:
-			green = 255
-			blue -= 1
-
-		if blue < 0:
-			# this gives us potentially millions of object colors
-			# with that many objects, this game would have already encountered other issues
-			# so it is very unlikely we will ever hit this condition
-			raise RangeException, "ran out of available ID colors"
-
-		self.current_color = (red,green,blue)
+		self.current_color_id += 1
+		return color
 	
 	def start_draw(self):
 		glPushMatrix()
@@ -67,6 +91,7 @@ class Masks(views.View):
 		# draw the foreground object masks
 		self.stars.handle_draw()
 		self.worm_holes.handle_draw()
+		self.panes.handle_draw()
 
 	def finish_draw(self):
 		glLoadIdentity()
@@ -109,16 +134,21 @@ class Masks(views.View):
 		self.finish_draw()
 	
 	def detected_objects(self, type=None):
-		"""Return map objects that were detected under the mouse, if any. Optionally, request only masks of a certain type."""
-		map_objects = []
+		"""Return objects that were detected under the mouse, if any. 
+		
+		Optionally, request only masks of a certain type."""
+
+		objects = []
+
 		# first objects were "the most" under the mouse
 		for mask_object in sorted(
 			self.detected_object_frequency, key=self.detected_object_frequency.get, reverse=True
 		):
 			if (type is not None) and not ((mask_object.type) == type):
 				continue
-			map_objects.append(mask_object.map_object)
-		return map_objects
+			objects.append(mask_object.source_object)
+
+		return objects
 
 	def set_center(self):
 		self.stars.set_center()
@@ -129,6 +159,8 @@ class Masks(views.View):
 		self.worm_holes.set_scale()
 
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		if self.state.vetoed_drag:
+			return
 		self.set_center()
 
 	def handle_mouse_motion(self, x, y, dx, dy):

@@ -6,9 +6,9 @@ import pyglet
 from pyglet.gl import *
 
 from globals import g
-import pane
+import common
 
-class MiniMap(pane.Pane):
+class MiniMap(common.Pane):
 	# offset from right/bottom of window
 	offset = 20
 	# either width or height, whichever is larger
@@ -145,6 +145,8 @@ class MiniMap(pane.Pane):
 		glPopMatrix()
 	
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		if self.state.vetoed_drag:
+			return
 		self.derive_dimensions()
 
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):

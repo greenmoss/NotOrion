@@ -169,6 +169,8 @@ class Galaxy(views.View):
 		glLoadIdentity()
 
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		if self.state.vetoed_drag:
+			return
 		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
 	
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
