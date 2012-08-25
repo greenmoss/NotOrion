@@ -6,21 +6,24 @@ import pyglet
 from pyglet.gl import *
 
 from globals import g
-import common
+from .. import common
 import views.galaxy.map.stars
+import title
+import star
 
 class StarSystem(common.Pane):
 	"""A window pane showing a star system."""
 	height = 325
 	width = 300
+	center = (150,150)
 
 	background_color = (0, 0, 0) # black
 	border_color = (32, 32, 32) # dark grey
-	minimum_border_offset = 10 # window should be no closer to edge than this
+	edge_offset = 10 # window should be no closer to edge than this
 	
 	def __init__(self, state):
 		self.state = state
-		self.star = None
+		self.model_star = None
 		self.half_height = int(StarSystem.height/2)
 		self.half_width = int(StarSystem.width/2)
 
@@ -36,8 +39,11 @@ class StarSystem(common.Pane):
 		self.visible = False
 		self.clicked_on_me = False
 
+		self.title = title.Title(self)
+		self.star = star.Star(self)
+
 	def derive_dimensions(self):
-		star_map_coordinate = self.state.map_coordinate(self.star.coordinates, 'model').as_default_window()
+		star_map_coordinate = self.state.map_coordinate(self.model_star.coordinates, 'model').as_default_window()
 
 		offset_x = star_map_coordinate.x
 		offset_y = star_map_coordinate.y
@@ -47,10 +53,10 @@ class StarSystem(common.Pane):
 		bottom = offset_y - self.half_height
 		left = offset_x - self.half_width
 
-		max_top = g.window.height - StarSystem.minimum_border_offset
-		max_right = g.window.width - StarSystem.minimum_border_offset
-		min_bottom = StarSystem.minimum_border_offset
-		min_left = StarSystem.minimum_border_offset
+		max_top = g.window.height - StarSystem.edge_offset
+		max_right = g.window.width - StarSystem.edge_offset
+		min_bottom = StarSystem.edge_offset
+		min_left = StarSystem.edge_offset
 
 		if top > max_top:
 			difference = top - max_top
@@ -88,12 +94,14 @@ class StarSystem(common.Pane):
 		self.corners = {'top':top, 'right':right, 'bottom':bottom, 'left':left}
 	
 	def hide(self):
-		self.star = None
+		self.model_star = None
 		self.visible = False
 	
 	def show(self, star):
-		self.star = star
+		self.model_star = star
 		self.derive_dimensions()
+		self.title.show()
+		self.star.show()
 		self.visible = True
 	
 	def handle_draw(self):
@@ -103,6 +111,8 @@ class StarSystem(common.Pane):
 		self.drawing_origin_to_lower_left()
 		self.bg_vertex_list.draw(pyglet.gl.GL_QUADS)
 		self.border_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
+		self.title.draw()
+		self.star.draw()
 	
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		if self.clicked_on_me:
