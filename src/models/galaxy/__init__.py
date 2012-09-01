@@ -15,6 +15,7 @@ import black_holes
 import nebulae
 import stars
 import worm_holes
+import orbitals
 
 class Galaxy(object):
 
@@ -28,8 +29,14 @@ class Galaxy(object):
 		'Generate objects in the galaxy'
 		logger.debug("generating galaxy")
 
+		# hold reference for orbitals
+		self.orbitals = orbitals.Orbitals()
+
 		self.generate_stars_and_black_holes(edges, dispersion, object_amount, object_pool)
 		logger.debug("star count: %s", len(self.stars.list))
+		logger.debug("planet count: %s", len(self.orbitals.planets))
+		logger.debug("asteroid belt count: %s", len(self.orbitals.asteroid_belts))
+		logger.debug("gas giant count: %s", len(self.orbitals.gas_giants))
 		logger.debug("black hole count: %s", len(self.black_holes.list))
 
 		# generate nebulae
@@ -52,16 +59,11 @@ class Galaxy(object):
 			amount=object_amount, dispersion=dispersion
 		)
 
-		self.stars = stars.Stars()
+		self.stars = stars.Stars(self.orbitals)
 		self.black_holes = black_holes.BlackHoles()
 
-		# mash all the objects together for randomization purposes
-		object_types = []
-		for name, freq in object_pool.iteritems():
-			object_types += [name]*freq
-
 		for coordinate in object_coordinates:
-			object_type = object_types[random.randint(0, len(object_types)-1)]
+			object_type = utilities.choose_from_probability(object_pool)
 
 			if object_type == 'black hole':
 				self.black_holes.add(coordinate)

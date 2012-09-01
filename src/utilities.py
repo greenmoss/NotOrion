@@ -50,6 +50,7 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 
 def recurse_into_rectangle(bottom, left, top, right, coordinate_count, minimum_length, rectangles, seed=None, debug=False):
 	'''recursively split a rectangle into subrectangles
+
 	allow sufficient area within each subrectangle for the specified minimum_length
 		if each coordinate has margin 1, the minimum_length is 2, and the area is 4
 			a margin of 2 has minimum_length 3 and area 9, etc
@@ -183,8 +184,8 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 	return part_counts
 
 def circle_vertices(radius):
-	"""
-	Calculate vertices sufficient to approximate a circle, centered around 0,0
+	"""Calculate vertices sufficient to approximate a circle, centered around 0,0
+
 	algorithm copied from https://sites.google.com/site/swinesmallpygletexamples/immediate-circle
 	"""
 	vertices = []
@@ -196,3 +197,26 @@ def circle_vertices(radius):
 		vertices.append((round(dx,4), round(dy,4)))
 		dx, dy = (dx*cos + dy*sin), (dy*cos - dx*sin)
 	return vertices
+
+def choose_from_probability(table):
+	"""Given a probability table, choose one if its elements."""
+	total = 0
+	sorted = table.keys()
+	sorted.sort()
+	for key in sorted:
+		total += table[key]
+
+	if total == 0:
+		return sorted[0]
+
+	chosen_int = random.randint(1, total)
+
+	total = 0
+	for key in sorted:
+		if table[key] == 0:
+			continue
+		total += table[key]
+		if total >= chosen_int:
+			return key
+
+	return sorted[-1]

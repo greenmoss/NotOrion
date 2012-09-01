@@ -14,7 +14,7 @@ class Nebulae(object):
 	def __init__(self, amount, edges):
 		self.list = []
 		if amount == 0:
-			return []
+			return
 		self.generate(amount, edges)
 
 	def generate(self, amount, edges):
