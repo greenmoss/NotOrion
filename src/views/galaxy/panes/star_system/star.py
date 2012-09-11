@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import pyglet
 
 import views.galaxy.map.stars

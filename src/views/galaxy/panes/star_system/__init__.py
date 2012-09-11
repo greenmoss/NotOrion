@@ -13,9 +13,10 @@ import star
 
 class StarSystem(common.Pane):
 	"""A window pane showing a star system."""
-	height = 325
-	width = 300
-	center = (150,150)
+	height = 225
+	width = 600
+	text_height = 25
+	center = (int(width/2),int(height-text_height)/2)
 
 	background_color = (0, 0, 0) # black
 	border_color = (32, 32, 32) # dark grey
@@ -92,10 +93,19 @@ class StarSystem(common.Pane):
 		)
 
 		self.corners = {'top':top, 'right':right, 'bottom':bottom, 'left':left}
+		logger.debug(self.corners)
 	
 	def hide(self):
 		self.model_star = None
 		self.visible = False
+	
+	def load(self, star):
+		if star is None:
+			return
+		self.show(star)
+
+	def save(self):
+		return self.model_star
 	
 	def show(self, star):
 		self.model_star = star
@@ -152,7 +162,11 @@ class StarSystem(common.Pane):
 		self.show(map_star.physical_star)
 
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
-		self.hide()
+		if self.visible:
+			# recalculate position
+			self.show(self.model_star)
 
 	def handle_resize(self, width, height):
-		self.hide()
+		if self.visible:
+			# recalculate position
+			self.show(self.model_star)

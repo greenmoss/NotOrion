@@ -25,11 +25,13 @@ class Galaxy(states.States):
 	def load(self, attribs):
 		"Load attributes that have been saved to disk."
 		self.map.load(attribs['map'])
+		self.star_system.load(attribs['star_system'])
 
 	def save(self):
 		"Return attributes that should be saved to disk."
 		attribs = {}
 		attribs['map'] = self.map.save()
+		attribs['star_system'] = self.star_system.save()
 		return attribs
 	
 	def map_coordinate(self, coordinates, type):
