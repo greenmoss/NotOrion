@@ -1,13 +1,17 @@
 ---
 layout: page
-title: "Kurt as GameDev"
-tagline: Blogging progress on NotOrion
+title: "Kurt's GameDev Excuses"
+tagline: "Or, Why NotOrion Remains Unfinished"
 ---
 {% include JB/setup %}
 
 ## NotOrion is a 4X game based on Master of Orion 2
 
 I am reimplementing the Master of Orion 2 game rules using python and pyglet. The project is currently called "NotOrion", though the name will change once I think of a better name. Once I am done with the reimplementation, I have a lot of ideas to extend gameplay rules and concepts.
+
+## Links
+
+* [Git project](http://github.com/greenmoss/NotOrion)
 
 ## Meta/News
 
