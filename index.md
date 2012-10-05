@@ -11,7 +11,7 @@ I am reimplementing the Master of Orion 2 game rules using python and pyglet. Th
 
 ## Links
 
-* [Git project](http://github.com/greenmoss/NotOrion)
+* [Source project and code for NotOrion](http://github.com/greenmoss/NotOrion)
 
 ## Meta/News
 
