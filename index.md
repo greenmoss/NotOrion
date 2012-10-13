@@ -17,7 +17,7 @@ NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Mast
     {% assign newest_gallery = site_post %}
   {% endif %} 
 {% endfor %}
-{% if newest_gallery %>
+{% if newest_gallery %}
   <li><a href="{{ BASE_PATH }}{{ newest_gallery.url }}">Most recent screen shots ({{ newest_gallery.date | date_to_string }})</a></li>
 {% endif %}
   <li><a href="http://github.com/greenmoss/NotOrion">NotOrion on GitHub</a></li>
