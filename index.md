@@ -7,7 +7,7 @@ tagline: "Or, Why NotOrion Remains Unfinished"
 
 # What the heck is NotOrion?
 
-NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Master of Orion 2: Battle for Antares"](http://en.wikipedia.org/wiki/Master_of_Orion_II:_Battle_at_Antares). Tell me [more]({{ BASE_PATH }}more.html)!
+NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Master of Orion 2: Battle for Antares"](http://en.wikipedia.org/wiki/Master_of_Orion_II:_Battle_at_Antares). Tell me [more]({{ BASE_PATH }}/more.html)!
 
 # Links
 
