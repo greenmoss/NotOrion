@@ -26,7 +26,7 @@
         <a class="btn disabled">Current</a>
       {% else %}
         {% capture img_src %}{{ BASE_PATH }}/img/screenshots/{{ site_post.date | date: "%Y-%m-%d" }}/{{ site_post.tags }}/{{ site_post.slug }}_tiny.gif{% endcapture %}
-        <a class="btn" href="{{ BASE_PATH }}{{ site_post.url }}" title="{{ site_post.description }}"><img alt='{{ site_post.description }}' src='{{ img_src }}' /></a>
+        <a class="btn" href="{{ BASE_PATH }}{{ site_post.url }}" title="{{ site_post.description }}"><img alt='{{ site_post.description }}' src='{{ img_src }}' height='{{ site_post.tiny_height }}' width='{{ site_post.tiny_width }}' /></a>
       {% endif %}
     {% endif %}
   {% endif %}

@@ -2,17 +2,20 @@ require 'pp'
 require 'RMagick'
 include Magick
 
-# stolen from https://github.com/cespare/ruby-dedent
+# inspired by https://github.com/cespare/ruby-dedent
 class String
   def dedent
     lines = split "\n"
     return self if lines.empty?
-    indents = lines.map do |line|
-      line =~ /\S/ ? (line.start_with?(" ") ? line.match(/^ +/).offset(0)[1] : 0) : nil
-    end
-    min_indent = indents.compact.min
-    return self if min_indent.zero?
-    lines.map { |line| line =~ /\S/ ? line.gsub(/^ {#{min_indent}}/, "") : line }.join "\n"
+	 # first indented line determines indent level
+	 indentation = nil
+	 lines.each{ |line|
+	   next unless line =~ /^(\s+)/
+		indentation = $1
+		break
+	 }
+	 return self if indentation.nil?
+    lines.map { |line| line.sub(/^#{indentation}/, "") }.join "\n"
   end
 end
 
@@ -61,7 +64,7 @@ task :screenshots do
   files_to_write = []
 
   image_names = []
-  image_info = []
+  image_info = {}
   images_array.each{ |image_path|
     base_name = File.basename(image_path, ".*")
     image_names << base_name
@@ -77,15 +80,15 @@ task :screenshots do
 
     image_path = File.join(image_fs_path, "#{base_name}#{CONFIG['image_name']}")
     files_to_write << image_path
-    image_info << { 'handle' => image_handle, 'path' => image_path }
+    image_info["#{base_name}#{CONFIG['image_name']}"] = { 'handle' => image_handle, 'path' => image_path }
 
     thumb_path = File.join(image_fs_path, "#{base_name}#{CONFIG['thumb_name']}")
     files_to_write << thumb_path
-    image_info << { 'handle' => thumb_handle, 'path' => thumb_path, 'size' => CONFIG['thumb_size'] }
+    image_info["#{base_name}#{CONFIG['thumb_name']}"] = { 'handle' => thumb_handle, 'path' => thumb_path, 'size' => CONFIG['thumb_size'] }
 
     tiny_path = File.join(image_fs_path, "#{base_name}#{CONFIG['tiny_name']}")
     files_to_write << tiny_path
-    image_info << { 'handle' => thumb_handle, 'path' => tiny_path, 'size' => CONFIG['tiny_size'] }
+    image_info["#{base_name}#{CONFIG['tiny_name']}"] = { 'handle' => thumb_handle, 'path' => tiny_path, 'size' => CONFIG['tiny_size'] }
   }
 
   gallery_file_path = File.join(CONFIG['posts'], CONFIG['gallery_category'])
@@ -122,7 +125,8 @@ task :screenshots do
   end
 
   # now write everything out
-  image_info.each{ |info|
+  image_info.keys.sort.each{ |name|
+    info = image_info[name]
     puts "Creating image: #{info['path']}"
     if info['size']
       info['handle'].resize_to_fit(info['size']).write(info['path'])
@@ -144,15 +148,17 @@ task :screenshots do
       ---
       {% include JB/setup %}
       
-      This is a gallery of screenshots for #{title}. Each of the images below is a thumbnail preview. Click on the preview image or description to see the original, full-sized image.
+      This is a gallery of screenshots for #{title}. Each of the images below is a thumbnail preview. Click on the preview image or description to see the full-sized image.
       {% for post in site.posts reversed %}
         {% if post.categories contains '#{CONFIG['screenshots_category']}' %}
           {% if post.tags contains '#{title_tag}' %}
+      
       {% capture img_src %}{{ BASE_PATH }}#{CONFIG['screenshots_path']}/{{ post.date | date: "%Y-%m-%d" }}/{{ post.tags }}/{{ post.slug }}_thumb.gif{% endcapture %}
       
-      <h3 id='{{ post.slug }}'><a href='{{ post.url }}'>{{ post.description }}</a></h3>
+      <h3 id='{{ post.slug }}'><a href='{{ BASE_PATH }}{{ post.url }}'>{{ post.description }}</a></h3>
       
-      <p><a href='{{ post.url }}'><img alt='{{ post.description }}' src='{{ img_src }}' /></a></p>
+      <p><a href='{{ BASE_PATH }}{{ post.url }}'><img height='{{ post.thumb_height }}' width='{{ post.thumb_width }}' alt='{{ post.description }}' src='{{ img_src }}' /></a></p>
+      
           {% endif %}
         {% endif %}
       {% endfor %}
@@ -161,6 +167,12 @@ task :screenshots do
 
   screenshot_info.each{ |info|
     puts "Creating screenshot: #{info['screenshot_filename']}"
+    image_file_name = "#{info['image_name']}#{CONFIG['image_name']}"
+    handle = image_info[image_file_name]['handle']
+    thumb_info = image_info["#{info['image_name']}#{CONFIG['thumb_name']}"]
+    thumb_handle = thumb_info['handle'].resize_to_fit(thumb_info['size'])
+    tiny_info = image_info["#{info['image_name']}#{CONFIG['tiny_name']}"]
+    tiny_handle = tiny_info['handle'].resize_to_fit(tiny_info['size'])
     open(info['screenshot_filename'], 'w') do |post|
       post.puts <<-eos.dedent
         ---
@@ -170,10 +182,14 @@ task :screenshots do
         category: #{CONFIG['screenshots_category']}
         tags: [#{slug}]
         slug: #{info['image_name']}
+        thumb_width: #{thumb_handle.columns}
+        thumb_height: #{thumb_handle.rows}
+        tiny_width: #{tiny_handle.columns}
+        tiny_height: #{tiny_handle.rows}
         ---
         {% include JB/setup %}
         
-        ![#{info['image_name']}]({{ BASE_PATH }}#{CONFIG['screenshots_path']}/#{date}/#{slug}/#{info['image_name']}.png)
+        <img height='#{handle.rows}' width='#{handle.columns}' alt='#{info['image_name']}' src='{{ BASE_PATH }}#{CONFIG['screenshots_path']}/#{date}/#{slug}/#{image_file_name}' />
       eos
     end
   }
