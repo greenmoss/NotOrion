@@ -1,0 +1,62 @@
+<div class="page-header">
+  <h1>
+    {{ page.description }} 
+    {% if page.tagline %}
+      <small>{{ page.tagline }}</small>
+    {% endif %}
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span8">
+    {{ content }}
+    <hr>
+    <div class="pagination btn-group">
+{% for site_post in site.posts %}
+  {% if site_post.categories contains 'galleries' %}
+    {% if site_post.tags contains page['tags'][0] %}
+      <a class="btn prev" href="{{ BASE_PATH }}{{ site_post.url }}" title="{{ site_post.title }}">&larr; Gallery</a>
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% for site_post in site.posts reversed %}
+  {% if site_post.categories contains 'screenshots' %}
+    {% if site_post.tags contains page['tags'][0] %}
+      {% if page.id == site_post.id %}
+        <a class="btn disabled">Current</a>
+      {% else %}
+        {% capture img_src %}{{ BASE_PATH }}/img/screenshots/{{ site_post.date | date: "%Y-%m-%d" }}/{{ site_post.tags }}/{{ site_post.slug }}_tiny.gif{% endcapture %}
+        <a class="btn" href="{{ BASE_PATH }}{{ site_post.url }}" title="{{ site_post.description }}"><img alt='{{ site_post.description }}' src='{{ img_src }}' /></a>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+    </div>
+    <hr>
+    {% include JB/comments %}
+  </div>
+  
+  <div class="span4">
+    <section>
+      <h4>Published</h4>
+      <div class="date"><span>{{ page.date | date_to_long_string }}</span></div>
+    </section>
+    {% if page.category %}
+      <section>
+        <h4>Category</h4>
+        <span class="category">
+          {{ page.category }}
+        </span>
+      </section>
+    {% endif %}     
+    {% unless page.tags == empty %}
+      <section>
+        <h4>Tags</h4>
+        <ul class="tag_box">
+          {% assign tags_list = page.tags %}
+          {% include JB/tags_list %}
+        </ul>
+      </section>
+    {% endunless %}         
+  </div>
+</div>
