@@ -3,7 +3,7 @@ layout: post
 title: "Sick and Surge"
 description: ""
 category: 
-tags: [updates]
+tags: [meta]
 ---
 {% include JB/setup %}
 
