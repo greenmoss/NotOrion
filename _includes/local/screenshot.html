@@ -9,8 +9,7 @@
 
 <div class="row">
   <div class="span8">
-    {{ content }}
-    <hr>
+{% capture paginator %}
     <div class="pagination btn-group">
 {% for site_post in site.posts %}
   {% if site_post.categories contains 'galleries' %}
@@ -32,6 +31,11 @@
   {% endif %}
 {% endfor %}
     </div>
+{% endcapture %}
+    {{ paginator }}
+    {{ content }}
+    <hr>
+    {{ paginator }}
     <hr>
     {% include JB/comments %}
   </div>
