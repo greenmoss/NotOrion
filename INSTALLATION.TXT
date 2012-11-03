@@ -1,5 +1,0 @@
-This document currently only contains hacks for me to get this code installed and working. Eventually it will become a respectable generalized document.
-
-Pyglet on MacOSX currently requires 32-bit python. To force subsequent python modules to also install using 32-bit, compile them using ARCHFLAGS. For instance:
-
-ARCHFLAGS='-arch i386' setup.py

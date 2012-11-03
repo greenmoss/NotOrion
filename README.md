@@ -25,5 +25,5 @@ License
 Additional Resources
 --------------------
 
-* Current news on [Github Blog](http://greenmoss.github.com/)
+* Current news on [Github Blog](http://greenmoss.github.com/NotOrion)
 * Planning and milestones on [GitHub project wiki](https://github.com/greenmoss/NotOrion/wiki/Planning)
