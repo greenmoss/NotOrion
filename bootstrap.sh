@@ -25,6 +25,11 @@ function find_virtualenvwrapper {
 			return
 		fi
 	fi
+	# still not; Debubuntu puts it in /etc/bash_completion.d
+	virtualenvwrapper_path='/etc/bash_completion.d/virtualenvwrapper'
+	if [ -e "$virtualenvwrapper_path" ]; then
+		return
+	fi
 	# any other methods to find virtualenvwrapper can be added here
 	echo "unable to find virtualenvwrapper.sh or anything that looks like it"
 	exit 1

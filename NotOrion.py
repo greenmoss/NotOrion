@@ -1,4 +1,4 @@
-#! /usr/bin/env python -O
+#! /usr/bin/env python
 """ This contains game initialization code only. All implementation details
 should occur elsewhere.  
 
