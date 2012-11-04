@@ -20,4 +20,4 @@ Another question is "what are those brown things". For example in this screen sh
 
 The purple/red/green shapes are nebulae. People who first see the map have fortunately so far understood immediately what they are. I'm generating them from randomly-arranged small, static <a href="https://github.com/greenmoss/NotOrion/tree/master/resources/images">cloud-like images</a>. Each of these was in turn created in <a href="http://inkscape.org/">Inkscape</a> with <a href="http://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>. You can also download the <a href="https://github.com/greenmoss/NotOrion/blob/master/resources/images/src/nebulae.svg">source inkscape document</a>.
 
-<img height='600' width='800' alt='the_entire_galaxy' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/the_entire_galaxy.png' />
+<img alt='the_entire_galaxy' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/the_entire_galaxy.png' />

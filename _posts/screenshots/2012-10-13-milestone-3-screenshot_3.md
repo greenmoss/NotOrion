@@ -16,4 +16,4 @@ Here is the same map, but showing range between two stars. To show range, you ho
 
 Also note the green partial outlines around the origin and target stars. In the game, these rotate back and forth to indicate they are active.
 
-<img height='600' width='800' alt='showing_distance_to_a_star' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/showing_distance_to_a_star.png' />
+<img alt='showing_distance_to_a_star' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/showing_distance_to_a_star.png' />

@@ -18,4 +18,4 @@ One suggestions I've had for this view so far is to grow the star images a littl
 
 Another suggestion was to have several layers of background stars that move relative to each other when you zoom. This would simulate parallax and add a nice 3D effect.
 
-<img height='600' width='800' alt='zoomed_in' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/zoomed_in.png' />
+<img alt='zoomed_in' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/zoomed_in.png' />

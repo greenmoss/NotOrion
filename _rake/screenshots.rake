@@ -189,7 +189,7 @@ task :screenshots do
         ---
         {% include JB/setup %}
         
-        <img height='#{handle.rows}' width='#{handle.columns}' alt='#{info['image_name']}' src='{{ BASE_PATH }}#{CONFIG['screenshots_path']}/#{date}/#{slug}/#{image_file_name}' />
+        <img alt='#{info['image_name']}' src='{{ BASE_PATH }}#{CONFIG['screenshots_path']}/#{date}/#{slug}/#{image_file_name}' />
       eos
     end
   }

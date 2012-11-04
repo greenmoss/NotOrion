@@ -16,4 +16,4 @@ This shows the first of several setup screens for choosing the "universe" parame
 
 Not that it's relevant to game-play, but I'm using the pyglet <a href="http://code.google.com/p/kytten/">kytten library</a>. I may need to eventually replace it depending on how well it handles dense tables of information.
 
-<img height='600' width='798' alt='starting_a_new_game' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/starting_a_new_game.png' />
+<img alt='starting_a_new_game' src='{{ BASE_PATH }}/img/screenshots/2012-10-13/milestone-3/starting_a_new_game.png' />
