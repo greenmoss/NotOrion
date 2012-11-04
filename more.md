@@ -33,4 +33,4 @@ I'm using [python](http://www.python.org) and [pyglet](http://www.pyglet.org/). 
 
 ## This project is so cool! How can I talk to you?
 
-Github [@greenmoss](https://github.com/blog/821)
+[Tweet @yellowmoss](http://www.twitter.com/yellowmoss) or [create an issue on Github](https://github.com/greenmoss/NotOrion/issues).
