@@ -10,6 +10,7 @@ from .. import common
 import views.galaxy.map.stars
 import title
 import star
+import orbits
 
 class StarSystem(common.Pane):
 	"""A window pane showing a star system."""
@@ -42,6 +43,7 @@ class StarSystem(common.Pane):
 
 		self.title = title.Title(self)
 		self.star = star.Star(self)
+		self.orbits = orbits.Orbits(self)
 
 	def derive_dimensions(self):
 		star_map_coordinate = self.state.map_coordinate(self.model_star.coordinates, 'model').as_default_window()

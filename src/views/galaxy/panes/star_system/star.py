@@ -19,7 +19,7 @@ class Star(object):
 	def show(self):
 		Star = views.galaxy.map.stars.Star
 		self.sprite.color = Star.colors[self.star_system_view.model_star.type]
-		self.sprite.x = self.star_system_view.corners['left'] + self.star_system_view.center[0]
+		self.sprite.x = self.star_system_view.corners['left'] + 10
 		self.sprite.y = self.star_system_view.corners['bottom'] + self.star_system_view.center[1]
 	
 	def draw(self):
