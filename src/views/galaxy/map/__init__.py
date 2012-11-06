@@ -1,6 +1,7 @@
 from __future__ import division
 import logging
 logger = logging.getLogger(__name__)
+import platform
 
 from pyglet.gl import *
 
@@ -172,6 +173,7 @@ class Galaxy(views.View):
 	def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
 		if self.state.vetoed_drag:
 			return
+		if platform.system() == 'Darwin': dy = -dy
 		self.set_center((self.view_center[0] - dx, self.view_center[1] - dy))
 	
 	def handle_mouse_scroll(self, x, y, scroll_x, scroll_y):
