@@ -8,8 +8,8 @@ sys.path.append(
 		os.path.dirname(os.path.abspath( __file__ )), os.path.pardir, 'src'
 	)
 )
-import application
-application.set_paths()
+import globals
+globals.g.get_paths()
 
 import utilities
 
