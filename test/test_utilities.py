@@ -57,6 +57,3 @@ class TestRandomDispersedCoordinates(unittest.TestCase):
 		self.assertEqual(coordinates, [(-2, 0), (2, 0)])
 		coordinates = utilities.random_dispersed_coordinates( 10, 10, 15, 15, amount=4, dispersion=2 )
 		self.assertEqual(coordinates, [(14, 11), (11, 11), (11, 14), (14, 14)])
-
-if __name__ == "__main__":
-	unittest.main()

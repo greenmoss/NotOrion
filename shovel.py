@@ -1,7 +1,7 @@
 import os
 import sys
 import shutil
-from subprocess import check_call
+import subprocess
 import platform
 
 from shovel import task
@@ -65,7 +65,7 @@ def allow_bytecode():
 		os.environ.pop('PYTHONDONTWRITEBYTECODE')
 
 def check_calls(str):
-	return check_call(str.split())
+	return subprocess.check_call(str.split())
 
 def rmdir(dir):
 	if os.path.isdir(dir):
@@ -89,6 +89,8 @@ def clean(alias = None):
 	rmdir('dist')
 	rm_ext('pyc')
 	rm_ext('pyo')
+	os.remove(os.path.join(os.getcwd(), '.coverage'))
+	rmdir('cover')
 
 @task
 def package(alias = None):
@@ -97,9 +99,15 @@ def package(alias = None):
 	os_handler.package(alias)
 
 @task
+def test_coverage(test_file = None):
+	'''Run nose tests with a coverage report.'''
+	#subprocess.call('nosetests --with-cover --cover-html --cover-package=src --cover-inclusive --cover-branches'.split())
+	subprocess.call('nosetests --with-cover --cover-html --cover-package=src --cover-branches'.split())
+
+@task
 def test(test_file = None):
-	'''Run a named test, or all tests.'''
-	check_call('nosetests')
+	'''Run nose tests.'''
+	subprocess.call('nosetests')
 
 @task
 def install():
