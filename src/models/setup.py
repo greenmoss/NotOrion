@@ -28,6 +28,12 @@ class GalaxyConfig(object):
 		for key, value in configs.iteritems():
 			if not hasattr(self, key): raise Exception, "attempted to set nonexistent attribute %s"%key
 			self.__setattr__(key, value)
+	
+	def isset(self, setting):
+		"""Find out whether a given configuration has been set."""
+		if self.__getattribute__(setting) is None:
+			return False
+		return True
 
 class Setup(object):
 	galaxy_age_help_text = textwrap.dedent("""\
@@ -179,11 +185,21 @@ class Setup(object):
 				int(self.galaxy_settings['star_count']/10), 
 				int(self.galaxy_settings['star_count']/5) 
 			)
+		if not self.galaxy_config.isset('worm_hole_count'):
+			self.galaxy_config.worm_hole_count = random.randint( 
+				int(self.galaxy_config.star_count/10), 
+				int(self.galaxy_config.star_count/5) 
+			)
 
 		if self.galaxy_settings.has_key('nebulae_count_min') and self.galaxy_settings.has_key('nebulae_count_max'):
 			self.galaxy_settings['nebulae_count'] = random.randint(
 				self.galaxy_settings['nebulae_count_min'],
 				self.galaxy_settings['nebulae_count_max'],
+			)
+		if self.galaxy_config.isset('nebulae_count_min') and self.galaxy_config.isset('nebulae_count_max'):
+			self.galaxy_config.nebulae_count = random.randint(
+				self.galaxy_config.nebulae_count_min,
+				self.galaxy_config.nebulae_count_max,
 			)
 
 		logger.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)

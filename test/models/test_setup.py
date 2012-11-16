@@ -26,6 +26,19 @@ class TestGalaxyConfig(unittest.TestCase):
 		"When merging into a GalaxyConfig, attribute values should become merged values."
 		self.config.merge({'age': 'Mature'})
 		self.assertEqual(self.config.age, 'Mature')
+	
+	def test_isset_invalid_config(self):
+		"In a GalaxyConfig, checking for an invalid configuration should raise an exception."
+		self.assertRaises(Exception, self.config.isset, 'blah')
+	
+	def test_isset_with_set_config(self):
+		"In a GalaxyConfig, checking for a set config should return true."
+		self.config.age = "Mature"
+		self.assertIs(self.config.isset('age'), True)
+	
+	def test_isset_with_unset_config(self):
+		"In a GalaxyConfig, checking for an unset config should return false."
+		self.assertIs(self.config.isset('age'), False)
 
 class TestSetup(unittest.TestCase):
 	def setUp(self):
@@ -49,7 +62,7 @@ class TestSetup(unittest.TestCase):
 		"Setting galaxy difficulty to beginner should have known worm hole count."
 		self.setup.set_galaxy_from_difficulty('Beginner')
 		self.assertEqual(
-			self.setup.galaxy_settings['worm_hole_count'], 
+			self.setup.galaxy_config.worm_hole_count, 
 			models.setup.Setup.difficulty_custom_settings['Beginner']['worm_hole_count']
 		)
 
@@ -57,7 +70,7 @@ class TestSetup(unittest.TestCase):
 		"Setting galaxy difficulty to beginner should have known nebula count."
 		self.setup.set_galaxy_from_difficulty('Beginner')
 		self.assertEqual(
-			self.setup.galaxy_settings['nebulae_count'], 
+			self.setup.galaxy_config.nebulae_count, 
 			models.setup.Setup.difficulty_custom_settings['Beginner']['nebulae_count']
 		)
 	
