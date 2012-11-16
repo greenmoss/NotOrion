@@ -8,6 +8,27 @@ logger = logging.getLogger(__name__)
 
 from globals import g
 
+class GalaxyConfig(object):
+	"""Keep track of all configurations for building a galaxy."""
+
+	# TODO: nebulae_count_min/max do not belong here
+	[
+		age, limits, nebulae_count, nebulae_count_min, nebulae_count_max, object_pool, 
+		size, star_count, worm_hole_count 
+	] = [None] * 9
+
+	# currently this is always set to 100
+	dispersion = 100
+
+	def __init__(self):
+		logger.debug("instantiated GalaxyConfig")
+	
+	def merge(self, configs):
+		"""Merge a hash of values into this configuration."""
+		for key, value in configs.iteritems():
+			if not hasattr(self, key): raise Exception, "attempted to set nonexistent attribute %s"%key
+			self.__setattr__(key, value)
+
 class Setup(object):
 	galaxy_age_help_text = textwrap.dedent("""\
 		Young galaxies have more mineral-rich planets and fewer planets suitable for farming.
@@ -128,9 +149,11 @@ class Setup(object):
 	def __init__(self):
 		logger.debug("instantiated Setup")
 		self.galaxy_settings = {}
+		self.galaxy_config = GalaxyConfig()
 
 	def set_galaxy_from_difficulty(self, chosen_difficulty="Normal"):
 		self.galaxy_settings['age'] = 'Mature'
+		self.galaxy_config.age = 'Mature'
 
 		settings_to_merge = None
 
@@ -140,6 +163,7 @@ class Setup(object):
 		if Setup.difficulty_preset_sizes.has_key(chosen_difficulty):
 			size = Setup.difficulty_preset_sizes[chosen_difficulty]
 			self.galaxy_settings['size'] = size
+			self.galaxy_config.size = size
 			settings_to_merge = Setup.size_defaults[Setup.difficulty_preset_sizes[chosen_difficulty]]
 
 		if settings_to_merge is None:
@@ -148,6 +172,7 @@ class Setup(object):
 		# is there a better way to merge dicts?
 		for key, value in settings_to_merge.iteritems():
 			self.galaxy_settings[key] = value
+		self.galaxy_config.merge(settings_to_merge)
 
 		if not self.galaxy_settings.has_key('worm_hole_count'):
 			self.galaxy_settings['worm_hole_count'] = random.randint( 

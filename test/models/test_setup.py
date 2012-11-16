@@ -4,14 +4,33 @@ import sys
 
 import models.setup
 
+class TestGalaxyConfig(unittest.TestCase):
+	def setUp(self):
+		unittest.TestCase.setUp(self)
+		self.config = models.setup.GalaxyConfig()
+	
+	def test_initial_empty_settings(self):
+		"New GalaxyConfig object should have empty settings."
+		self.assertEqual(self.config.age, None)
+		self.assertEqual(self.config.limits, None)
+	
+	def test_initial_dispersion(self):
+		"New GalaxyConfig object should have dispersion of 100."
+		self.assertEqual(self.config.dispersion, 100)
+	
+	def test_merge_invalid_config(self):
+		"When merging into a GalaxyConfig, an invalid merge key should raise an exception."
+		self.assertRaises(Exception, self.config.merge, {'blah':1})
+	
+	def test_merge_config(self):
+		"When merging into a GalaxyConfig, attribute values should become merged values."
+		self.config.merge({'age': 'Mature'})
+		self.assertEqual(self.config.age, 'Mature')
+
 class TestSetup(unittest.TestCase):
 	def setUp(self):
 		unittest.TestCase.setUp(self)
 		self.setup = models.setup.Setup()
-	
-	def test_init(self):
-		"New Setup object should have empty settings."
-		self.assertEqual(self.setup.galaxy_settings, {})
 	
 	def test_set_galaxy_from_difficulty_invalid_difficulty(self):
 		"Setting galaxy difficulty with an invalid difficulty should raise an exception."
@@ -20,9 +39,9 @@ class TestSetup(unittest.TestCase):
 	def test_set_galaxy_from_difficulty_default_parameters(self):
 		"Setting galaxy difficulty without a difficulty should have default settings."
 		self.setup.set_galaxy_from_difficulty()
-		self.assertEqual(self.setup.galaxy_settings['age'], 'Mature')
+		self.assertEqual(self.setup.galaxy_config.age, 'Mature')
 		self.assertEqual(
-			self.setup.galaxy_settings['size'],
+			self.setup.galaxy_config.size,
 			models.setup.Setup.difficulty_preset_sizes['Normal']
 		)
 
