@@ -69,7 +69,7 @@ class Application(object):
 		elif self.args.difficulty:
 			logger.debug("received --difficulty: %s",self.args.difficulty)
 			g.setup.set_galaxy_from_difficulty(self.args.difficulty)
-			g.setup.generate_galaxy()
+			g.galaxy.generate(g.setup.get_galaxy_config())
 			self.set_state('galaxy')
 
 		else:

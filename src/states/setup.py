@@ -22,7 +22,7 @@ class Setup(states.States):
 		g.setup.set_galaxy_from_difficulty(chosen_difficulty)
 
 		if chosen_difficulty == 'Beginner':
-			g.setup.generate_galaxy()
+			g.galaxy.generate(g.setup.get_galaxy_config())
 			self.view.difficulty_dialog.teardown()
 			g.application.set_state('galaxy')
 			return
@@ -44,15 +44,13 @@ class Setup(states.States):
 			chosen_age,
 			models.setup.Setup.age_defaults[chosen_age].keys()
 		)
-		# is there a better way to merge dicts?
-		for key, value in models.setup.Setup.age_defaults[chosen_age].iteritems():
-			g.setup.galaxy_settings[key] = value
+		g.setup.galaxy_config.merge(models.setup.Setup.age_defaults[chosen_age])
 
 	def handle_galaxy_size_help(self):
 		self.view.initialize_help_dialog(models.setup.Setup.galaxy_size_help_text)
 
 	def handle_galaxy_size_selection(self, chosen_size):
-		g.setup.galaxy_settings['size'] = chosen_size
+		g.setup.galaxy_config.size = chosen_size
 
 		if not models.setup.Setup.size_defaults.has_key(chosen_size):
 			raise Exception, "invalid size: %s"%chosen_size
@@ -62,12 +60,10 @@ class Setup(states.States):
 			chosen_size,
 			models.setup.Setup.size_defaults[chosen_size].keys()
 		)
-		# is there a better way to merge dicts?
-		for key, value in models.setup.Setup.size_defaults[chosen_size].iteritems():
-			g.setup.galaxy_settings[key] = value
+		g.setup.galaxy_config.merge(models.setup.Setup.size_defaults[chosen_size])
 	
 	def handle_game_options_continue(self):
-		"""Should have all necessary galaxy_settings, so generate the galaxy and enter galaxy state."""
-		g.setup.generate_galaxy()
+		"""Should have all necessary galaxy configs, so generate the galaxy and enter galaxy state."""
+		g.galaxy.generate(g.setup.get_galaxy_config())
 		self.view.options_dialog.teardown()
 		g.application.set_state('galaxy')

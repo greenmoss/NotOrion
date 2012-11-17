@@ -53,7 +53,7 @@ class Setup(views.View):
 						None,
 						kytten.Dropdown(
 							options=g.setup.size_options,
-							selected=g.setup.galaxy_settings['size'],
+							selected=g.setup.galaxy_config.size,
 							on_select=self.state.handle_galaxy_size_selection,
 						),
 						kytten.Button("?", on_click=self.state.handle_galaxy_size_help),
@@ -63,7 +63,7 @@ class Setup(views.View):
 						None,
 						kytten.Dropdown(
 							options=g.setup.age_options,
-							selected=g.setup.galaxy_settings['age'],
+							selected=g.setup.galaxy_config.age,
 							on_select=self.state.handle_galaxy_age_selection,
 						),
 						kytten.Button("?", on_click=self.state.handle_galaxy_age_help),

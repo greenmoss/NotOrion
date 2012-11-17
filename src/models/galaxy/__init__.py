@@ -25,14 +25,14 @@ class Galaxy(object):
 	def __init__(self):
 		logger.debug("instantiated Galaxy")
 
-	def generate(self, edges, dispersion, object_amount, object_pool, worm_hole_amount, nebulae_amount):
+	def generate(self, config):
 		'Generate objects in the galaxy'
 		logger.debug("generating galaxy")
 
 		# hold reference for orbitals
 		self.orbitals = orbitals.Orbitals()
 
-		self.generate_stars_and_black_holes(edges, dispersion, object_amount, object_pool)
+		self.generate_stars_and_black_holes(config)
 		logger.debug("star count: %s", len(self.stars.list))
 		logger.debug("planet count: %s", len(self.orbitals.planets))
 		logger.debug("asteroid belt count: %s", len(self.orbitals.asteroid_belts))
@@ -40,30 +40,30 @@ class Galaxy(object):
 		logger.debug("black hole count: %s", len(self.black_holes.list))
 
 		# generate nebulae
-		self.nebulae = nebulae.Nebulae(nebulae_amount, edges)
+		self.nebulae = nebulae.Nebulae(config.nebulae_count, config.limits)
 		logger.debug("nebulae count: %s", len(self.nebulae.list))
 
 		# generate worm holes
-		self.worm_holes = worm_holes.WormHoles(worm_hole_amount, self.stars)
+		self.worm_holes = worm_holes.WormHoles(config.worm_hole_count, self.stars)
 		logger.debug("worm hole count: %s", len(self.worm_holes.list))
 
 		self.derive_bounding_lines()
 		self.normalize()
 		self.derive_min_max_distances()
 
-	def generate_stars_and_black_holes(self, edges, dispersion, object_amount, object_pool):
+	def generate_stars_and_black_holes(self, config):
 		# generate coordinates for stars AND black holes in one pass
 		# since they may not overlap
 		object_coordinates = utilities.random_dispersed_coordinates(
-			edges[0], edges[1], edges[2], edges[3],
-			amount=object_amount, dispersion=dispersion
+			config.limits[0], config.limits[1], config.limits[2], config.limits[3],
+			amount=config.star_count, dispersion=config.dispersion
 		)
 
 		self.stars = stars.Stars(self.orbitals)
 		self.black_holes = black_holes.BlackHoles()
 
 		for coordinate in object_coordinates:
-			object_type = utilities.choose_from_probability(object_pool)
+			object_type = utilities.choose_from_probability(config.object_pool)
 
 			if object_type == 'black hole':
 				self.black_holes.add(coordinate)
