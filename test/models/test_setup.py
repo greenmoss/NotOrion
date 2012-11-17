@@ -73,11 +73,10 @@ class TestSetup(unittest.TestCase):
 		"Generating a galaxy without any settings should raise an exception."
 		self.assertRaises(Exception, self.setup.get_galaxy_config)
 
-	def test_get_galaxy_config_with_missing_setting(self):
+	def test_get_galaxy_config_with_missing_object_pool(self):
 		"Generating a galaxy without setting an object pool should create the default object pool."
 		self.setup.set_galaxy_from_difficulty()
-		config = self.setup.get_galaxy_config()
 		self.assertEqual(
-			config.object_pool, 
+			self.setup.get_galaxy_config().object_pool, 
 			models.setup.Setup.age_defaults['Mature']['object_pool']
 		)
