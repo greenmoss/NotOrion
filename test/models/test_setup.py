@@ -11,12 +11,7 @@ class TestGalaxyConfig(unittest.TestCase):
 	
 	def test_initial_empty_settings(self):
 		"New GalaxyConfig object should have empty settings."
-		self.assertEqual(self.config.age, None)
 		self.assertEqual(self.config.limits, None)
-	
-	def test_initial_dispersion(self):
-		"New GalaxyConfig object should have dispersion of 100."
-		self.assertEqual(self.config.dispersion, 100)
 	
 	def test_merge_invalid_config(self):
 		"When merging into a GalaxyConfig, an invalid merge key should raise an exception."
@@ -27,18 +22,18 @@ class TestGalaxyConfig(unittest.TestCase):
 		self.config.merge({'age': 'Mature'})
 		self.assertEqual(self.config.age, 'Mature')
 	
-	def test_isset_invalid_config(self):
+	def test_is_set_invalid_config(self):
 		"In a GalaxyConfig, checking for an invalid configuration should raise an exception."
-		self.assertRaises(Exception, self.config.isset, 'blah')
+		self.assertRaises(Exception, self.config.is_set, 'blah')
 	
-	def test_isset_with_set_config(self):
+	def test_is_set_with_set_config(self):
 		"In a GalaxyConfig, checking for a set config should return true."
-		self.config.age = "Mature"
-		self.assertIs(self.config.isset('age'), True)
+		self.config.star_count = 5
+		self.assertIs(self.config.is_set('star_count'), True)
 	
-	def test_isset_with_unset_config(self):
+	def test_is_set_with_unset_config(self):
 		"In a GalaxyConfig, checking for an unset config should return false."
-		self.assertIs(self.config.isset('age'), False)
+		self.assertIs(self.config.is_set('limits'), False)
 
 class TestSetup(unittest.TestCase):
 	def setUp(self):
@@ -74,17 +69,15 @@ class TestSetup(unittest.TestCase):
 			models.setup.Setup.difficulty_custom_settings['Beginner']['nebulae_count']
 		)
 	
-	def test_generate_galaxy_with_empty(self):
+	def test_get_galaxy_config_with_empty(self):
 		"Generating a galaxy without any settings should raise an exception."
-		self.assertRaises(Exception, self.setup.generate_galaxy)
-	
-	# need to move generate_galaxy() out of setup
-	# and to do that, need to turn galaxy_settings into an object
-	#def test_generate_galaxy_without_object_pool(self):
-	#	"Generating a galaxy without setting an object pool should create the default object pool."
-	#	self.setup.set_galaxy_from_difficulty()
-	#	self.setup.generate_galaxy()
-	#	self.assertEqual(
-	#		self.setup.galaxy_settings['object_pool'], 
-	#		models.setup.Setup.age_defaults['Mature']['object_pool']
-	#	)
+		self.assertRaises(Exception, self.setup.get_galaxy_config)
+
+	def test_get_galaxy_config_with_missing_setting(self):
+		"Generating a galaxy without setting an object pool should create the default object pool."
+		self.setup.set_galaxy_from_difficulty()
+		config = self.setup.get_galaxy_config()
+		self.assertEqual(
+			config.object_pool, 
+			models.setup.Setup.age_defaults['Mature']['object_pool']
+		)

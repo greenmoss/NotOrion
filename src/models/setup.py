@@ -13,9 +13,12 @@ class GalaxyConfig(object):
 
 	# TODO: nebulae_count_min/max do not belong here
 	[
-		age, limits, nebulae_count, nebulae_count_min, nebulae_count_max, object_pool, 
+		limits, nebulae_count, nebulae_count_min, nebulae_count_max, object_pool, 
 		size, star_count, worm_hole_count 
-	] = [None] * 9
+	] = [None] * 8
+
+	# age defaults to Mature
+	age = 'Mature'
 
 	# currently this is always set to 100
 	dispersion = 100
@@ -29,7 +32,7 @@ class GalaxyConfig(object):
 			if not hasattr(self, key): raise Exception, "attempted to set nonexistent attribute %s"%key
 			self.__setattr__(key, value)
 	
-	def isset(self, setting):
+	def is_set(self, setting):
 		"""Find out whether a given configuration has been set."""
 		if self.__getattribute__(setting) is None:
 			return False
@@ -154,13 +157,9 @@ class Setup(object):
 
 	def __init__(self):
 		logger.debug("instantiated Setup")
-		self.galaxy_settings = {}
 		self.galaxy_config = GalaxyConfig()
 
 	def set_galaxy_from_difficulty(self, chosen_difficulty="Normal"):
-		self.galaxy_settings['age'] = 'Mature'
-		self.galaxy_config.age = 'Mature'
-
 		settings_to_merge = None
 
 		if Setup.difficulty_custom_settings.has_key(chosen_difficulty):
@@ -168,68 +167,38 @@ class Setup(object):
 
 		if Setup.difficulty_preset_sizes.has_key(chosen_difficulty):
 			size = Setup.difficulty_preset_sizes[chosen_difficulty]
-			self.galaxy_settings['size'] = size
 			self.galaxy_config.size = size
 			settings_to_merge = Setup.size_defaults[Setup.difficulty_preset_sizes[chosen_difficulty]]
 
 		if settings_to_merge is None:
 			raise Exception, "no settings found for difficulty %s"%chosen_difficulty
 
-		# is there a better way to merge dicts?
-		for key, value in settings_to_merge.iteritems():
-			self.galaxy_settings[key] = value
 		self.galaxy_config.merge(settings_to_merge)
 
-		if not self.galaxy_settings.has_key('worm_hole_count'):
-			self.galaxy_settings['worm_hole_count'] = random.randint( 
-				int(self.galaxy_settings['star_count']/10), 
-				int(self.galaxy_settings['star_count']/5) 
-			)
-		if not self.galaxy_config.isset('worm_hole_count'):
+		if not self.galaxy_config.is_set('worm_hole_count'):
 			self.galaxy_config.worm_hole_count = random.randint( 
 				int(self.galaxy_config.star_count/10), 
 				int(self.galaxy_config.star_count/5) 
 			)
 
-		if self.galaxy_settings.has_key('nebulae_count_min') and self.galaxy_settings.has_key('nebulae_count_max'):
-			self.galaxy_settings['nebulae_count'] = random.randint(
-				self.galaxy_settings['nebulae_count_min'],
-				self.galaxy_settings['nebulae_count_max'],
-			)
-		if self.galaxy_config.isset('nebulae_count_min') and self.galaxy_config.isset('nebulae_count_max'):
+		if self.galaxy_config.is_set('nebulae_count_min') and self.galaxy_config.is_set('nebulae_count_max'):
 			self.galaxy_config.nebulae_count = random.randint(
 				self.galaxy_config.nebulae_count_min,
 				self.galaxy_config.nebulae_count_max,
 			)
 
-		logger.debug('in set_galaxy_from_difficulty, galaxy_settings is %s',self.galaxy_settings)
-
-	def generate_galaxy(self):
-		# ensure all necessary galaxy_settings have been set
+	def get_galaxy_config(self):
+		# ensure all necessary galaxy configs have been set
 		for setting in [
 			'limits',
 			'star_count',
 			'worm_hole_count',
 			'nebulae_count'
-			# object_pool and dispersion are currently optional
 		]:
-			if not self.galaxy_settings.has_key(setting):
+			if not self.galaxy_config.is_set(setting):
 				raise Exception, "missing galaxy setting: %s"%setting
 
-		if not self.galaxy_settings.has_key('object_pool'):
-			self.galaxy_settings['object_pool'] = Setup.age_defaults[self.galaxy_settings['age']]['object_pool']
+		if not self.galaxy_config.is_set('object_pool'):
+			self.galaxy_config.object_pool = Setup.age_defaults[self.galaxy_config.age]['object_pool']
 
-		if not self.galaxy_settings.has_key('dispersion'):
-			# currently this is always set to 100
-			self.galaxy_settings['dispersion'] = 100
-
-		logger.debug('in generate_galaxy, galaxy_settings is %s',self.galaxy_settings)
-
-		g.galaxy.generate(
-			self.galaxy_settings['limits'],
-			self.galaxy_settings['dispersion'],
-			self.galaxy_settings['star_count'],
-			self.galaxy_settings['object_pool'],
-			self.galaxy_settings['worm_hole_count'],
-			self.galaxy_settings['nebulae_count'],
-		)
+		return self.galaxy_config
