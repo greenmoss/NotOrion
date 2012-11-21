@@ -8,7 +8,6 @@ class WormHoles(object):
 
 	def generate(self, amount):
 		star_indexes = range(len(self.stars.list))
-		worm_holes = []
 		for repeat in range(amount):
 			index1 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
 			index2 = star_indexes.pop(random.randint(0, len(star_indexes)-1))
