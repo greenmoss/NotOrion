@@ -41,11 +41,11 @@ class Star(masses.Mass):
 
 	def __init__(self, coordinates, name, orbitals, type='yellow'):
 		if (len(name) > Stars.max_name_length) or (len(name) < Stars.min_name_length):
-			raise RangeException, "name must be %d to %d characters long"%(Stars.max_name_length,Stars.min_name_length)
+			raise Exception, "name must be %d to %d characters long"%(Stars.max_name_length,Stars.min_name_length)
 		self.name = name
 
 		if not type in Stars.colors:
-			raise DataError, 'unknown star type: %s'%type
+			raise Exception, 'unknown star type: %s'%type
 		self.type = type
 
 		super(Star, self).__init__(coordinates)

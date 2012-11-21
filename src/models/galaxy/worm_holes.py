@@ -1,7 +1,5 @@
 import random
 
-import stars
-
 class WormHoles(object):
 	def __init__(self, amount, stars):
 		self.stars = stars
@@ -21,11 +19,8 @@ class WormHole(object):
 	"""Wormholes are a special class of object; they have no mass and can not exist independently of their endpoint stars."""
 
 	def __init__(self, star1, star2):
-		if not isinstance(star1, stars.Star) or not isinstance(star2, stars.Star):
-			raise DataError, "both ends of wormholes must be stars"
-
 		if star1.worm_hole or star2.worm_hole:
-			raise DataError, "wormhole endpoint stars may only be used once"
+			raise Exception, "wormhole endpoint stars may only be used once"
 
 		self.endpoints = (star1, star2)
 		star1.worm_hole = self
