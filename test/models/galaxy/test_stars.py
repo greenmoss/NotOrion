@@ -1,8 +1,27 @@
 import unittest
 
-from globals import g
 import models.galaxy.stars
 import models.galaxy.orbitals
+
+class TestStars(unittest.TestCase):
+	def setUp(self):
+		unittest.TestCase.setUp(self)
+		orbitals = models.galaxy.orbitals.Orbitals()
+		self.stars = models.galaxy.stars.Stars(orbitals)
+	
+	def test_new_has_available_names(self):
+		"On Stars creation, there should be star names."
+		self.assertGreater(len(self.stars.available_names), 0)
+	# TODO: testing with a smaller number of star names, and running out
+	
+	def test_new_empty_list(self):
+		"On Stars creation, list of stars should be empty."
+		self.assertEqual([], self.stars.list)
+	
+	def test_add_star_increments_list(self):
+		"Adding a Star should increment the number of stars."
+		self.stars.add((0,0), 'yellow')
+		self.assertEqual(len(self.stars.list), 1)
 
 class TestStar(unittest.TestCase):
 	def setUp(self):
