@@ -7,7 +7,8 @@ import utilities
 class Orbitals(object):
 	"""Objects that orbit stars.
 
-	Planets, asteroid belts, gas giants"""
+	Planets, asteroid belts, gas giants. 
+	Note that when stars are created they automatically populate orbitals."""
 
 	# table from http://masteroforion2.blogspot.com/2006/01/moo2-map-generator.html
 	# modified to triple the weight of orbitals with "something"
@@ -38,8 +39,10 @@ class Orbitals(object):
 		self.asteroid_belts = []
 		self.gas_giants = []
 	
-	def add(self, star, orbit_number):
-		type = utilities.choose_from_probability(Orbitals.star_orbital_probability_table[star.type])
+	def add(self, star, orbit_number, type=None):
+		if type is None:
+			type = utilities.choose_from_probability(Orbitals.star_orbital_probability_table[star.type])
+
 		if type == 'nothing':
 			object = Empty(star, orbit_number)
 		elif type == 'planet':
@@ -51,6 +54,9 @@ class Orbitals(object):
 		elif type == 'gas giant':
 			object = GasGiant(star, orbit_number)
 			self.gas_giants.append(object)
+		else:
+			raise Exception, 'Unknown orbital type: %s'%type
+
 		return object
 
 class Planet(object):

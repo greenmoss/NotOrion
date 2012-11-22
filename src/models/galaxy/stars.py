@@ -39,7 +39,7 @@ class Stars(object):
 class Star(masses.Mass):
 	"""A star that may have orbiting planets, gas giants, etc."""
 
-	def __init__(self, coordinates, name, orbitals, type='yellow'):
+	def __init__(self, coordinates, name, orbitals=None, type='yellow'):
 		if (len(name) > Stars.max_name_length) or (len(name) < Stars.min_name_length):
 			raise Exception, "name must be %d to %d characters long"%(Stars.max_name_length,Stars.min_name_length)
 		self.name = name
@@ -52,6 +52,11 @@ class Star(masses.Mass):
 
 		self.worm_hole = None
 
+		if orbitals is not None:
+			self.set_orbits(orbitals)
+
+	def set_orbits(self, orbitals):
+		"Set objects that orbit this star."
 		self.orbits = []
 		logger.debug("%s: %s", self.name, self.type)
 		for orbit_number in range(0,5):
