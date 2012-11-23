@@ -21,6 +21,8 @@ class Stars(object):
 		'white',
 		'yellow',
 	]
+
+	max_orbits = 5
 	
 	def __init__(self, orbitals):
 		self.orbitals = orbitals
@@ -52,13 +54,13 @@ class Star(masses.Mass):
 
 		self.worm_hole = None
 
+		self.orbits = []
 		if orbitals is not None:
 			self.set_orbits(orbitals)
 
 	def set_orbits(self, orbitals):
 		"Set objects that orbit this star."
-		self.orbits = []
 		logger.debug("%s: %s", self.name, self.type)
-		for orbit_number in range(0,5):
+		for orbit_number in range(0,Stars.max_orbits):
 			orbital = orbitals.add(self, orbit_number)
 			self.orbits.append(orbital)

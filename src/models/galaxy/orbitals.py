@@ -38,10 +38,20 @@ class Orbitals(object):
 		self.planets = []
 		self.asteroid_belts = []
 		self.gas_giants = []
+
+		# keep track of stars and orbits that have been set
+		self.star_orbits = {}
 	
 	def add(self, star, orbit_number, type=None):
 		if type is None:
 			type = utilities.choose_from_probability(Orbitals.star_orbital_probability_table[star.type])
+
+		if self.star_orbits.has_key(star):
+			if orbit_number in self.star_orbits[star]:
+				raise Exception, "already added orbit %d for star %s"%(orbit_number, star.name)
+		else:
+			self.star_orbits[star] = []
+		self.star_orbits[star].append(orbit_number)
 
 		if type == 'nothing':
 			object = Empty(star, orbit_number)
