@@ -34,14 +34,22 @@ def random_dispersed_coordinates(bottom=-1000, left=-1000, top=1000, right=1000,
 	minimum_length = dispersion+1
 	recurse_into_rectangle(bottom, left, top, right, amount, minimum_length, rectangles, debug=debug)
 	(margin, remainder) = divmod(dispersion, 2)
-	tr_margin = margin+remainder
-	bl_margin = margin
+	(tr_margin, bl_margin) = (margin, margin)
+	if remainder > 0:
+		split = random.randint(0, remainder)
+		tr_margin += split
+		bl_margin -= split
+		bl_margin += remainder
 	object_coordinates = []
 	for rectangle in rectangles:
 		bottom_bound = rectangle[0]+bl_margin
 		left_bound = rectangle[1]+bl_margin
 		top_bound = rectangle[2]-tr_margin
 		right_bound = rectangle[3]-tr_margin
+		if top_bound < bottom_bound:
+			raise RangeException, 'insufficient vertical area'
+		if right_bound < left_bound:
+			raise RangeException, 'insufficient horizontal area'
 		x_coord = random.randint(left_bound, right_bound)
 		y_coord = random.randint(bottom_bound, top_bound)
 		object_coordinates.append( (x_coord, y_coord) )
@@ -120,9 +128,6 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 
 		remaining_x_chunks = x_chunks-minimum_left_x_chunks-minimum_right_x_chunks
 
-		if remaining_x_chunks < 0:
-			raise RangeException, 'insufficient area to hold coordinates of given minimum width'
-
 		# would eventually be nice to actually use "random", like this:
 		#random_x_chunk_offset = remaining_x_chunks and random.randint(0, remaining_x_chunks-1) 
 		# but first we'd have to find out how many additional chunks *minimum* are required 
@@ -165,7 +170,7 @@ def randomly_split_rectangle(bottom, left, top, right, minimum_length, coordinat
 		remaining_y_chunks = y_chunks-minimum_bottom_y_chunks-minimum_top_y_chunks
 
 		if remaining_y_chunks < 0:
-			raise RangeException, 'insufficient area to hold coordinates of given minimum height'
+			raise RangeException, 'insufficient area to hold remaining coordinates'
 
 		# would eventually be nice to actually use "random", like this:
 		#random_y_chunk_offset = remaining_y_chunks and random.randint(0, remaining_y_chunks-1) 
@@ -218,5 +223,3 @@ def choose_from_probability(table):
 		total += table[key]
 		if total >= chosen_int:
 			return key
-
-	return sorted[-1]

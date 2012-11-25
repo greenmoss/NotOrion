@@ -3,7 +3,6 @@
 move setup size and age default information into galaxy model
 use non-pyglet image loader within nebula lobes model
 use observer pattern on galaxy view, eg stars should be attaching to "set_scale"
-in utilities random_dispersed_coordinates, ensure top/right are as densely populated as bottom/left
 move window.update into appropriate state/view
 better separation/indirection between marker worm holes and wrapped objects?
 	specifically, pulling worm hole color seems "wrong"
