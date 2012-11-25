@@ -25,7 +25,7 @@ NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Mast
 </p>
 {% endif %}
 
-# Installation
+# [Installation]({{ BASE_PATH }}/installation.html)
 * See [installation instructions]({{ BASE_PATH }}/installation.html)
 
 # Meta/News
