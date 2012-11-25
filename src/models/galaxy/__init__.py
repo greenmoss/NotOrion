@@ -74,10 +74,12 @@ class Galaxy(object):
 
 	def derive_min_max_distances(self):
 		# derive max/min distances between all stars/black holes
-		self.max_coords = (0, 0)
+		max_coords = (0, 0)
 		self.max_distance = 0
-		self.min_coords = ((self.right_bounding_x - self.left_bounding_x), (self.top_bounding_y - self.bottom_bounding_y))
-		self.min_distance = math.sqrt(self.min_coords[0]**2 + self.min_coords[1]**2)
+
+		min_coords = ((self.right_bounding_x - self.left_bounding_x), (self.top_bounding_y - self.bottom_bounding_y))
+		self.min_distance = math.sqrt(min_coords[0]**2 + min_coords[1]**2)
+
 		for object1 in self.stars.list+self.black_holes.list:
 			for object2 in self.stars.list+self.black_holes.list:
 				if object1 == object2:
@@ -95,13 +97,14 @@ class Galaxy(object):
 				coords = ((max_x - min_x), (max_y - min_y))
 				distance = math.sqrt(coords[0]**2 + coords[1]**2)
 				if distance < self.min_distance:
-					self.min_coords = coords
+					min_coords = coords
 					self.min_distance = distance
 				if distance > self.max_distance:
-					self.max_coords = coords
+					max_coords = coords
 					self.max_distance = distance
+
 		if self.min_distance < Galaxy.min_separation_parsecs:
-			raise DataError, "at least two stars and/or black holes are not far enough apart"
+			raise Exception, "at least two stars and/or black holes are not far enough apart"
 
 	def normalize(self):
 		'Force extreme stars/black holes to be equidistant from (0,0)'
