@@ -35,20 +35,6 @@ class Nebulae(object):
 			# cycle to next lobe primary color
 			lobe_primary_color_index += 1
 
-		# ensure nebulae don't overlap
-		min_nebula_distance = Nebula.max_offset * 2
-		for nebula1 in self.list:
-			for nebula2 in self.list:
-				if nebula1 == nebula2:
-					continue
-				offset_from_zero = (
-					abs(nebula1.coordinates[0] - nebula2.coordinates[0]), 
-					abs(nebula1.coordinates[1] - nebula2.coordinates[1])
-				)
-				distance = math.sqrt(offset_from_zero[0]**2 + offset_from_zero[1]**2)
-				if distance < min_nebula_distance:
-					raise DataError, "at least two nebulae are not far enough apart"
-
 class Nebula(masses.Mass):
 	"""A nebula. These interact with other objects, eg ships by slowing movement."""
 	max_offset = 200
@@ -56,8 +42,11 @@ class Nebula(masses.Mass):
 	max_lobes = 6
 	lobe_offset_bounds = 80
 
-	def __init__(self, coordinates, primary_color_name):
+	def __init__(self, coordinates, primary_color_name=None):
 		super(Nebula, self).__init__(coordinates)
+
+		if primary_color_name is None:
+			primary_color_name = random.choice(Lobe.color_names.keys())
 
 		if not Lobe.color_names.has_key(primary_color_name):
 			raise DataError, "invalid primary color name: %s"%primary_color_name
@@ -116,7 +105,7 @@ class Lobe(object):
 		self.primary_color_name = primary_color_name
 
 		if permutation_index is None:
-			permutation_index = random.randint(0, len(Lobe.nebula_secondary_permutations))
+			permutation_index = random.randint(0, len(Lobe.nebula_secondary_permutations)-1)
 		else:
 			permutation_index = permutation_index % len(Lobe.nebula_secondary_permutations)
 		(secondary_color_index, self.image_selector) = Lobe.nebula_secondary_permutations[permutation_index]
@@ -133,6 +122,9 @@ class Lobe(object):
 		self.set_pyglet_images()
 
 	def set_pyglet_images(self):
+		"""Set pyglet image separately from other object attributes.
+
+		This allows Lobes to be serialized without pyglet references."""
 		self.pyglet_image_resource = pyglet.resource.image( self.pyglet_image_resource_file_name )
 	
 	def __getstate__(self):
