@@ -198,9 +198,7 @@ class Setup(object):
 			if not self.galaxy_config.is_set(setting):
 				raise Exception, "missing galaxy setting: %s"%setting
 
-		if self.galaxy_config.is_set('object_pool'): # coverage branch test doesn't like "if not"
-			pass
-		else:
+		if self.galaxy_config.is_set('object_pool') is False:
 			self.galaxy_config.object_pool = Setup.age_defaults[self.galaxy_config.age]['object_pool']
 
 		return self.galaxy_config
