@@ -29,7 +29,8 @@ class Window(pyglet.window.Window):
 
 		self.set_visible()
 
-	# this activates kytten in state.setup; it should move into views.setup
+	# TODO (debt) move this into views.setup
+	# this activates kytten in state.setup
 	def update(self, dt):
 		self.dispatch_event('on_update', dt)
 
