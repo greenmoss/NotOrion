@@ -19,8 +19,9 @@ class Application(object):
 	"""All application-level functionality, for instance game setup/teardown,
 	saved-game load/write, etc."""
 	
-	def configure(self):
-		self.parse_args()
+	def configure(self, args=None):
+		if args is None:
+			self.parse_args()
 		g.window = window.Window()
 		g.galaxy = models.galaxy.Galaxy()
 		g.setup = models.setup.Setup()
