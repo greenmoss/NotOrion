@@ -19,6 +19,8 @@ class Marker(object):
 	def __init__(self, map_object, marker_stars):
 		# each worm hole needs to inform marker Stars about marker view state
 		self.map_object = map_object
+		# TODO (debt) better separation/indirection between marker worm holes and wrapped objects
+		# specifically, pulling worm hole color seems "wrong"
 		self.color = self.map_object.color
 		self.star_marker_color_priority = 1
 		self.marker_stars = marker_stars

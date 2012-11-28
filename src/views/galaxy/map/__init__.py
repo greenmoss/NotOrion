@@ -134,6 +134,7 @@ class Galaxy(views.View):
 		self.scale = scale
 
 		# recalculate all object attributes that rely on scale
+		# TODO (debt) use observer pattern instead, eg stars should be attaching to "set_scale"
 		self.stars.set_scale(scale)
 		self.black_holes.set_scale(scale)
 		self.nebulae.set_scale(scale)

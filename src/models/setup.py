@@ -62,6 +62,7 @@ class Setup(object):
 	size_options=["Tiny", "Small", "Medium", "Large", "Huge"]
 	age_options=["Young", "Mature", "Old"]
 	
+	# TODO (debt): move setup size and age default information into galaxy model
 	# defaults based on galaxy age
 	# copy estimated proportions from
 	# http://masteroforion2.blogspot.com/2006/01/moo2-map-generator.html

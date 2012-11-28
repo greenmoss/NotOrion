@@ -118,6 +118,7 @@ class Lobe(object):
 		self.scale = 10**random.uniform(-0.3, 0.3)
 
 		image_id = '%s_%s_%d'%(self.primary_color_name, self.secondary_color_name, self.image_selector)
+		# TODO (debt): use non-pyglet image loader
 		self.pyglet_image_resource_file_name = Lobe.image_file_names[image_id]
 		self.set_pyglet_images()
 
