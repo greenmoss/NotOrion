@@ -1,4 +1,3 @@
-#! /usr/bin/env python -O
 from __future__ import division
 import os
 import argparse
@@ -19,9 +18,16 @@ class Application(object):
 	"""All application-level functionality, for instance game setup/teardown,
 	saved-game load/write, etc."""
 	
-	def configure(self, args=None):
-		if args is None:
+	def configure(self, settings=None, script=None):
+		# if no settings, read from ARGV
+		if settings is None:
+			self.settings = Settings()
 			self.parse_args()
+		else:
+			self.settings = settings
+
+		self.script = script
+
 		g.window = window.Window()
 		g.galaxy = models.galaxy.Galaxy()
 		g.setup = models.setup.Setup()
@@ -63,13 +69,13 @@ class Application(object):
 		self.state.load(saved_data['galaxy_state'])
 
 	def run(self):
-		if vars(self.args)['continue']: # "self.args.continue" is a syntax error, thus "vars(self.args)" instead
-			logger.debug("received --continue")
-			self.load('game.json')
+		if self.settings.continue_game:
+			logger.debug('continuing existing game: %s',self.settings.game_file)
+			self.load(self.settings.game_file)
 
-		elif self.args.difficulty:
-			logger.debug("received --difficulty: %s",self.args.difficulty)
-			g.setup.set_galaxy_from_difficulty(self.args.difficulty)
+		elif self.settings.difficulty:
+			logger.debug("received difficulty: %s",self.settings.difficulty)
+			g.setup.set_galaxy_from_difficulty(self.settings.difficulty)
 			g.galaxy.generate(g.setup.get_galaxy_config())
 			self.set_state('galaxy')
 
@@ -84,7 +90,17 @@ class Application(object):
 		parser.add_argument('--save-game-file')
 		parser.add_argument('--continue', action='store_true')
 		parser.add_argument('--difficulty', choices=['Beginner', 'Easy', 'Normal', 'Challenging'])
-		self.args = parser.parse_args()
+		args = parser.parse_args()
+
+		if vars(args)['continue']: # "self.args.continue" is a syntax error, thus "vars(self.args)" instead
+			self.settings.continue_game = True
+
+		elif args.save_game_file:
+			self.settings.continue_game = True
+			self.settings.game_file = args.save_game_file
+
+		elif args.difficulty:
+			self.settings.difficulty = args.difficulty
 	
 	def set_state(self, new_state):
 		logger.debug("setting state to %s"%new_state)
@@ -106,3 +122,11 @@ class Application(object):
 			raise Exception, "unknown state: %s"%new_state
 
 		self.states[new_state] = self.state
+
+class Settings(object):
+	"""All application settings."""
+
+	def __init__(self):
+		self.continue_game = False
+		self.game_file = 'game.json'
+		self.difficulty = None
