@@ -9,9 +9,6 @@ Currently you must install from source; there are not yet any OS packages availa
        # Download the code.
     cd NotOrion 
        # Change to the NotOrion directory.
-    git fetch -a
-    git checkout milestone_3 
-       # Current work is happening on branch "milestone_3", so switch to that.
     ./bootstrap.sh 
        # This installs all prerequisites.
     source Env/bin/activate 
