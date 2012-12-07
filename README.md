@@ -1,16 +1,18 @@
 NotOrion is currently an open-source reimplementation of the classic game 
-[Master of Orion 2](http://en.wikipedia.org/wiki/Master_of_Orion_II:_Battle_at_Antares). It is intended
-to eventually grow beyond its roots to include new game mechanics and scenarios.
+[Master of Orion 2](http://en.wikipedia.org/wiki/Master_of_Orion_II:_Battle_at_Antares). I intend
+to eventually [add new features](https://github.com/greenmoss/NotOrion/wiki/Version-2), and then 
+[add new game mechanics and scenarios](https://github.com/greenmoss/NotOrion/wiki/Version-3).
 
 Installation
 ------------
 
-TBD
+* See [instructions on the NotOrion website](http://greenmoss.github.com/NotOrion/installation.html)
+* Or read INSTALLATION.md
 
 Getting Help
 ------------
 
-TBD
+* [Create an issue on Github](https://github.com/greenmoss/NotOrion/issues).
 
 Author
 ------
