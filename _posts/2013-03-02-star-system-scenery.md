@@ -13,3 +13,5 @@ Part of the delay/de-motivation for me has been due to not knowing how to approa
 I've concluded that I should mock up my star system view in Blender, including all elements of the star system popup window as they will appear in the game. I am not yet done, but what I have has already been hugely helpful for me. I have been able to see which considerations are most important, versus ones that I *thought* were important but turned out to be irrelevant. For example: I started to create a very detailed earth, but found that most of the intricate effects weren't even visible due to the planet's small size in the scene. The asteroid I started modelling also turns out to be too granular and detailed to be useful. Also, I can easily balance colors, animate planet rotations, test shading, and count vertices.
 
 I'm still working on my Blender model, but I have completed enough to post various screenshots here. So my follow-on post (hopefully today) will be a gallery with more screenshots.
+
+__Update:__ [the screenshots are online]({{ BASE_PATH }}/galleries/2013/03/05/modelling-the-star-system-view/)
