@@ -10,7 +10,7 @@ NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Mast
 
 {% for site_post in site.posts %}{% if site_post.categories contains 'galleries' and newest_gallery == nil %}{% assign newest_gallery = site_post %}{% endif %}{% endfor %}
 {% if newest_gallery %}
-# <a href="{{ BASE_PATH }}{{ newest_gallery.url }}" title="{{ newest_gallery.title }}">Screen Shots</a>
+# <a href="{{ BASE_PATH }}{{ newest_gallery.url }}" title="{{ newest_gallery.title }}">Game Pics</a>
 <p>
 {% for post in site.posts reversed %}
   {% if post.categories contains 'screenshots' %}
@@ -23,6 +23,8 @@ NotOrion is (going to be) a galactic conquest game based on the 1996 game ["Mast
   {% endif %}
 {% endfor %}
 </p>
+
+* [All galleries]({{ BASE_PATH }}/categories.html#galleries-ref)
 {% endif %}
 
 # [Installation]({{ BASE_PATH }}/installation.html)
