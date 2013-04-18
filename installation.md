@@ -3,7 +3,7 @@ layout: page
 title: "Installation Instructions"
 ---
 {% include JB/setup %}
-Currently you must install from source; there are not yet any OS packages available. The following has been tested on Mac OS 10.8 (Lion) and Ubuntu 12.04 (Precise):
+Currently you must install from source; there are not yet any OS packages available. The following has been tested on Mac OS 10.7 (Lion) and Ubuntu 12.04 (Precise):
 
     git clone https://github.com/greenmoss/NotOrion.git 
        # Download the code.
