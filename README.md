@@ -6,7 +6,7 @@ to eventually [add new features](https://github.com/greenmoss/NotOrion/wiki/Vers
 Installation
 ------------
 
-* See [instructions on the NotOrion website](http://greenmoss.github.com/NotOrion/installation.html)
+* See [instructions on the NotOrion website](http://greenmoss.github.io/NotOrion/installation.html)
 * Or read INSTALLATION.md
 
 Getting Help
@@ -27,5 +27,5 @@ License
 Additional Resources
 --------------------
 
-* Current news on [Github Blog](http://greenmoss.github.com/NotOrion)
+* Current news on [Github Blog](http://greenmoss.github.io/NotOrion)
 * Planning and milestones on [GitHub project wiki](https://github.com/greenmoss/NotOrion/wiki/Planning)
