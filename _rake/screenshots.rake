@@ -54,8 +54,7 @@ task :screenshots do
   begin
     date = (ENV['date'] ? Time.parse(ENV['date']) : Time.now).strftime('%Y-%m-%d')
   rescue Exception => e
-    puts "Error - date format must be YYYY-MM-DD, please check you typed it correctly!"
-    exit -1
+    abort "Error - date format must be YYYY-MM-DD, please check you typed it correctly!"
   end
 
   image_fs_path = File.join(SOURCE, CONFIG['screenshots_path'], date, slug)
