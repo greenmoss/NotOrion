@@ -8,7 +8,7 @@ from globals import g
 #import states.galaxy
 
 class States(object):
-	""" Different states of the game, such as within setup and viewing the
-	galaxy.  """
+    """ Different states of the game, such as within setup and viewing the
+    galaxy.  """
 
-	pass
+    pass

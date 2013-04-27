@@ -6,5 +6,5 @@ import pyglet
 from globals import g
 
 class View(pyglet.event.EventDispatcher):
-	""" Each view within the single pyglet window."""
-	pass
+    """ Each view within the single pyglet window."""
+    pass
