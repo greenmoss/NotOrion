@@ -28,6 +28,9 @@ class Globals(object):
         paths['root_dir'] = os.path.abspath(os.path.join(paths['code_dir'], os.path.pardir))
         paths['resources_dir'] = os.path.abspath(os.path.join(paths['root_dir'], 'resources'))
         paths['images_dir'] = os.path.abspath(os.path.join(paths['resources_dir'], 'images'))
+        paths['meshes_dir'] = os.path.abspath(
+            os.path.join(paths['resources_dir'], 'meshes')
+        )
         paths['preferences_dir'] = pyglet.resource.get_settings_path('NotOrion')
         paths['saved_games_dir'] = os.path.join(paths['preferences_dir'], 'saved_games')
 

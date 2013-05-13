@@ -10,19 +10,19 @@ from .. import common
 import views.galaxy.map.stars
 import title
 import star
-import orbits
+import orbitals
 
 class StarSystem(common.Pane):
     """A window pane showing a star system."""
     height = 225
-    width = 600
+    width = 750
     text_height = 25
     center = (int(width/2),int(height-text_height)/2)
 
     background_color = (0, 0, 0) # black
     border_color = (32, 32, 32) # dark grey
     edge_offset = 10 # window should be no closer to edge than this
-    
+
     def __init__(self, state):
         self.state = state
         self.model_star = None
@@ -43,7 +43,7 @@ class StarSystem(common.Pane):
 
         self.title = title.Title(self)
         self.star = star.Star(self)
-        self.orbits = orbits.Orbits(self)
+        self.orbitals = orbitals.Orbitals(self)
 
     def derive_dimensions(self):
         star_map_coordinate = self.state.map_coordinate(self.model_star.coordinates, 'model').as_default_window()
@@ -96,11 +96,11 @@ class StarSystem(common.Pane):
 
         self.corners = {'top':top, 'right':right, 'bottom':bottom, 'left':left}
         logger.debug(self.corners)
-    
+
     def hide(self):
         self.model_star = None
         self.visible = False
-    
+
     def load(self, star):
         if star is None:
             return
@@ -108,14 +108,14 @@ class StarSystem(common.Pane):
 
     def save(self):
         return self.model_star
-    
+
     def show(self, star):
         self.model_star = star
         self.derive_dimensions()
         self.title.show()
         self.star.show()
         self.visible = True
-    
+
     def handle_draw(self):
         if not self.visible:
             return
@@ -125,14 +125,15 @@ class StarSystem(common.Pane):
         self.border_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
         self.title.draw()
         self.star.draw()
-    
+        self.orbitals.draw()
+
     def handle_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self.clicked_on_me:
             self.state.vetoed_drag = self
             return
-            
+
         self.hide()
-    
+
     def handle_mouse_press(self, x, y, button, modifiers):
         self.clicked_on_me = False
         if not pyglet.window.mouse.LEFT:
