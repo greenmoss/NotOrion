@@ -4,7 +4,6 @@ import os
 import warnings
 
 from pyglet.gl import *
-from pyglet import image
 
 class Material(object):
     diffuse = [.8, .8, .8]
@@ -205,26 +204,23 @@ class Wavefront(object):
                 warnings.warn('Expected "newmtl" in %s' % file_name)
                 continue
 
-            try:
-                if values[0] == 'Kd':
-                    material.diffuse = map(float, values[1:])
-                elif values[0] == 'Ka':
-                    material.ambient = map(float, values[1:])
-                elif values[0] == 'Ks':
-                    material.specular = map(float, values[1:])
-                elif values[0] == 'Ke':
-                    material.emissive = map(float, values[1:])
-                elif values[0] == 'Ns':
-                    material.shininess = float(values[1])
-                elif values[0] == 'd':
-                    material.opacity = float(values[1])
-                elif values[0] == 'map_Kd':
-                    try:
-                        material.texture = image.load(values[1]).texture
-                    except image.ImageDecodeException:
-                        warnings.warn('Could not load texture %s' % values[1])
-            except:
-                warnings.warn('Parse error in %s.' % file_name)
+            if values[0] == 'Kd':
+                material.diffuse = map(float, values[1:])
+            elif values[0] == 'Ka':
+                material.ambient = map(float, values[1:])
+            elif values[0] == 'Ks':
+                material.specular = map(float, values[1:])
+            elif values[0] == 'Ke':
+                material.emissive = map(float, values[1:])
+            elif values[0] == 'Ns':
+                material.shininess = float(values[1])
+            elif values[0] == 'd':
+                material.opacity = float(values[1])
+            elif values[0] == 'map_Kd':
+                # wavefront file has relative paths
+                # we only need the file name, since pyglet takes care of path lookups
+                path = values[1].split('/')[-1]
+                material.texture = pyglet.resource.image(path).texture
 
         if material.texture: material.verify_dimensions()
 
