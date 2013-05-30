@@ -50,6 +50,7 @@ class Galaxy(states.States):
         #self.masks.finish_draw()
 
     def on_key_press(self, *args):
+        self.star_system.handle_key_press(*args)
         self.markers.handle_key_press(*args)
 
     def on_key_release(self, *args):
