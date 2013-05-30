@@ -16,8 +16,9 @@ class Orbitals(object):
         self.star_system_view = star_system_view
         self.orbital = Orbital(self.star_system_view)
 
-    def draw(self):
-        self.orbital.draw()
+    def draw(self, look, rotate):
+
+        self.orbital.draw(look, rotate)
 
 class Orbital(object):
 
@@ -26,13 +27,7 @@ class Orbital(object):
         imported_path = os.path.join(g.paths['meshes_dir'], 'uv_sphere.obj')
         self.mesh = mesh.Wavefront(imported_path)
 
-    def draw(self):
-        fourfv = ctypes.c_float * 4
-        glLightfv(GL_LIGHT0, GL_POSITION, fourfv(10, 20, 20, 0))
-        glLightfv(GL_LIGHT0, GL_AMBIENT, fourfv(0.2, 0.2, 0.2, 1.0))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, fourfv(0.8, 0.8, 0.8, 1.0))
-        glEnable(GL_LIGHT0)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_DEPTH_TEST)
-        gluLookAt(0, 3, 3, 0, 0, 0, 0, 1, 0)
+    def draw(self, look, rotate):
+        glTranslated(look[0], look[1], look[2])
+        glRotated(rotate[0], rotate[1], rotate[2], rotate[3])
         self.mesh.draw()
