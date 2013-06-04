@@ -45,7 +45,7 @@ class StarSystem(common.Pane):
             ('c3B/static', StarSystem.border_color*4)
         )
 
-        self.persp = [-5., 50., 200.]
+        self.persp = [-5., 10., 300.]
 
         self.visible = False
         self.clicked_on_me = False

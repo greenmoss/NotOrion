@@ -68,6 +68,16 @@ class Orbital(object):
         self.model = model_orbital
         if type(self.model) == models.galaxy.orbitals.Planet:
             self.showing = True
+            if self.model.size == 'tiny':
+                self.look = [0, 0, -225]
+            elif self.model.size == 'small':
+                self.look = [0, 0, -175]
+            elif self.model.size == 'medium':
+                self.look = [0, 0, -125]
+            elif self.model.size == 'large':
+                self.look = [0, 0, -100]
+            elif self.model.size == 'huge':
+                self.look = [0, 0, -75]
         else:
             self.showing = False
             return
