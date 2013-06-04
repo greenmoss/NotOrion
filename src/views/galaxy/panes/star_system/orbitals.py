@@ -8,13 +8,13 @@ from pyglet.gl import *
 
 import views.galaxy.map.stars
 import utilities
-import mesh
+import wavefront
 from globals import g
 import models
 
 class Orbitals(object):
     path = os.path.join(g.paths['meshes_dir'], 'uv_sphere.obj')
-    uv_sphere = mesh.Wavefront(path)
+    uv_sphere = wavefront.Wavefront(path)
 
     def __init__(self, star_system_view):
         self.star_system_view = star_system_view
