@@ -41,7 +41,7 @@ class Orbitals(object):
 
         # keep track of stars and orbits that have been set
         self.star_orbits = {}
-    
+
     def add(self, star, orbit_number, type=None):
         if type is None:
             type = utilities.choose_from_probability(Orbitals.star_orbital_probability_table[star.type])
