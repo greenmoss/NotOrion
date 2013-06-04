@@ -30,6 +30,23 @@ class Orbitals(object):
         self.orbital_width = int( (display_box['right'] - display_box['left']) / 5 )
         self.height = display_box['top'] - display_box['bottom']
 
+        # adjust lighting based on star color
+        star_type = self.star_system_view.model_star.type
+        if star_type == 'blue':
+            self.light_dif = [2.0, 2.0, 4.0, 1.0]
+        elif star_type == 'brown':
+            self.light_dif = [0.6, 0.4, 0.4, 1.0]
+        elif star_type == 'orange':
+            self.light_dif = [1.0, 0.9, 0.7, 1.0]
+        elif star_type == 'red':
+            self.light_dif = [0.8, 0.7, 0.6, 1.0]
+        elif star_type == 'white':
+            self.light_dif = [2.0, 2.0, 2.0, 1.0]
+        elif star_type == 'yellow':
+            self.light_dif = [1.0, 1.0, 0.9, 1.0]
+        else:
+            self.light_dif = [1.0, 1.0, 1.0, 1.0]
+
         model_orbitals = self.star_system_view.model_star.orbits
         for orbital_index in range(0, len(self.all)):
             orbital = self.all[orbital_index]

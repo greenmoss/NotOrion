@@ -23,7 +23,7 @@ class Stars(object):
     ]
 
     max_orbits = 5
-    
+
     def __init__(self, orbitals):
         self.orbitals = orbitals
 
@@ -33,7 +33,7 @@ class Stars(object):
                 self.available_names.append(line.rstrip())
 
         self.list = []
-    
+
     def add(self, coordinate, color):
         name = self.available_names.pop( random.randint(0, len(self.available_names)-1)) 
         self.list.append( Star( coordinate, name, self.orbitals, color) )
