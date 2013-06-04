@@ -15,12 +15,12 @@ class Star(object):
         image.anchor_x = image.width // 2
         image.anchor_y = image.height // 2
         self.sprite = pyglet.sprite.Sprite(image, 0, 0)
-    
-    def show(self):
+
+    def prepare(self):
         Star = views.galaxy.map.stars.Star
         self.sprite.color = Star.colors[self.star_system_view.model_star.type]
         self.sprite.x = self.star_system_view.corners['left'] + 10
         self.sprite.y = self.star_system_view.corners['bottom'] + self.star_system_view.center[1]
-    
+
     def draw(self):
         self.sprite.draw()
