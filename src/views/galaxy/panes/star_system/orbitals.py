@@ -1,20 +1,18 @@
 import logging
 logger = logging.getLogger(__name__)
 import ctypes
-import os
 
 import pyglet
 from pyglet.gl import *
 
 import views.galaxy.map.stars
 import utilities
-import wavefront
+import meshes
 from globals import g
 import models
 
 class Orbitals(object):
-    path = os.path.join(g.paths['meshes_dir'], 'uv_sphere.obj')
-    uv_sphere = wavefront.Wavefront(path)
+    sphere = meshes.Sphere()
 
     def __init__(self, star_system_view):
         self.star_system_view = star_system_view
@@ -130,7 +128,7 @@ class Orbital(object):
         glTranslated(self.look[0], self.look[1], self.look[2])
         glRotated(self.rotate[0], self.rotate[1], self.rotate[2], self.rotate[3])
 
-        Orbitals.uv_sphere.draw()
+        Orbitals.sphere.draw()
 
         glPopAttrib(GL_LIGHT0)
         glPopAttrib(GL_MODELVIEW)
