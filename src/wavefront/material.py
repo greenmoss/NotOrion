@@ -54,3 +54,47 @@ class MaterialGroup(object):
         # Interleaved array of floats in GL_T2F_N3F_V3F format
         self.vertices = []
         self.array = None
+
+
+def load_materials_file(file_path):
+    """Load one or more materials from a *.mtl file. Return a Hash
+    containing all found materials; the hash keys are the material names
+    as found in the .mtl file."""
+    this_material = None
+    file_handle = open(file_path, 'r')
+    materials = {}
+
+    for line in file_handle:
+        if line.startswith('#'):
+            continue
+        values = line.split()
+        if not values:
+            continue
+
+        if values[0] == 'newmtl':
+            this_material = Material(values[1])
+            materials[this_material.name] = this_material
+        elif this_material is None:
+            warnings.warn('Expected "newmtl" in %s' % file_name)
+            continue
+
+        if values[0] == 'Kd':
+            this_material.diffuse = map(float, values[1:])
+        elif values[0] == 'Ka':
+            this_material.ambient = map(float, values[1:])
+        elif values[0] == 'Ks':
+            this_material.specular = map(float, values[1:])
+        elif values[0] == 'Ke':
+            this_material.emissive = map(float, values[1:])
+        elif values[0] == 'Ns':
+            this_material.shininess = float(values[1])
+        elif values[0] == 'd':
+            this_material.opacity = float(values[1])
+        elif values[0] == 'map_Kd':
+            # wavefront file has relative paths
+            # we only need the file name, since pyglet takes care of path lookups
+            path = values[1].split('/')[-1]
+            this_material.texture = pyglet.resource.image(path).texture
+
+    if this_material.texture: this_material.verify_dimensions()
+    return materials
