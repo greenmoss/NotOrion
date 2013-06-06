@@ -1,3 +1,6 @@
+"""This library imports Wavefront-formatted 3D object definitions and
+converts them into pyglet vertex lists."""
+
 # TODO: move this into an independent git project library
 # Derived from `contrib/model/examples/obj_test.py` in the pyglet directory
 import os
@@ -43,7 +46,10 @@ class Wavefront(object):
             elif values[0] == 'vt':
                 tex_coords.append(map(float, values[1:3]))
             elif values[0] == 'mtllib':
-                self.load_material_library(values[1])
+                file_path = os.path.join(self.path, values[1])
+                loaded = material.load_materials_file(file_path)
+                for material_name, material_object in loaded.iteritems():
+                    self.materials[material_name] = material_object
             elif values[0] in ('usemtl', 'usemat'):
                 this_material = self.materials.get(values[1], None)
                 if this_material is None:
@@ -93,48 +99,6 @@ class Wavefront(object):
                     if i == 0:
                         v1 = vertex
                     vlast = vertex
-
-    def open_material_file(self, file_name):
-        '''Override for loading from archive/network etc.'''
-        return open(os.path.join(self.path, file_name), 'r')
-
-    def load_material_library(self, file_name):
-        this_material = None
-        file_handle = self.open_material_file(file_name)
-
-        for line in file_handle:
-            if line.startswith('#'):
-                continue
-            values = line.split()
-            if not values:
-                continue
-
-            if values[0] == 'newmtl':
-                this_material = material.Material(values[1])
-                self.materials[this_material.name] = this_material
-            elif this_material is None:
-                warnings.warn('Expected "newmtl" in %s' % file_name)
-                continue
-
-            if values[0] == 'Kd':
-                this_material.diffuse = map(float, values[1:])
-            elif values[0] == 'Ka':
-                this_material.ambient = map(float, values[1:])
-            elif values[0] == 'Ks':
-                this_material.specular = map(float, values[1:])
-            elif values[0] == 'Ke':
-                this_material.emissive = map(float, values[1:])
-            elif values[0] == 'Ns':
-                this_material.shininess = float(values[1])
-            elif values[0] == 'd':
-                this_material.opacity = float(values[1])
-            elif values[0] == 'map_Kd':
-                # wavefront file has relative paths
-                # we only need the file name, since pyglet takes care of path lookups
-                path = values[1].split('/')[-1]
-                this_material.texture = pyglet.resource.image(path).texture
-
-        if this_material.texture: this_material.verify_dimensions()
 
     def draw(self):
         for this_mesh in self.mesh_list:
