@@ -25,7 +25,6 @@ class Wavefront(object):
         self.path = path
 
         this_mesh = None
-        group = None
         this_material = None
 
         vertices = [[0., 0., 0.]]
@@ -55,13 +54,11 @@ class Wavefront(object):
                 if this_material is None:
                     warnings.warn('Unknown material: %s' % values[1])
                 if this_mesh is not None:
-                    group = material.MaterialGroup(this_material)
-                    this_mesh.groups.append(group)
+                    this_mesh.add_material(this_material)
             elif values[0] == 'o':
                 this_mesh = mesh.Mesh(values[1])
                 self.meshes[this_mesh.name] = this_mesh
                 self.mesh_list.append(this_mesh)
-                group = None
             elif values[0] == 'f':
                 if len(normals) == 1: warnings.warn('No Normals found: black screen?')
 
@@ -70,9 +67,7 @@ class Wavefront(object):
                     self.mesh_list.append(this_mesh)
                 if this_material is None:
                     this_material = material.Material()
-                if group is None:
-                    group = material.MaterialGroup(this_material)
-                    this_mesh.groups.append(group)
+                this_mesh.add_material(this_material)
 
                 # For fan triangulation, remember first and latest vertices
                 v1 = None
@@ -93,8 +88,8 @@ class Wavefront(object):
 
                     if i >= 3:
                         # Triangulate
-                        group.vertices += v1 + vlast
-                    group.vertices += vertex
+                        this_material.vertices += v1 + vlast
+                    this_material.vertices += vertex
 
                     if i == 0:
                         v1 = vertex
