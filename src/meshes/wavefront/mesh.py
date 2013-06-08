@@ -3,11 +3,23 @@ from pyglet.gl import *
 class Mesh(object):
     def __init__(self, name):
         self.name = name
-        self.groups = []
+        self.materials = []
 
         # Display list, created only if compile() is called, but used
         # automatically by draw()
         self.display_list = None
+
+    def has_material(self, new_material):
+        """Determine whether we already have a material of this name."""
+        for material in self.materials:
+            if material.name == new_material.name:
+                return True
+        return False
+
+    def add_material(self, material):
+        """Add a material to the mesh, IFF it is not already present."""
+        if self.has_material(material): return
+        self.materials.append(material)
 
     def draw(self):
         if self.display_list:
@@ -18,13 +30,13 @@ class Mesh(object):
         glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_LIGHTING_BIT)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
-        for group in self.groups:
-            group.material.prepare()
-            if group.array is None:
-                group.array = (GLfloat * len(group.vertices))(*group.vertices)
-                group.triangles = len(group.vertices) / 8
-            glInterleavedArrays(GL_T2F_N3F_V3F, 0, group.array)
-            glDrawArrays(GL_TRIANGLES, 0, group.triangles)
+        for material in self.materials:
+            material.prepare()
+            if material.array is None:
+                material.array = (GLfloat * len(material.vertices))(*material.vertices)
+                material.triangles = len(material.vertices) / 8
+            glInterleavedArrays(GL_T2F_N3F_V3F, 0, material.array)
+            glDrawArrays(GL_TRIANGLES, 0, material.triangles)
         glPopAttrib()
         glPopClientAttrib()
 

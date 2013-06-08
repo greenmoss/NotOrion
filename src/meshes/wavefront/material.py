@@ -12,6 +12,10 @@ class Material(object):
     def __init__(self, name):
         self.name = name
 
+        # Interleaved array of floats in GL_T2F_N3F_V3F format
+        self.vertices = []
+        self.array = None
+
     def prepare(self, face=GL_FRONT_AND_BACK):
         if self.texture:
             glEnable(self.texture.target)
@@ -46,15 +50,6 @@ class Material(object):
                 )
                 break
             value = div_int
-
-class MaterialGroup(object):
-    def __init__(self, material):
-        self.material = material
-
-        # Interleaved array of floats in GL_T2F_N3F_V3F format
-        self.vertices = []
-        self.array = None
-
 
 def load_materials_file(file_path):
     """Load one or more materials from a *.mtl file. Return a Hash
