@@ -1,6 +1,6 @@
 # Blender MTL File: 'uv_sphere.blend'
 # Material Count: 1
-newmtl Material.002_terran_planet1.png
+newmtl Material.terran.png
 Ns 96.078431
 Ka 0.000000 0.000000 0.000000
 Kd 0.640000 0.640000 0.640000
@@ -8,6 +8,4 @@ Ks 0.500000 0.500000 0.500000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd ../images/terran_planet1.png
-
-
+map_Kd ../images/planet_surfaces/terran.png

@@ -12,8 +12,6 @@ from globals import g
 import models
 
 class Orbitals(object):
-    sphere = meshes.Sphere()
-
     def __init__(self, star_system_view):
         self.star_system_view = star_system_view
         self.all = []
@@ -68,6 +66,13 @@ class Orbitals(object):
             orbital.draw(self.light_amb, self.light_dif)
 
 class Orbital(object):
+    planet_z_depth = {
+            'tiny': -225,
+            'small': -175,
+            'medium': -125,
+            'large': -100,
+            'huge': -75
+    }
 
     def __init__(self, star_system_view):
         self.star_system_view = star_system_view
@@ -79,20 +84,14 @@ class Orbital(object):
         self.look = [0, 0, -100]
         self.rotate = [0, 0, 0, 0]
 
+        self.planet = meshes.Sphere()
+
     def prepare(self, model_orbital, display_box):
         self.model = model_orbital
         if type(self.model) == models.galaxy.orbitals.Planet:
             self.showing = True
-            if self.model.size == 'tiny':
-                self.look = [0, 0, -225]
-            elif self.model.size == 'small':
-                self.look = [0, 0, -175]
-            elif self.model.size == 'medium':
-                self.look = [0, 0, -125]
-            elif self.model.size == 'large':
-                self.look = [0, 0, -100]
-            elif self.model.size == 'huge':
-                self.look = [0, 0, -75]
+            self.look = [0, 0, Orbital.planet_z_depth[self.model.size]]
+            self.planet.set_texture('%s.png'%self.model.type)
         else:
             self.showing = False
             return
@@ -128,7 +127,7 @@ class Orbital(object):
         glTranslated(self.look[0], self.look[1], self.look[2])
         glRotated(self.rotate[0], self.rotate[1], self.rotate[2], self.rotate[3])
 
-        Orbitals.sphere.draw()
+        self.planet.draw()
 
         glPopAttrib(GL_LIGHT0)
         glPopAttrib(GL_MODELVIEW)

@@ -34,10 +34,11 @@ class Globals(object):
         paths['preferences_dir'] = pyglet.resource.get_settings_path('NotOrion')
         paths['saved_games_dir'] = os.path.join(paths['preferences_dir'], 'saved_games')
 
-        # load images using pyglet's resource path
-        if (pyglet.resource.path.count(paths['images_dir']) == 0):
-            pyglet.resource.path.append(paths['images_dir'])
-            pyglet.resource.reindex()
+        # populate pyglet's resource path
+        # TODO: populate the path dynamically by reading directory
+        # contents; exclude "src" directory
+        pyglet.resource.path = ['resources/images', 'resources/images/planet_surfaces']
+        pyglet.resource.reindex()
 
         return paths
         
