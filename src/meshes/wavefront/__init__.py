@@ -34,7 +34,7 @@ class Wavefront(object):
             this_mesh.draw()
 
 class Parser(object):
-    """Object to hold parsed values."""
+    """Object to parse lines of a mesh definition file."""
     def __init__(self, wavefront):
         # unfortunately we can't escape from external effects on the
         # wavefront object
@@ -46,6 +46,8 @@ class Parser(object):
         self.vertices = [[0., 0., 0.]]
         self.normals = [[0., 0., 0.]]
         self.tex_coords = [[0., 0.]]
+
+        self.warn = False
 
     def parse(self, line):
         """Determine what type of line we are and dispatch
@@ -61,7 +63,7 @@ class Parser(object):
         try:
             parse_function = getattr(self, 'parse_%s'%line_type)
         except AttributeError:
-            warnings.warn(
+            if self.warn: warnings.warn(
                     'ignored unparseable values in wavefront object file: %s'%values)
             return
         parse_function(parameters)
@@ -85,7 +87,7 @@ class Parser(object):
     def parse_usemtl(self, parameters):
         self.material = self.wavefront.materials.get(parameters[0], None)
         if self.material is None:
-            warnings.warn('Unknown material: %s' % parameters[0])
+            if self.warn: warnings.warn('Unknown material: %s' % parameters[0])
         if self.mesh is not None:
             self.mesh.add_material(self.material)
 
@@ -98,7 +100,8 @@ class Parser(object):
         self.wavefront.mesh_list.append(self.mesh)
 
     def parse_f(self, parameters):
-        if len(self.normals) == 1: warnings.warn('No Normals found: black screen?')
+        if self.warn and (len(self.normals) == 1): 
+            warnings.warn('No Normals found: black screen?')
 
         if self.mesh is None:
             self.mesh = mesh.Mesh('')
