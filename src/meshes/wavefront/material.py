@@ -1,3 +1,5 @@
+import warnings
+
 from pyglet.gl import *
 
 class Material(object):
@@ -16,10 +18,12 @@ class Material(object):
         self.vertices = []
         self.array = None
 
+    def set_texture(self, path):
+        self.texture = Texture(path)
+
     def prepare(self, face=GL_FRONT_AND_BACK):
         if self.texture:
-            glEnable(self.texture.target)
-            glBindTexture(self.texture.target, self.texture.id)
+            self.texture.prepare()
         else:
             glDisable(GL_TEXTURE_2D)
 
@@ -33,63 +37,102 @@ class Material(object):
             (GLfloat * 4)(*(self.emission + [self.opacity])))
         glMaterialf(face, GL_SHININESS, self.shininess)
 
+class Texture(object):
+    def __init__(self, path):
+        self.path = path
+
+        # wavefront file has relative paths
+        # we only need the file name, since pyglet takes care of path lookups
+        self.image_name = self.path.split('/')[-1]
+
+        self.image = pyglet.resource.image(self.image_name).texture
+
+        self.verify_dimensions()
+
+        self.warn = False
+
+    def prepare(self):
+        glEnable(self.image.target)
+        glBindTexture(self.image.target, self.image.id)
+
     def verify_dimensions(self):
         self.verify('width')
         self.verify('height')
 
     def verify(self, dimension):
-        value = self.texture.__getattribute__(dimension)
+        value = self.image.__getattribute__(dimension)
         while value > 1:
             div_float = float(value) / 2.0
             div_int = int(div_float)
             if not (div_float == div_int):
-                warnings.warn(
-                    'texture %s is %d, which is not a power of 2: partial mesh coverage?'%(
-                        dimension, self.texture.__getattribute__(dimension)
+                if self.warn: warnings.warn(
+                    'image %s is %d, which is not a power of 2: partial texture coverage?'%(
+                        dimension, self.image.__getattribute__(dimension)
                     )
                 )
                 break
             value = div_int
 
+class Parser(object):
+    """Object to parse lines of a materials definition file."""
+
+    def __init__(self):
+        self.materials = {}
+        self.material = None
+        self.warn = False
+
+    def parse(self, line):
+        """Determine what type of line we are and dispatch
+        appropriately."""
+        if line.startswith('#'): return
+
+        values = line.split()
+        if len(values) < 2: return
+
+        line_type = values[0]
+        parameters = values[1:]
+
+        try:
+            parse_function = getattr(self, 'parse_%s'%line_type)
+        except AttributeError:
+            if self.warn: warnings.warn(
+                    'ignored unparseable values in wavefront material file: %s'%values)
+            return
+        parse_function(parameters)
+
+    def parse_newmtl(self, parameters):
+        self.material = Material(parameters[0])
+        self.materials[self.material.name] = self.material
+
+    def parse_Kd(self, parameters):
+        self.material.diffuse = map(float, parameters[0:])
+
+    def parse_Ka(self, parameters):
+        self.material.ambient = map(float, parameters[0:])
+
+    def parse_Ks(self, parameters):
+        self.material.specular = map(float, parameters[0:])
+
+    def parse_Ke(self, parameters):
+        self.material.emissive = map(float, parameters[0:])
+
+    def parse_Ns(self, parameters):
+        self.material.shininess = float(parameters[0])
+
+    def parse_d(self, parameters):
+        self.material.opacity = float(parameters[0])
+
+    def parse_map_Kd(self, parameters):
+        self.material.set_texture(parameters[0])
+
 def load_materials_file(file_path):
     """Load one or more materials from a *.mtl file. Return a Hash
     containing all found materials; the hash keys are the material names
     as found in the .mtl file."""
-    this_material = None
     file_handle = open(file_path, 'r')
-    materials = {}
+    parser = Parser()
 
     for line in file_handle:
-        if line.startswith('#'):
-            continue
-        values = line.split()
-        if not values:
-            continue
+        parser.parse(line)
 
-        if values[0] == 'newmtl':
-            this_material = Material(values[1])
-            materials[this_material.name] = this_material
-        elif this_material is None:
-            warnings.warn('Expected "newmtl" in %s' % file_name)
-            continue
-
-        if values[0] == 'Kd':
-            this_material.diffuse = map(float, values[1:])
-        elif values[0] == 'Ka':
-            this_material.ambient = map(float, values[1:])
-        elif values[0] == 'Ks':
-            this_material.specular = map(float, values[1:])
-        elif values[0] == 'Ke':
-            this_material.emissive = map(float, values[1:])
-        elif values[0] == 'Ns':
-            this_material.shininess = float(values[1])
-        elif values[0] == 'd':
-            this_material.opacity = float(values[1])
-        elif values[0] == 'map_Kd':
-            # wavefront file has relative paths
-            # we only need the file name, since pyglet takes care of path lookups
-            path = values[1].split('/')[-1]
-            this_material.texture = pyglet.resource.image(path).texture
-
-    if this_material.texture: this_material.verify_dimensions()
-    return materials
+    return parser.materials

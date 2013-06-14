@@ -12,8 +12,7 @@ class Mesh(object):
     def has_material(self, new_material):
         """Determine whether we already have a material of this name."""
         for material in self.materials:
-            if material.name == new_material.name:
-                return True
+            if material.name == new_material.name: return True
         return False
 
     def add_material(self, material):
@@ -41,9 +40,10 @@ class Mesh(object):
         glPopClientAttrib()
 
     def compile(self):
-        if not self.display_list:
-            display_list = glGenLists(1)
-            glNewList(display_list, GL_COMPILE)
-            self.draw()
-            glEndList()
-            self.display_list = display_list
+        if self.display_list: return
+
+        display_list = glGenLists(1)
+        glNewList(display_list, GL_COMPILE)
+        self.draw()
+        glEndList()
+        self.display_list = display_list
