@@ -6,3 +6,4 @@ dist
 Env
 .coverage
 cover
+.DS_Store
