@@ -1,3 +1,4 @@
+from __future__ import division
 import logging
 logger = logging.getLogger(__name__)
 import ctypes
@@ -65,6 +66,10 @@ class Orbitals(object):
         for orbital in self.all:
             orbital.draw(self.light_amb, self.light_dif)
 
+    def hide(self):
+        for orbital in self.all:
+            orbital.hide()
+
 class Orbital(object):
     planet_z_depth = {
             'tiny': -225,
@@ -77,14 +82,32 @@ class Orbital(object):
     def __init__(self, star_system_view):
         self.star_system_view = star_system_view
         self.model = None
-        self.showing = False
 
+        self.showing = False
         self.lightfv = ctypes.c_float * 4
         self.light_pos = [10, 0, 3, 0]
         self.look = [0, 0, -100]
-        self.rotate = [0, 0, 0, 0]
+        self.rotate_x = 0
+        self.rotate_y = 0
+        self.rotate_z = 0
 
         self.planet = meshes.Sphere()
+
+        self.animated = False
+
+    def animate(self, dt):
+        self.rotate_y += (dt*50)
+        self.rotate_y %= 360
+
+    def remove_animation(self):
+        if self.animated is False: return
+        pyglet.clock.unschedule(self.animate)
+        self.animated = False
+
+    def schedule_animation(self):
+        if self.animated is True: return
+        pyglet.clock.schedule_interval(self.animate, 1/60)
+        self.animated = True
 
     def prepare(self, model_orbital, display_box):
         self.model = model_orbital
@@ -100,18 +123,10 @@ class Orbital(object):
         self.port_height = display_box['top'] - display_box['bottom']
         self.port_width = display_box['right'] - display_box['left']
 
+        self.schedule_animation()
+
     def draw(self, light_amb, light_dif):
         if self.showing is False: return
-        #print 'showing orbital %d'%self.model.orbit_number
-
-        glPushAttrib(GL_LIGHT0)
-        glLightfv(GL_LIGHT0, GL_POSITION, self.lightfv(self.light_pos[0],
-            self.light_pos[1], self.light_pos[2], self.light_pos[3]))
-        glLightfv(GL_LIGHT0, GL_AMBIENT, self.lightfv(light_amb[0],
-            light_amb[1], light_amb[2], light_amb[3]))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, self.lightfv(light_dif[0],
-            light_dif[1], light_dif[2], light_dif[3]))
-        glEnable(GL_LIGHT0)
 
         glViewport(
             self.display_box['left'],
@@ -122,12 +137,28 @@ class Orbital(object):
         glPushAttrib(GL_MODELVIEW)
         glMatrixMode(GL_MODELVIEW)
 
+        glPushAttrib(GL_LIGHT0)
+        glLightfv(GL_LIGHT0, GL_POSITION, self.lightfv(self.light_pos[0],
+            self.light_pos[1], self.light_pos[2], self.light_pos[3]))
+        glLightfv(GL_LIGHT0, GL_AMBIENT, self.lightfv(light_amb[0],
+            light_amb[1], light_amb[2], light_amb[3]))
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, self.lightfv(light_dif[0],
+            light_dif[1], light_dif[2], light_dif[3]))
+        glEnable(GL_LIGHT0)
+        glPopAttrib(GL_LIGHT0)
+
         glLoadIdentity()
 
+        glPushMatrix()
         glTranslated(self.look[0], self.look[1], self.look[2])
-        glRotated(self.rotate[0], self.rotate[1], self.rotate[2], self.rotate[3])
+        glRotatef(self.rotate_z, 0, 0, 1)
+        glRotatef(self.rotate_y, 0, 1, 0)
+        glRotatef(self.rotate_x, 1, 0, 0)
 
         self.planet.draw()
+        glPopMatrix()
 
-        glPopAttrib(GL_LIGHT0)
         glPopAttrib(GL_MODELVIEW)
+
+    def hide(self):
+        self.remove_animation()

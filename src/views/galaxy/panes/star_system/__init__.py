@@ -108,6 +108,7 @@ class StarSystem(common.Pane):
 
     def hide(self):
         self.model_star = None
+        self.orbitals.hide()
         self.visible = False
 
     def load(self, star):
