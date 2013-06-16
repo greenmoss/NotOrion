@@ -96,7 +96,7 @@ class Orbital(object):
         self.animated = False
 
     def animate(self, dt):
-        self.rotate_y += (dt*50)
+        self.rotate_y += (dt*self.model.orbit_speed)
         self.rotate_y %= 360
 
     def remove_animation(self):
@@ -115,8 +115,10 @@ class Orbital(object):
             self.showing = True
             self.look = [0, 0, Orbital.planet_z_depth[self.model.size]]
             self.planet.set_texture('%s.png'%self.model.type)
+            self.rotate_z = self.model.orbit_inclination
         else:
             self.showing = False
+            self.remove_animation()
             return
 
         self.display_box = display_box
