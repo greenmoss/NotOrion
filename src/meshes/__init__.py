@@ -19,13 +19,13 @@ class Mesh(object):
                     "found %d meshes within %s; we require exactly one mesh"%(
                     mesh_count, path)
         self.mesh = imported.mesh_list[0]
-        logger.debug( self.mesh )
+        #logger.debug( self.mesh )
 
         material_count = len(self.mesh.materials)
         if material_count < 1:
             raise Exception, \
                     "found 0 materials within %s; we require at least one material"%path
-        logger.debug( self.mesh.materials[0] )
+        #logger.debug( self.mesh.materials[0] )
 
     def set_texture(self, image_path):
         self.mesh.materials[0].set_texture(image_path)

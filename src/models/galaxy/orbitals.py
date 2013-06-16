@@ -194,6 +194,10 @@ class Planet(object):
         self.gravity = Planet.size_richness_gravity_table[self.size][self.richness]
         logger.debug("%s: %s %s %s %s", self.name, self.size, self.type, self.richness, self.gravity)
 
+        # and now for cosmetics
+        self.orbit_inclination = random.randint(0, 40)
+        self.orbit_speed = random.randint(10, 100)
+
 class Empty(object):
     """An empty orbit."""
     def __init__(self, star, orbit_number):
