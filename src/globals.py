@@ -37,7 +37,10 @@ class Globals(object):
         # populate pyglet's resource path
         # TODO: populate the path dynamically by reading directory
         # contents; exclude "src" directory
-        pyglet.resource.path = ['resources/images', 'resources/images/planet_surfaces']
+        pyglet.resource.path = [
+                paths['images_dir'],
+                'resources/images/planet_surfaces',
+                paths['meshes_dir']]
         pyglet.resource.reindex()
 
         return paths

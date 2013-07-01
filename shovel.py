@@ -11,7 +11,7 @@ class LinuxHandler(object):
         # broken as of Nov 3, 2012
         #check_calls('pip install pyglet')
         check_calls('pip install hg+https://pyglet.googlecode.com/hg/')
-    
+
     def package(self):
         raise Exception, 'not yet supported'
 
@@ -30,7 +30,7 @@ class OSXHandler(object):
         #sed -ie 's/unset pydoc/unset pydoc; unset python/' ~/.virtualenvs/NotOrion/bin/activate
         #sed -ie 's/alias pydoc/alias python="arch -i386 python"; alias pydoc/' ~/.virtualenvs/NotOrion/bin/activate
         #pip install pyglet
-    
+
     def package(self):
         try:
             import py2app
@@ -116,4 +116,4 @@ def install():
     Includes modules for testing, building, and running NotOrion.'''
     allow_bytecode()
     os_handler.install()
-    check_calls('pip install jsonpickle kytten coverage nose')
+    check_calls('pip install jsonpickle kytten coverage nose PyWavefront')
