@@ -124,13 +124,20 @@ class StarSystem(common.Pane):
         self.model_star = star
         self.derive_dimensions()
         self.title.prepare()
-        self.star.prepare()
+
+        star_display_box = {
+            'top':self.corners['top'],
+            'right':self.corners['left'] + StarSystem.star_display_width,
+            'bottom':self.corners['bottom'],
+            'left':self.corners['left'],
+        }
+        self.star.prepare(star_display_box)
 
         # dimensions of box for displaying orbitals
         orbitals_display_box = {
-            'top':self.corners['top'] - StarSystem.text_height,
+            'top':self.corners['top'],
             'right':self.corners['right'],
-            'bottom':self.corners['bottom'] + StarSystem.text_height,
+            'bottom':self.corners['bottom'],
             'left':self.corners['left'] + StarSystem.star_display_width,
         }
         self.orbitals.prepare(orbitals_display_box)
@@ -144,11 +151,13 @@ class StarSystem(common.Pane):
         self.bg_vertex_list.draw(pyglet.gl.GL_QUADS)
         self.border_vertex_list.draw(pyglet.gl.GL_LINE_LOOP)
         self.title.draw()
-        self.star.draw()
 
         # prepare to draw 3D meshes
         glPushAttrib(GL_DEPTH_TEST)
         glEnable(GL_DEPTH_TEST)
+
+        glPushAttrib(GL_PROJECTION)
+        glMatrixMode(GL_PROJECTION)
 
         glPushAttrib(GL_COLOR_MATERIAL)
         glEnable(GL_COLOR_MATERIAL)
@@ -156,8 +165,7 @@ class StarSystem(common.Pane):
         glPushAttrib(GL_LIGHTING)
         glEnable(GL_LIGHTING)
 
-        glPushAttrib(GL_PROJECTION)
-        glMatrixMode(GL_PROJECTION)
+        self.star.draw()
 
         self.orbitals.draw()
 
