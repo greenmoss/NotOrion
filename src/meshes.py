@@ -30,6 +30,30 @@ class Mesh(object):
     def set_texture(self, image_path):
         self.mesh.materials[0].set_texture(image_path)
 
+    def set_diffuse(self, color_values):
+        self.mesh.materials[0].set_diffuse(color_values)
+
+    def unset_diffuse(self):
+        self.set_diffuse([0., 0., 0., 0.])
+
+    def set_ambient(self, color_values):
+        self.mesh.materials[0].set_ambient(color_values)
+
+    def unset_ambient(self):
+        self.set_ambient([0., 0., 0., 0.])
+
+    def set_specular(self, color_values):
+        self.mesh.materials[0].set_specular(color_values)
+
+    def unset_specular(self):
+        self.set_specular([0., 0., 0., 0.])
+
+    def set_emissive(self, color_values):
+        self.mesh.materials[0].set_emissive(color_values)
+
+    def unset_emissive(self):
+        self.set_emissive([0., 0., 0., 0.])
+
     def draw(self):
         self.mesh.draw()
 

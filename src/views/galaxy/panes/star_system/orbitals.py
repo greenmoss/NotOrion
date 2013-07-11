@@ -21,7 +21,7 @@ class Orbitals(object):
             self.all.append(Orbital(self.star_system_view))
 
         self.light_amb = [0.1, 0.1, 0.1, 1.0]
-        self.light_dif = [1.0, 1.0, 1.0, 1.0]
+        self.star_light = [1.0, 1.0, 1.0, 1.0]
 
     def prepare(self, display_box):
         #logger.debug('display_box: %s'%self.display_box)
@@ -30,9 +30,7 @@ class Orbitals(object):
 
         # adjust lighting based on star color
         star_type = self.star_system_view.model_star.type
-        star_diffuse = star.Star.diffuse_light[star_type]
-        self.light_dif = [star_diffuse[0], star_diffuse[1],
-                star_diffuse[2], 0.1]
+        self.star_light = star.Star.light_color[star_type]
 
         model_orbitals = self.star_system_view.model_star.orbits
         for orbital_index in range(0, len(self.all)):
@@ -54,7 +52,7 @@ class Orbitals(object):
             self.star_system_view.persp[2])
 
         for orbital in self.all:
-            orbital.draw(self.light_amb, self.light_dif)
+            orbital.draw(self.light_amb, self.star_light)
 
     def hide(self):
         for orbital in self.all:
@@ -117,7 +115,7 @@ class Orbital(object):
 
         self.schedule_animation()
 
-    def draw(self, light_amb, light_dif):
+    def draw(self, light_amb, star_light):
         if self.showing is False: return
 
         glViewport(
@@ -134,8 +132,10 @@ class Orbital(object):
             self.light_pos[1], self.light_pos[2], self.light_pos[3]))
         glLightfv(GL_LIGHT0, GL_AMBIENT, self.lightfv(light_amb[0],
             light_amb[1], light_amb[2], light_amb[3]))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, self.lightfv(light_dif[0],
-            light_dif[1], light_dif[2], light_dif[3]))
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, self.lightfv(star_light[0],
+            star_light[1], star_light[2], star_light[3]))
+        # for the moment, we do not want any specular highlights
+        glLightfv(GL_LIGHT0, GL_SPECULAR, self.lightfv(0., 0., 0., 0.))
         glEnable(GL_LIGHT0)
         glPopAttrib(GL_LIGHT0)
 
