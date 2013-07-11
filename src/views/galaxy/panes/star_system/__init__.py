@@ -159,13 +159,13 @@ class StarSystem(common.Pane):
         glPushAttrib(GL_PROJECTION)
         glMatrixMode(GL_PROJECTION)
 
-        glPushAttrib(GL_COLOR_MATERIAL)
-        glEnable(GL_COLOR_MATERIAL)
-
         glPushAttrib(GL_LIGHTING)
         glEnable(GL_LIGHTING)
 
         self.star.draw()
+
+        glPushAttrib(GL_COLOR_MATERIAL)
+        glEnable(GL_COLOR_MATERIAL)
 
         self.orbitals.draw()
 
